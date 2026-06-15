@@ -1,0 +1,35 @@
+# Barricora v37 Cloud Foundation
+
+This version keeps the v36 app but adds a Cloudflare backend foundation.
+
+## Required Cloudflare bindings
+
+Set these exact binding names in your Cloudflare Pages project:
+
+- D1 database binding: `DB`
+- R2 bucket binding: `AUDIT_PHOTOS`
+
+## Database setup
+
+Run the SQL from `schema.sql` in your D1 database.
+
+## Deployment note
+
+Cloudflare Pages Functions are included under `/functions`.
+Do not use normal dashboard drag-and-drop direct upload for this backend version.
+Deploy using GitHub integration or Wrangler.
+
+## API routes included
+
+- `GET /api/health`
+- `GET /api/audits`
+- `POST /api/audits`
+- `DELETE /api/audits`
+- `DELETE /api/audits/:id`
+- `GET /api/photos?key=...`
+
+## Behaviour
+
+The app still works locally/browser-only if the API is not available.
+When the API is available, it will sync saved audits to D1 and upload photo data to R2.
+Existing local audits are not wiped when the cloud database is empty; they are pushed to cloud.

@@ -1,0 +1,11 @@
+name = "barricora"
+pages_build_output_dir = "."
+
+[[d1_databases]]
+binding = "DB"
+database_name = "YOUR_D1_DATABASE_NAME"
+database_id = "YOUR_D1_DATABASE_ID"
+
+[[r2_buckets]]
+binding = "AUDIT_PHOTOS"
+bucket_name = "YOUR_R2_BUCKET_NAME"
