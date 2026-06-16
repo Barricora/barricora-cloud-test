@@ -113,6 +113,9 @@
 
 /* Barricora v37 cloud status */
 #cloudStatus{display:inline-block;background:#f6f9fd;border:1px solid #dce4ec;border-radius:999px;padding:7px 10px;margin:8px 0 0;font-weight:900}.cloudOnline{color:#14532d!important;background:#e7f8ed!important;border-color:#a8ddb6!important}.cloudSyncing{color:#174ea6!important;background:#dbeafe!important;border-color:#a8c7fa!important}.cloudOffline{color:#7a4b00!important;background:#fff3cd!important;border-color:#f3cf74!important}.cloudError{color:#8a1f1f!important;background:#fde0df!important;border-color:#f3aaa5!important}
+
+/* Barricora v38 cloud cleanup */
+.cloudPanel{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}.cloudPanel #cloudStatus{margin:0}.cloudPanel #cloudLastSync{display:inline-block;background:#f8fafc;border:1px solid #dce4ec;border-radius:999px;padding:7px 10px;color:#667789;font-size:13px;font-weight:900}.cloudPanel button{padding:8px 11px;border-radius:999px;font-size:12px}@media(max-width:800px){.cloudPanel{display:grid;grid-template-columns:1fr}.cloudPanel button{width:100%}}
 </style></head><body>
 <header><div class="headerInner"><img class="logo" src="assets/barricora-logo.png" alt="Barricora logo"><div class="headerText"><h1>Barricora</h1><p id="sub">Focused. Practical. Safer sites.</p><p id="autosaveStatus" style="margin:4px 0 0;color:#b8c7d8;font-size:12px">Auto-save ready</p></div></div></header>
 <main>
@@ -120,7 +123,12 @@
   <div class="card">
     <span class="step">Dashboard</span>
     <h2>Safety Audit Dashboard</h2>
-    <p class="small">Start a new focused audit, resume current work, or review saved reports and actions.</p><p class="small" id="cloudStatus">Cloud: checking...</p>
+    <p class="small">Start a new focused audit, resume current work, or review saved reports and actions.</p>
+    <div class="cloudPanel noPrint">
+      <span id="cloudStatus">Cloud: checking...</span>
+      <span id="cloudLastSync">Last sync: never</span>
+      <button class="secondary" id="syncNowBtn" type="button">Sync now</button>
+    </div>
     <div class="homeDashGrid" id="homeDashGrid">
       <div class="homeDashCard"><b id="dashDrafts">0</b><span>Drafts</span></div>
       <div class="homeDashCard finished"><b id="dashFinished">0</b><span>Finished</span></div>
@@ -225,7 +233,7 @@ function esc(s){return String(s||"").replace(/[&<>"']/g,function(m){return {"&":
 function today(){return new Date().toISOString().slice(0,10)}
 function show(id){["screenCategories","screenAuditList","screenActionList","screenCloseAction","screenDetails","screenQuestion","screenReport"].forEach(function(s){$(s).classList.add("hidden")});$(id).classList.remove("hidden");if(id==="screenCategories")updateHomeDashboard();window.scrollTo(0,0)}
 function init(){buildCategories();$("backDetails").onclick=function(){show("screenCategories")};$("openAuditListBtn").onclick=openAuditList;$("openActionListBtn").onclick=openActionList;$("backFromActionListBtn").onclick=function(){show("screenCategories")};$("cancelCloseActionBtn").onclick=function(){renderActionList();show("screenActionList")};$("closeActionPhoto").onchange=handleCloseActionPhoto;$("confirmCloseActionBtn").onclick=confirmCloseAction;if($("resumeCurrentDraftBtn"))$("resumeCurrentDraftBtn").onclick=resumeCurrentDraft;$("backFromAuditListBtn").onclick=function(){show("screenCategories")};$("deleteAllAuditsBtn").onclick=deleteAllSavedAudits;$("startQuestions").onclick=startQuestions;$("backToReportDetails").onclick=function(){buildReport();autoSave();show("screenReport")};$("saveExitBtn").onclick=function(){try{saveQuestionAction()}catch(e){}autoSave();saveUnfinishedAudit()};$("newAuditBtn").onclick=startCleanNewAudit;$("finishSaveExitBtn").onclick=finishSaveExit;$("saveCompletedBtn").onclick=saveCompletedAudit;$("saveBtn").onclick=saveAudit;$("backToAuditListFromReportBtn").onclick=function(){setReadOnlyReportMode(false);renderAuditList();updateHomeDashboard();show("screenAuditList")};$("clearDraftBtn").onclick=function(){if(confirm("Clear saved draft from this device?"))clearAutoSave()};$("exportBtn").onclick=exportAudit;$("printBtn").onclick=openPrintableReport;setupSignaturePad("sigAuditorCanvas","auditorSignature");setupSignaturePad("sigSupervisorCanvas","supervisorSignature");$("clearAuditorSigBtn").onclick=function(){clearSignatureCanvas("sigAuditorCanvas","auditorSignature")};$("clearSupervisorSigBtn").onclick=function(){clearSignatureCanvas("sigSupervisorCanvas","supervisorSignature")};$("sigAuditorName").oninput=function(){signatures.auditorName=this.value;autoSave();buildReport()};$("sigSupervisorName").oninput=function(){signatures.supervisorName=this.value;autoSave();buildReport()};$("editDetailsBtn").onclick=function(){if(readOnlyReport)return;reportReady=true;$("backToReportDetails").classList.remove("hidden");show("screenDetails")};$("editQuestionsBtn").onclick=function(){questionIndex=CATEGORIES[currentCategory].questions.length-1;renderQuestion();show("screenQuestion")};$("generateCommentBtn").onclick=generateOverallComment;$("clearCommentBtn").onclick=function(){$("overallComment").value="";$("backToReportDetails").classList.add("hidden");buildReport()};$("overallComment").oninput=function(){autoSave();buildReport()};$("micOverall").onclick=function(){startDictation("overallComment",$("micOverall"))}
-;document.querySelectorAll("[data-audit-filter]").forEach(function(btn){btn.onclick=function(){auditListFilter=this.getAttribute("data-audit-filter")||"all";updateFilterButtons("audit");renderAuditList();}});if($("auditSearch"))$("auditSearch").oninput=function(){auditSearchText=this.value.trim().toLowerCase();renderAuditList();};document.querySelectorAll("[data-action-filter]").forEach(function(btn){btn.onclick=function(){actionListFilter=this.getAttribute("data-action-filter")||"all";updateFilterButtons("action");renderActionList();}});updateHomeDashboard()}
+;document.querySelectorAll("[data-audit-filter]").forEach(function(btn){btn.onclick=function(){auditListFilter=this.getAttribute("data-audit-filter")||"all";updateFilterButtons("audit");renderAuditList();}});if($("auditSearch"))$("auditSearch").oninput=function(){auditSearchText=this.value.trim().toLowerCase();renderAuditList();};if($("syncNowBtn"))$("syncNowBtn").onclick=manualCloudSync;document.querySelectorAll("[data-action-filter]").forEach(function(btn){btn.onclick=function(){actionListFilter=this.getAttribute("data-action-filter")||"all";updateFilterButtons("action");renderActionList();}});updateHomeDashboard()}
 function buildCategories(){let grid=$("categoryGrid");grid.innerHTML="";Object.keys(CATEGORIES).forEach(function(name){let item=CATEGORIES[name];let btn=document.createElement("button");btn.type="button";btn.className="catCard";btn.innerHTML='<div class="catIcon">'+item.icon+'</div><div><b>'+esc(name)+'</b><span>'+item.questions.length+' questions</span></div><div class="chev">›</div>';btn.addEventListener("click",function(){selectCategory(name)});grid.appendChild(btn)})}
 function selectCategory(name){setReadOnlyReportMode(false);currentCategory=name;currentAuditId="audit_"+Date.now();questionIndex=0;answers={};comments={};photos={};actions={};reportReady=false;commentVariant=0;setSignatureData({});if($("overallComment")){$("overallComment").value="";}$("selectedCat").textContent=name;$("selectedCount").textContent=CATEGORIES[name].questions.length+" questions";$("sub").textContent=name+" audit setup";$("date").value=today();autoSave();updateResumeDraftButton();show("screenDetails")}
 function startQuestions(){if(!currentCategory){alert("Please choose category first.");return}$("sub").textContent=currentCategory+" audit in progress";questionIndex=0;renderQuestion();autoSave();show("screenQuestion")}
@@ -235,7 +243,7 @@ function renderQuestion(){let qs=CATEGORIES[currentCategory].questions;let q=qs[
     $("poorActionWarning").style.display="block";
     $("actionOptionalText").textContent="(required)";
   }$("micComment").onclick=function(){startDictation("commentBox",$("micComment"))};$("micAction").onclick=function(){startDictation("actionText",$("micAction"))};$("prevBtn").disabled=questionIndex===0;$("prevBtn").onclick=function(){saveQuestionAction();if(questionIndex>0){questionIndex--;autoSave();renderQuestion();window.scrollTo(0,0)}};$("nextBtn").onclick=function(){saveQuestionAction();if(!requireCurrentRating())return;if(!requirePoorActionForIndex(questionIndex))return;if(questionIndex<qs.length-1){questionIndex++;autoSave();renderQuestion();window.scrollTo(0,0)}else{finishAudit()}};if(reportReady&&$("questionBackToReportBtn")){$("questionBackToReportBtn").onclick=function(){saveQuestionAction();if(!requirePoorActionForIndex(questionIndex))return;if(!canFinishAudit())return;buildReport();autoSave();show("screenReport")}}}
-function saveQuestionAction(){let k=key();actions[k]={text:$("actionText").value,owner:$("actionOwner").value,due:$("actionDue").value,status:($("actionStatus")?$("actionStatus").value:"Open")};autoSave()}
+function saveQuestionAction(){let k=key(),txt=$("actionText").value.trim(),own=$("actionOwner").value.trim(),due=$("actionDue").value,st=($("actionStatus")?$("actionStatus").value:"Open");if(txt){actions[k]={text:txt,owner:own,due:due,status:st};}else{delete actions[k];}autoSave()}
 const NOTE_BANK={
   "Very well managed":[
     "Strong standard observed with controls implemented effectively.",
@@ -744,6 +752,35 @@ function setCloudStatus(text,cls){
   el.classList.remove("cloudOnline","cloudSyncing","cloudOffline","cloudError");
   if(cls)el.classList.add(cls);
   el.textContent=text;
+  if(cls==="cloudOnline")setCloudLastSync();
+}
+function setCloudLastSync(){
+  let el=$("cloudLastSync");
+  if(!el)return;
+  el.textContent="Last sync: "+new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+}
+function cleanActionsObject(src){
+  let out={};
+  Object.keys(src||{}).forEach(function(k){
+    let a=src[k]||{};
+    let text=(a.text||"").trim();
+    if(text){
+      out[k]={text:text,owner:a.owner||"",due:a.due||"",status:a.status||"Open"};
+      if(a.originalRating)out[k].originalRating=a.originalRating;
+      if(a.closedAt)out[k].closedAt=a.closedAt;
+      if(a.closeComment)out[k].closeComment=a.closeComment;
+      if(a.closePhoto)out[k].closePhoto=a.closePhoto;
+      if(a.closeRating)out[k].closeRating=a.closeRating;
+    }
+  });
+  return out;
+}
+async function manualCloudSync(){
+  if(!cloudAvailable){await initCloudSync();return;}
+  await loadCloudAudits();
+  let list=getAuditList();
+  for(let i=0;i<list.length;i++)await syncAuditToCloud(list[i],true);
+  setCloudStatus("Cloud: synced","cloudOnline");
 }
 async function initCloudSync(){
   setCloudStatus("Cloud: checking...","cloudSyncing");
@@ -846,6 +883,7 @@ function auditLabel(data){
 function upsertAuditToList(status){
   if(!currentCategory)return false;
   let data=collect();
+  actions=data.actions||{};
   data.status=status || (reportReady?"Finished":"Unfinished");
   data.savedAt=new Date().toISOString();
   data.id=currentAuditId || data.id || ("audit_"+Date.now());
@@ -1168,7 +1206,7 @@ function autoSave(){if(!currentCategory)return;try{localStorage.setItem(AUTOSAVE
 function clearAutoSave(){try{localStorage.removeItem(AUTOSAVE_KEY)}catch(e){}setAutosaveStatus("Auto-save cleared");}
 function restoreAudit(data){if(!data||!data.category||!CATEGORIES[data.category])return false;currentCategory=data.category;currentAuditId=data.id||("audit_"+Date.now());answers=data.answers||{};comments=data.comments||{};photos=data.photos||{};actions=data.actions||{};commentVariant=data.commentVariant||0;reportReady=!!data.reportReady || data.status==="Finished";questionIndex=Math.min(data.questionIndex||0,CATEGORIES[currentCategory].questions.length-1);$("selectedCat").textContent=currentCategory;$("selectedCount").textContent=CATEGORIES[currentCategory].questions.length+" questions";detailIds.forEach(function(id){if(data.details&&data.details[id]!==undefined)$(id).value=data.details[id]});if($("overallComment"))$("overallComment").value=data.overallComment||"";setSignatureData(data.signatures||{});$("sub").textContent=reportReady?currentCategory+" report":currentCategory+" audit restored";if(reportReady){$("backToReportDetails").classList.remove("hidden");buildReport();show("screenReport");}else if(data.screen==="screenQuestion"){renderQuestion();show("screenQuestion");}else{show("screenDetails");}setAutosaveStatus("Previous audit restored");updateResumeDraftButton();return true;}
 function checkResumeDraft(){let raw=null;try{raw=localStorage.getItem(AUTOSAVE_KEY)}catch(e){}if(!raw)return;try{let data=JSON.parse(raw);if(data&&data.category&&confirm("Resume previous unfinished audit?")){restoreAudit(data)}else{if(confirm("Delete previous saved draft?"))clearAutoSave()}}catch(e){clearAutoSave()}}
-function collect(){let data={id:currentAuditId,category:currentCategory,status:(reportReady?"Finished":"Unfinished"),details:{},overallComment:$("overallComment")?$("overallComment").value:"",answers:answers,comments:comments,photos:photos,actions:actions,score:calc(),questionIndex:questionIndex,reportReady:reportReady,screen:currentScreenId(),commentVariant:commentVariant,signatures:getSignatureData()};detailIds.forEach(function(id){data.details[id]=$(id).value});return data}
+function collect(){let data={id:currentAuditId,category:currentCategory,status:(reportReady?"Finished":"Unfinished"),details:{},overallComment:$("overallComment")?$("overallComment").value:"",answers:answers,comments:comments,photos:photos,actions:cleanActionsObject(actions),score:calc(),questionIndex:questionIndex,reportReady:reportReady,screen:currentScreenId(),commentVariant:commentVariant,signatures:getSignatureData()};detailIds.forEach(function(id){data.details[id]=$(id).value});return data}
 function saveAudit(){try{localStorage.setItem(AUTOSAVE_KEY,JSON.stringify(collect()));upsertAuditToList(reportReady?"Finished":"Unfinished");setAutosaveStatus("Saved on this device/browser");alert("Saved on this device/browser and Audit List.")}catch(e){alert("Could not save. Photos may be too large. Use Export or Report.")}}
 function exportAudit(){let safe=currentCategory.split(" ").join("-").replace("/","-").toLowerCase(),blob=new Blob([JSON.stringify(collect(),null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="barricora-"+safe+"-"+($("date").value||today())+".json";a.click()}
 document.addEventListener("DOMContentLoaded",function(){init();detailIds.forEach(function(id){let el=$(id);if(el)el.addEventListener("input",autoSave)});setTimeout(checkResumeDraft,250);initCloudSync();});

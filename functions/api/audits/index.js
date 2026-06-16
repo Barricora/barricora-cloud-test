@@ -47,7 +47,12 @@ async function normaliseAudit(env, audit) {
       act.closePhoto = await storeDataUrl(env, audit.id, `${k}/closeout`, "closeout.jpg", act.closePhoto);
     }
   }
-  audit.actions = acts;
+  const cleanedActs = {};
+  for (const k of Object.keys(acts)) {
+    const act = acts[k] || {};
+    if ((act.text || "").trim()) cleanedActs[k] = act;
+  }
+  audit.actions = cleanedActs;
   return audit;
 }
 
@@ -70,17 +75,25 @@ function auditSummaryFields(audit) {
 }
 
 export async function onRequestGet({ env }) {
-  const { results } = await env.DB.prepare("SELECT data_json FROM audits ORDER BY saved_at DESC").all();
-  const audits = (results || []).map(row => {
-    try { return JSON.parse(row.data_json); } catch (_) { return null; }
-  }).filter(Boolean);
-  return json({ ok: true, audits });
+  try {
+    if (!env.DB) return json({ ok: false, error: "Missing D1 binding. Add binding name DB." }, 500);
+    const { results } = await env.DB.prepare("SELECT data_json FROM audits ORDER BY saved_at DESC").all();
+    const audits = (results || []).map(row => {
+      try { return JSON.parse(row.data_json); } catch (_) { return null; }
+    }).filter(Boolean);
+    return json({ ok: true, audits });
+  } catch (err) {
+    return json({ ok: false, error: String(err && err.message ? err.message : err) }, 500);
+  }
 }
 
 export async function onRequestPost({ request, env }) {
-  let audit;
-  try { audit = await request.json(); } catch (_) { return json({ error: "Invalid JSON" }, 400); }
-  audit = await normaliseAudit(env, audit);
+  try {
+    if (!env.DB) return json({ ok: false, error: "Missing D1 binding. Add binding name DB." }, 500);
+    if (!env.AUDIT_PHOTOS) return json({ ok: false, error: "Missing R2 binding. Add binding name AUDIT_PHOTOS." }, 500);
+    let audit;
+    try { audit = await request.json(); } catch (_) { return json({ error: "Invalid JSON" }, 400); }
+    audit = await normaliseAudit(env, audit);
   const f = auditSummaryFields(audit);
   await env.DB.prepare(
     `INSERT INTO audits (id,status,category,label,site,area,auditor,score,saved_at,data_json)
@@ -97,9 +110,13 @@ export async function onRequestPost({ request, env }) {
        data_json=excluded.data_json`
   ).bind(f.id, f.status, f.category, f.label, f.site, f.area, f.auditor, f.score, f.savedAt, f.dataJson).run();
   return json({ ok: true, audit });
+  } catch (err) {
+    return json({ ok: false, error: String(err && err.message ? err.message : err) }, 500);
+  }
 }
 
 export async function onRequestDelete({ env }) {
+  try {
   let cursor;
   do {
     const listed = await env.AUDIT_PHOTOS.list({ prefix: "audits/", cursor });
@@ -108,4 +125,7 @@ export async function onRequestDelete({ env }) {
   } while (cursor);
   await env.DB.prepare("DELETE FROM audits").run();
   return json({ ok: true });
+  } catch (err) {
+    return json({ ok: false, error: String(err && err.message ? err.message : err) }, 500);
+  }
 }

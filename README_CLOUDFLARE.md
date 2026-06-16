@@ -33,3 +33,9 @@ Deploy using GitHub integration or Wrangler.
 The app still works locally/browser-only if the API is not available.
 When the API is available, it will sync saved audits to D1 and upload photo data to R2.
 Existing local audits are not wiped when the cloud database is empty; they are pushed to cloud.
+
+## v38 additions
+
+- Dashboard has a clearer cloud panel.
+- Empty action records are removed before saving.
+- Test `/api/debug` to confirm bindings. Expected: `{"ok":true,"dbBinding":true,"r2Binding":true,...}`
