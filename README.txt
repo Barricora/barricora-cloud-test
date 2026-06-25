@@ -1,6 +1,6 @@
-Barricora Wizard Audit v38 Cloud Cleanup.
-- Built from v37 cloud foundation.
-- Removes empty action records before saving/export/cloud sync.
-- Adds clearer cloud panel with last sync time and Sync now button.
-- Adds /api/debug endpoint to check D1/R2 bindings.
-- Improves API error messages for missing DB/R2/schema issues.
+Barricora Wizard Audit v39 App Settings.
+- Built from v38 cloud cleanup.
+- Adds Settings screen for default auditor, contractor, site, area, PM, SM, workers and company profile name.
+- Applies default details automatically to new audits.
+- Settings save locally and sync to cloud via /api/settings when D1 table exists.
+- Adds schema_v39_settings.sql for cloud settings table.

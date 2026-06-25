@@ -39,3 +39,9 @@ Existing local audits are not wiped when the cloud database is empty; they are p
 - Dashboard has a clearer cloud panel.
 - Empty action records are removed before saving.
 - Test `/api/debug` to confirm bindings. Expected: `{"ok":true,"dbBinding":true,"r2Binding":true,...}`
+
+## v39 settings table
+
+Run `schema_v39_settings.sql` in your D1 database to enable cloud-synced app settings. The app still saves settings locally if this table is not created yet.
+
+New API route: `GET/POST /api/settings`

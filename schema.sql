@@ -14,3 +14,10 @@ CREATE TABLE IF NOT EXISTS audits (
 CREATE INDEX IF NOT EXISTS idx_audits_saved_at ON audits(saved_at DESC);
 CREATE INDEX IF NOT EXISTS idx_audits_status ON audits(status);
 CREATE INDEX IF NOT EXISTS idx_audits_site ON audits(site);
+
+
+CREATE TABLE IF NOT EXISTS app_settings (
+  key TEXT PRIMARY KEY,
+  value_json TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
