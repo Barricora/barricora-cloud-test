@@ -180,6 +180,21 @@
 .findingFormCard.hidden,.findingDashboardWrap.hidden{display:none!important}
 @media(max-width:700px){.actionFindingLayout{grid-template-columns:72px 1fr;gap:10px}.actionFindingThumb{width:72px;height:64px}.findingCreateBar .primary{width:100%}}
 
+
+/* v46: full action tile colours */
+.auditListItem.actionTileOpen{background:linear-gradient(135deg,#fff1c2,#fff8df)!important;border:1px solid #f59e0b!important;border-left:10px solid #f59e0b!important;box-shadow:0 4px 14px rgba(245,158,11,.18)!important}
+.auditListItem.actionTileProgress{background:linear-gradient(135deg,#dbeafe,#eff6ff)!important;border:1px solid #2563eb!important;border-left:10px solid #2563eb!important;box-shadow:0 4px 14px rgba(37,99,235,.16)!important}
+.auditListItem.actionTileClosed{background:linear-gradient(135deg,#dcfce7,#f0fdf4)!important;border:1px solid #16a34a!important;border-left:10px solid #16a34a!important;box-shadow:0 4px 14px rgba(22,163,74,.15)!important}
+.auditListItem.actionTileOverdue{background:linear-gradient(135deg,#fee2e2,#fff5f5)!important;border:1px solid #dc2626!important;border-left:10px solid #dc2626!important;box-shadow:0 4px 14px rgba(220,38,38,.18)!important}
+.auditListItem.actionTileOpen .auditListMeta,.auditListItem.actionTileOpen .small{color:#5f3b00!important}
+.auditListItem.actionTileProgress .auditListMeta,.auditListItem.actionTileProgress .small{color:#123b7a!important}
+.auditListItem.actionTileClosed .auditListMeta,.auditListItem.actionTileClosed .small{color:#0f5132!important}
+.auditListItem.actionTileOverdue .auditListMeta,.auditListItem.actionTileOverdue .small{color:#7f1d1d!important}
+.auditListItem.actionTileOpen .actionFindingThumb{border-color:#f59e0b;background:#fff7df}
+.auditListItem.actionTileProgress .actionFindingThumb{border-color:#2563eb;background:#eef6ff}
+.auditListItem.actionTileClosed .actionFindingThumb{border-color:#16a34a;background:#f0fdf4}
+.auditListItem.actionTileOverdue .actionFindingThumb{border-color:#dc2626;background:#fff5f5}
+
 </style></head><body>
 <section id="loginScreen" class="loginScreen noPrint">
   <div class="loginCard">

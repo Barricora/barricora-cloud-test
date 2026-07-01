@@ -106,3 +106,15 @@ Expected first result:
 ```
 
 Daily checklist photos and close-out photos are stored in the same R2 bucket using the `AUDIT_PHOTOS` binding.
+
+
+## v45 Action Status Colours
+- No new D1 schema required if v44 schema has already been run.
+- Upload to GitHub and let Cloudflare Pages redeploy.
+- Actions page opens the Open filter by default.
+- Action cards are colour-coded by status.
+
+
+## v46 Full Action Tile Colours
+
+This version only changes action list styling so the whole action tile/card uses the status colour. No new D1 SQL is required.
