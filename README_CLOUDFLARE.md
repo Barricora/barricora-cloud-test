@@ -69,3 +69,11 @@ New API routes:
 - `DELETE /api/findings/:id`
 
 Finding photos and close-out photos are stored in the existing R2 binding `AUDIT_PHOTOS`.
+
+
+## v42 note
+No new D1 schema is required if `schema_v41_findings.sql` was already run. Deploy through GitHub as before.
+
+
+## v43 Action Update Flow
+No new SQL is required. Upload to GitHub and let Cloudflare Pages redeploy. The action list now uses an Update screen where actions can be marked Open/In Progress or closed out with evidence.

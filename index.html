@@ -349,7 +349,7 @@
   </div>
 </section>
 <section id="screenCloseAction" class="hidden">
-  <div class="card"><span class="step">Action Update</span><h2>Update Action / Close-out</h2><div id="closeActionInfo"></div><label>Close-out comment<textarea id="closeActionComment" rows="4" placeholder="Explain what was fixed and how..."></textarea></label><label>Close-out rating<select id="closeActionRating"><option value="">Select close-out rating</option><option value="Very well managed">Very well managed</option><option value="Well managed">Well managed</option><option value="Needs improvement">Needs improvement</option><option value="Poorly managed">Poorly managed</option><option value="N/A">N/A</option></select></label><div class="photo"><b>Close-out photo</b><br><label class="photoBtn">📷 Add close-out photo<input type="file" accept="image/*" capture="environment" id="closeActionPhoto"></label><div id="closeActionPhotoPreview"></div></div><div class="actions noPrint"><button class="secondary" id="cancelCloseActionBtn" type="button">Cancel</button><button class="primary" id="confirmCloseActionBtn" type="button">Close Action</button></div></div>
+  <div class="card"><span class="step">Action Update</span><h2>Update Action / Close-out</h2><div id="closeActionInfo"></div><div class="grid" style="margin-top:10px"><label>Action status<select id="closeActionStatus"><option value="Open">Open</option><option value="In Progress">In Progress</option></select></label></div><div class="actions noPrint" style="margin-top:8px"><button class="secondary" id="saveActionUpdateBtn" type="button">Save Action</button></div><hr><p class="small"><b>Close-out section:</b> use this only when the action is fully completed. Close-out requires comment, photo and rating.</p><label>Close-out comment<textarea id="closeActionComment" rows="4" placeholder="Explain what was fixed and how..."></textarea></label><label>Close-out rating<select id="closeActionRating"><option value="">Select close-out rating</option><option value="Very well managed">Very well managed</option><option value="Well managed">Well managed</option><option value="Needs improvement">Needs improvement</option><option value="Poorly managed">Poorly managed</option><option value="N/A">N/A</option></select></label><div class="photo"><b>Close-out photo</b><br><label class="photoBtn">📷 Add close-out photo<input type="file" accept="image/*" capture="environment" id="closeActionPhoto"></label><div id="closeActionPhotoPreview"></div></div><div class="actions noPrint"><button class="secondary" id="cancelCloseActionBtn" type="button">Cancel</button><button class="primary" id="confirmCloseActionBtn" type="button">Close-out Action</button></div></div>
 </section>
 <section id="screenDetails" class="hidden"><div class="card"><span class="step">Step 2</span><h2>Audit Details</h2><p><b id="selectedCat"></b> <span class="small" id="selectedCount"></span></p><div class="grid"><label>Date<input id="date" type="date"></label><label>Site / Project<input id="site" placeholder="GVX-25"></label><label>Area<input id="area" placeholder="Admin area / upper gallery"></label><label>Auditor<input id="auditor" placeholder="Name"></label><label>PM<input id="pm" placeholder="Project Manager"></label><label>SM / Supervisor<input id="sm" placeholder="Supervisor"></label><label>Contractor<input id="contractor" placeholder="Company / Team"></label><label>Workers observed<input id="workers" type="number" min="0"></label></div><div class="actions noPrint"><button class="secondary" id="backDetails">← Back</button><button class="secondary hidden" id="backToReportDetails">Back to Report</button><button class="primary" id="startQuestions">Start Questions →</button></div></div></section>
 <section id="screenQuestion" class="hidden"><div class="progressCard"><div class="progressTop"><button class="secondary noPrint" id="saveExitBtn">Save & Exit</button><b id="qProgressText">Question</b></div><div class="bar"><div class="fill" id="qProgressFill"></div></div></div><div id="questionBox"></div></section>
@@ -399,7 +399,7 @@ function $(id){return document.getElementById(id)}
 function esc(s){return String(s||"").replace(/[&<>"']/g,function(m){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]})}
 function today(){return new Date().toISOString().slice(0,10)}
 const PORTAL_SCREENS=["screenPortalDashboard","screenCategories","screenDailyChecklists","screenToolboxTalks","screenRAMS","screenActionList","screenFindings","screenPPE","screenSettings","screenAuditList","screenCloseAction","screenDetails","screenQuestion","screenReport"];
-function screenTitle(id){return {screenPortalDashboard:"Dashboard",screenCategories:"Audits",screenDailyChecklists:"Daily Checklists",screenToolboxTalks:"Toolbox Talks",screenRAMS:"RAMS",screenActionList:"Actions",screenFindings:"Findings",screenPPE:"PPE",screenSettings:"Settings",screenAuditList:"Audit List",screenCloseAction:"Close Action",screenDetails:"Audit Details",screenQuestion:"Audit Questions",screenReport:"Audit Report"}[id]||"Barricora"}
+function screenTitle(id){return {screenPortalDashboard:"Dashboard",screenCategories:"Audits",screenDailyChecklists:"Daily Checklists",screenToolboxTalks:"Toolbox Talks",screenRAMS:"RAMS",screenActionList:"Actions",screenFindings:"Findings",screenPPE:"PPE",screenSettings:"Settings",screenAuditList:"Audit List",screenCloseAction:"Update Action",screenDetails:"Audit Details",screenQuestion:"Audit Questions",screenReport:"Audit Report"}[id]||"Barricora"}
 function setActiveNav(id){document.querySelectorAll(".navItem").forEach(function(btn){let target=btn.getAttribute("data-nav-screen");btn.classList.toggle("active",target===id)});if($("portalTitle"))$("portalTitle").textContent=screenTitle(id)}
 function closeMobileMenu(){if($("portalSidebar"))$("portalSidebar").classList.remove("open");if($("mobileMenuOverlay"))$("mobileMenuOverlay").classList.remove("open")}
 function show(id){PORTAL_SCREENS.forEach(function(s){let el=$(s);if(el)el.classList.add("hidden")});let target=$(id);if(target)target.classList.remove("hidden");if($("appShell"))$("appShell").classList.remove("hidden");if($("loginScreen"))$("loginScreen").classList.add("hidden");if(id==="screenPortalDashboard"||id==="screenCategories"||id==="screenActionList"||id==="screenAuditList"||id==="screenFindings")updateHomeDashboard();if(id==="screenFindings")showFindingDashboard(false);setActiveNav(id);closeMobileMenu();window.scrollTo(0,0)}
@@ -441,6 +441,7 @@ function init(){
   if($("cancelCloseActionBtn"))$("cancelCloseActionBtn").onclick=function(){renderActionList();show("screenActionList")};
   if($("closeActionPhoto"))$("closeActionPhoto").onchange=handleCloseActionPhoto;
   if($("confirmCloseActionBtn"))$("confirmCloseActionBtn").onclick=confirmCloseAction;
+  if($("saveActionUpdateBtn"))$("saveActionUpdateBtn").onclick=saveActionUpdate;
   if($("resumeCurrentDraftBtn"))$("resumeCurrentDraftBtn").onclick=resumeCurrentDraft;
   if($("backFromAuditListBtn"))$("backFromAuditListBtn").onclick=function(){show("screenCategories")};
   if($("backFromSettingsBtn"))$("backFromSettingsBtn").onclick=function(){show("screenPortalDashboard")};
@@ -1484,11 +1485,9 @@ function renderActionList(){
       h+='<div class="auditListMeta">'+metaHtml+'</div>';
     }
     h+='<div class="actions noPrint">';
-    if(st!=="Closed"){
-      if(st==="Open")h+='<button class="secondary" type="button" onclick="setActionInProgressByPosition('+idx+')">Mark In Progress</button>';
-      h+='<button class="primary" type="button" onclick="openCloseActionByPosition('+idx+')">Update</button>';
-    }
-    if(e.source==='audit')h+='<button class="secondary" type="button" onclick="openSavedAudit('+e.auditIdx+')">Open Report</button>';else h+='<button class="secondary" type="button" onclick="openFindings()">Open Finding</button>';h+='</div></div>';
+    if(st!=="Closed")h+='<button class="primary" type="button" onclick="openCloseActionByPosition('+idx+')">Update</button>';
+    if(e.source==='audit')h+='<button class="secondary" type="button" onclick="openSavedAudit('+e.auditIdx+')">Open Report</button>';
+    h+='</div></div>';
   });
   box.innerHTML=h;
 }
@@ -1518,6 +1517,7 @@ function openCloseAction(auditId,actionKey){
   $("closeActionComment").value=act.closeComment||"";
   let existingRating=act.closeRating || ((audit.answers||{})[actionKey]) || "";
   if($("closeActionRating"))$("closeActionRating").value=existingRating;
+  if($("closeActionStatus"))$("closeActionStatus").value=(act.status==="In Progress"?"In Progress":"Open");
   $("closeActionPhotoPreview").innerHTML=currentClosePhoto?'<div class="photoThumbs"><div class="photoThumb"><img src="'+currentClosePhoto+'" alt="Close-out photo"></div></div>':'';
   show("screenCloseAction");
 }
@@ -1527,12 +1527,29 @@ function openCloseFindingAction(findingId){
   $("closeActionInfo").innerHTML='<div class="closeoutBox"><b>'+esc(findingLabel(f))+'</b><p><b>Finding:</b> '+esc(f.description||'')+'<br><b>Action:</b> '+esc(act.text)+'<br><b>Owner:</b> '+esc(act.owner||"TBC")+'<br><b>Due:</b> '+dueDisplay(act.due,act.status||"Open")+'</p></div>';
   $("closeActionComment").value=act.closeComment||"";
   if($("closeActionRating"))$("closeActionRating").value=act.closeRating||"Well managed";
+  if($("closeActionStatus"))$("closeActionStatus").value=(act.status==="In Progress"?"In Progress":"Open");
   $("closeActionPhotoPreview").innerHTML=currentClosePhoto?'<div class="photoThumbs"><div class="photoThumb"><img src="'+currentClosePhoto+'" alt="Close-out photo"></div></div>':'';
   show("screenCloseAction");
 }
 function handleCloseActionPhoto(e){
   let file=(e.target.files||[])[0]; if(!file)return;
   readPhotoFile(file,function(photo){currentClosePhoto=photo.data;$("closeActionPhotoPreview").innerHTML='<div class="photoThumbs"><div class="photoThumb"><img src="'+photo.data+'" alt="Close-out photo"></div></div>';});
+}
+function saveActionUpdate(){
+  let newStatus=$("closeActionStatus")?$("closeActionStatus").value:"Open";
+  if(newStatus!=="Open"&&newStatus!=="In Progress")newStatus="Open";
+  if(currentCloseType==="finding"){
+    let flist=getFindingsList();let fidx=flist.findIndex(function(x){return x.id===currentCloseFindingId});if(fidx<0)return;
+    let f=flist[fidx];if(!f.action)return;
+    f.action.status=newStatus;f.status="Open";f.savedAt=new Date().toISOString();flist[fidx]=f;
+    if(setFindingsList(flist)){syncFindingToCloud(f);renderFindingList();renderActionList();updateHomeDashboard();alert("Action updated and saved as "+newStatus+".");show("screenActionList");}
+    return;
+  }
+  if(!currentCloseAuditId||!currentCloseActionKey)return;
+  let list=getAuditList();let idx=list.findIndex(function(x){return x.id===currentCloseAuditId});if(idx<0)return;
+  let audit=list[idx];if(!audit.actions||!audit.actions[currentCloseActionKey])return;
+  audit.actions[currentCloseActionKey].status=newStatus;audit.savedAt=new Date().toISOString();list[idx]=audit;
+  if(setAuditList(list)){syncAuditToCloud(audit);renderActionList();updateHomeDashboard();alert("Action updated and saved as "+newStatus+".");show("screenActionList");}
 }
 function confirmCloseAction(){
   let closeComment=$("closeActionComment").value.trim();
