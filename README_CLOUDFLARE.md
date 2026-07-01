@@ -45,3 +45,8 @@ Existing local audits are not wiped when the cloud database is empty; they are p
 Run `schema_v39_settings.sql` in your D1 database to enable cloud-synced app settings. The app still saves settings locally if this table is not created yet.
 
 New API route: `GET/POST /api/settings`
+
+
+## v40 Portal Shell
+
+This version adds a portal UI shell with a demo login screen, sidebar navigation and placeholder modules. It keeps the existing Cloudflare D1/R2 API from v39. The login screen is not production security; protect the app with Cloudflare Access or proper authentication before real data.
