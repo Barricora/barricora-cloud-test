@@ -284,7 +284,7 @@
       <div class="sectionHeader"><div><span class="step">Daily Checklists</span><h2>Daily Checklist Dashboard</h2><p class="small">Fast daily site-walk checks. Keep it simple: date, site, questions, photos and actions if something is not right.</p></div></div>
       <div class="miniStats"><div class="miniStat"><b id="dailyTodayStat">0</b><span>Completed Today</span></div><div class="miniStat"><b id="dailyTotalStat">0</b><span>Total Checks</span></div><div class="miniStat"><b id="dailyOpenStat">0</b><span>Open Actions</span></div><div class="miniStat"><b id="dailyOverdueStat">0</b><span>Overdue</span></div></div>
     </div>
-    <div class="findingCreateBar noPrint"><button class="primary" id="newDailyBtn" type="button">+ General Daily Walk</button><button class="secondary" id="focusedDailyBtn" type="button">Focused Walk</button></div>
+    <div class="findingCreateBar noPrint"><button class="primary" id="newDailyBtn" type="button">+ General Daily Walk</button><button class="secondary" id="focusedDailyBtn" type="button" onclick="openFocusedDailyTemplates();return false;">Focused Walk</button></div>
     <div class="card">
       <div class="sectionHeader"><div><h2>Daily Checklist History</h2><p class="small">Completed checks stay in history. Any No answer can create an action and appear in the main Action / Issue List.</p></div></div>
       <div class="filterBar noPrint">
@@ -298,11 +298,11 @@
       <div id="dailyListBox"></div>
     </div>
     <div class="card hidden" id="dailyFocusCard">
-      <div class="sectionHeader"><div><h2>Focused Walk</h2><p class="small">Choose a short focused checklist for one specific activity or equipment type.</p></div><button class="secondary noPrint" id="closeFocusedDailyBtn" type="button">Hide</button></div>
+      <div class="sectionHeader"><div><h2>Focused Walk</h2><p class="small">Choose a short focused checklist for one specific activity or equipment type.</p></div><button class="secondary noPrint" id="closeFocusedDailyBtn" type="button" onclick="if(document.getElementById('dailyFocusCard'))document.getElementById('dailyFocusCard').classList.add('hidden');return false;">Hide</button></div>
       <div class="moduleGrid">
-        <button class="moduleCard moduleCardButton" type="button" data-daily-type="MEWP"><div class="moduleIcon">🛗</div><b>MEWP</b><p class="small">Daily pre-use style check for MEWP condition, emergency lowering, ground, barriers and harness use.</p></button>
-        <button class="moduleCard moduleCardButton" type="button" data-daily-type="Harness / Lanyard"><div class="moduleIcon">🦺</div><b>Harness / Lanyard</b><p class="small">Quick visual check for condition, labels, lanyard, connectors, G3 inspection and correct use.</p></button>
-        <button class="moduleCard moduleCardButton" type="button" data-daily-type="Telehandler"><div class="moduleIcon">🚜</div><b>Telehandler</b><p class="small">Focused plant check for operator, inspection, tyres, forks, alarms, route and exclusion zone.</p></button>
+        <button class="moduleCard moduleCardButton" type="button" data-daily-type="MEWP" onclick="startDailyChecklist('MEWP');return false;"><div class="moduleIcon">🛗</div><b>MEWP</b><p class="small">Daily pre-use style check for MEWP condition, emergency lowering, ground, barriers and harness use.</p></button>
+        <button class="moduleCard moduleCardButton" type="button" data-daily-type="Harness / Lanyard" onclick="startDailyChecklist('Harness / Lanyard');return false;"><div class="moduleIcon">🦺</div><b>Harness / Lanyard</b><p class="small">Quick visual check for condition, labels, lanyard, connectors, G3 inspection and correct use.</p></button>
+        <button class="moduleCard moduleCardButton" type="button" data-daily-type="Telehandler" onclick="startDailyChecklist('Telehandler');return false;"><div class="moduleIcon">🚜</div><b>Telehandler</b><p class="small">Focused plant check for operator, inspection, tyres, forks, alarms, route and exclusion zone.</p></button>
       </div>
     </div>
   </div>
@@ -516,7 +516,7 @@ function init(){
   if($("newDailyBtn"))$("newDailyBtn").onclick=function(){startDailyChecklist("General Daily Walk")};
   if($("focusedDailyBtn"))$("focusedDailyBtn").onclick=openFocusedDailyTemplates;
   if($("closeFocusedDailyBtn"))$("closeFocusedDailyBtn").onclick=function(){if($("dailyFocusCard"))$("dailyFocusCard").classList.add("hidden")};
-  document.querySelectorAll("[data-daily-type]").forEach(function(btn){btn.onclick=function(){startDailyChecklist(this.getAttribute("data-daily-type")||"General Daily Walk")}});
+  bindFocusedDailyTiles();
   if($("finishDailyBtn"))$("finishDailyBtn").onclick=saveDailyChecklist;
   if($("clearDailyFormBtn"))$("clearDailyFormBtn").onclick=resetDailyForm;
   if($("backDailyDashboardBtn"))$("backDailyDashboardBtn").onclick=function(){showDailyDashboard(true)};
@@ -1199,7 +1199,7 @@ async function manualCloudSync(){
 async function initCloudSync(){
   setCloudStatus("Cloud: checking...","cloudSyncing");
   try{
-    let res=await fetch("/api/health",{cache:"no-store"});
+    let res=await fetchWithTimeout("/api/health",{cache:"no-store"},8000);
     if(!res.ok)throw new Error("Health check failed");
     cloudAvailable=true;
     setCloudStatus("Cloud: online","cloudOnline");
@@ -1361,7 +1361,8 @@ function openDailyChecklists(){showDailyDashboard(false);show("screenDailyCheckl
 function showDailyDashboard(scrollTop){let dash=$("dailyDashboardWrap"),form=$("dailyFormCard");if(dash)dash.classList.remove("hidden");if(form)form.classList.add("hidden");renderDailyList();updateHomeDashboard();if(scrollTop)window.scrollTo(0,0);}
 function getPortalSessionEmail(){try{let s=JSON.parse(localStorage.getItem(PORTAL_SESSION_KEY)||"{}");return s.email||""}catch(e){return ""}}
 function fillDailyDefaults(){loadLocalSettings();if($("dailyDate"))$("dailyDate").value=today();if($("dailySite"))$("dailySite").value=appSettings.site||"";if($("dailyArea"))$("dailyArea").value=appSettings.area||"";if($("dailyCheckedBy"))$("dailyCheckedBy").value=appSettings.auditor||getPortalSessionEmail();}
-function openFocusedDailyTemplates(){let card=$("dailyFocusCard");if(card){card.classList.remove("hidden");card.scrollIntoView({behavior:"smooth",block:"start"});}}
+function openFocusedDailyTemplates(){show("screenDailyChecklists");let dash=$("dailyDashboardWrap"),form=$("dailyFormCard"),card=$("dailyFocusCard");if(dash)dash.classList.remove("hidden");if(form)form.classList.add("hidden");if(card){card.classList.remove("hidden");setTimeout(function(){card.scrollIntoView({behavior:"smooth",block:"start"});},50);}}
+function bindFocusedDailyTiles(){document.querySelectorAll("[data-daily-type]").forEach(function(btn){btn.onclick=function(e){if(e){e.preventDefault();e.stopPropagation();}let type=this.getAttribute("data-daily-type")||"General Daily Walk";startDailyChecklist(type);return false;};});}
 function openNewDailyChecklist(){startDailyChecklist("General Daily Walk")}
 function startDailyChecklist(type){currentDailyType=type||"General Daily Walk";resetDailyForm();let dash=$("dailyDashboardWrap"),form=$("dailyFormCard");if(dash)dash.classList.add("hidden");if(form)form.classList.remove("hidden");show("screenDailyChecklists");if(dash)dash.classList.add("hidden");if(form)form.classList.remove("hidden");setDailyFormTitle();setTimeout(function(){window.scrollTo(0,0);},50);}
 function resetDailyForm(){dailyAnswers={};dailyActions={};dailyPhotos=[];fillDailyDefaults();setDailyFormTitle();if($("dailyNotes"))$("dailyNotes").value="";if($("dailyPhotosInput"))$("dailyPhotosInput").value="";renderDailyQuestions();renderDailyPhotoPreview();}
