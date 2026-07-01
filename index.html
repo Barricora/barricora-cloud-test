@@ -147,6 +147,15 @@
 .findingLinkedAction{background:#fff8e6;border:1px solid #f3cf82;border-radius:12px;padding:10px;margin-top:10px;font-size:13px;line-height:1.45;color:#5f3b00}
 @media(max-width:800px){.findingFormGrid{grid-template-columns:1fr}.findingPhotoThumb{width:calc(50% - 8px)}.findingListTop{display:block}}
 
+/* v42 Findings dashboard flow */
+.findingCreateBar{display:flex;justify-content:center;margin:12px 0 14px}
+.findingCreateBar .primary{min-width:220px;padding:13px 18px}
+.actionFindingLayout{display:grid;grid-template-columns:86px 1fr;gap:12px;align-items:start}
+.actionFindingThumb{width:86px;height:72px;border:1px solid #dce4ec;border-radius:12px;background:#f8fafc;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#667789;font-size:12px;font-weight:900;text-align:center}
+.actionFindingThumb img{width:100%;height:100%;object-fit:cover;display:block}
+.findingFormCard.hidden,.findingDashboardWrap.hidden{display:none!important}
+@media(max-width:700px){.actionFindingLayout{grid-template-columns:72px 1fr;gap:10px}.actionFindingThumb{width:72px;height:64px}.findingCreateBar .primary{width:100%}}
+
 </style></head><body>
 <section id="loginScreen" class="loginScreen noPrint">
   <div class="loginCard">
@@ -232,12 +241,27 @@
 <section id="screenToolboxTalks" class="hidden"><div class="card"><div class="portalPlaceholderHero"><div class="bigIcon">🗣️</div><div><span class="step">Toolbox Talks</span><h2>Toolbox Talks</h2><p class="small">Store toolbox talks and record attendance/signatures. This module will connect to PDF attendance records later.</p></div></div><div class="miniStats"><div class="miniStat"><b id="dashToolboxDone">0</b><span>Completed</span></div><div class="miniStat"><b>0</b><span>Signed today</span></div><div class="miniStat"><b>0</b><span>Open talks</span></div></div></div></section>
 <section id="screenRAMS" class="hidden"><div class="card"><div class="portalPlaceholderHero"><div class="bigIcon">📄</div><div><span class="step">RAMS</span><h2>RAMS Library</h2><p class="small">Future area for RAMS upload, revision control and worker sign-on tracking.</p></div></div><div class="emptyState">RAMS document storage will be built after the core action/finding workflows are stable.</div></div></section>
 <section id="screenFindings" class="hidden">
-  <div class="card">
-    <div class="sectionHeader"><div><span class="step">Findings</span><h2>Findings</h2><p class="small">Raise good or bad site observations, attach multiple photos and create linked actions where required.</p></div><button class="primary noPrint" id="newFindingBtn" type="button">Raise Finding</button></div>
-    <div class="miniStats"><div class="miniStat"><b id="findingTotalStat">0</b><span>Total</span></div><div class="miniStat"><b id="findingOpenStat">0</b><span>Open</span></div><div class="miniStat"><b id="findingClosedStat">0</b><span>Closed</span></div><div class="miniStat"><b id="findingPositiveStat">0</b><span>Positive</span></div></div>
+  <div id="findingDashboardWrap" class="findingDashboardWrap">
+    <div class="card">
+      <div class="sectionHeader"><div><span class="step">Findings</span><h2>Finding Dashboard</h2><p class="small">Quick overview of open, closed and positive findings from site walks.</p></div></div>
+      <div class="miniStats"><div class="miniStat"><b id="findingTotalStat">0</b><span>Total</span></div><div class="miniStat"><b id="findingOpenStat">0</b><span>Open</span></div><div class="miniStat"><b id="findingClosedStat">0</b><span>Closed</span></div><div class="miniStat"><b id="findingPositiveStat">0</b><span>Positive</span></div></div>
+    </div>
+    <div class="findingCreateBar noPrint"><button class="primary" id="newFindingBtn" type="button">+ Create New Finding</button></div>
+    <div class="card">
+      <div class="sectionHeader"><div><h2>Findings / Action History</h2><p class="small">Open findings stay visible until the linked action is closed. Closed findings remain here as proof and repeat-issue history.</p></div></div>
+      <div class="filterBar noPrint">
+        <button class="filterBtn active" type="button" data-finding-filter="all">All</button>
+        <button class="filterBtn" type="button" data-finding-filter="open">Open</button>
+        <button class="filterBtn" type="button" data-finding-filter="closed">Closed</button>
+        <button class="filterBtn" type="button" data-finding-filter="positive">Positive</button>
+        <button class="filterBtn" type="button" data-finding-filter="negative">Negative / Concern</button>
+        <input class="filterSearch" id="findingSearch" placeholder="Search by site, area, contractor, worker/card or text...">
+      </div>
+      <div id="findingListBox"></div>
+    </div>
   </div>
-  <div class="card" id="findingFormCard">
-    <div class="sectionHeader"><div><h2>Raise New Finding</h2><p class="small">Use this during a site walk. Add several photos if needed, for example finding photo and worker card/photo evidence.</p></div></div>
+  <div class="card findingFormCard hidden" id="findingFormCard">
+    <div class="sectionHeader"><div><span class="step">New Finding</span><h2>Create New Finding</h2><p class="small">Use this during a site walk. Add several photos if needed, for example finding photo and worker card/photo evidence.</p></div><button class="secondary noPrint" id="backFindingDashboardBtn" type="button">Back to Finding Dashboard</button></div>
     <div class="findingFormGrid">
       <label>Date<input id="findingDate" type="date"></label>
       <label>Finding type<select id="findingType"><option value="Unsafe condition">Unsafe condition</option><option value="Unsafe behaviour">Unsafe behaviour</option><option value="Good practice">Good practice</option><option value="Positive observation">Positive observation</option><option value="Near miss / concern">Near miss / concern</option></select></label>
@@ -250,26 +274,14 @@
       <label>Action required<select id="findingActionRequired"><option value="No">No</option><option value="Yes">Yes</option></select></label>
     </div>
     <div class="writeTop" style="margin-top:10px"><label style="margin:0;flex:1">Description</label><button class="micBtn noPrint" type="button" id="micFindingDesc">🎤 Speak</button></div>
-    <textarea id="findingDescription" rows="4" placeholder="Describe what was observed. Example: Worker grinding without face shield, photo taken, supervisor informed..."></textarea>
+    <textarea id="findingDescription" rows="4" placeholder="Describe what was observed. Example: No barriers around work area, worker card photographed, supervisor informed..."></textarea>
     <div class="photo"><b>Finding Photos <span class="small">(you can add more than one)</span></b><br><label class="photoBtn">📷 Add photo(s)<input type="file" accept="image/*" capture="environment" id="findingPhotosInput" multiple></label><div id="findingPhotoPreview"></div></div>
     <div class="findingActionPanel hidden" id="findingActionPanel">
       <b>Linked Action</b><p class="small">This action will appear in the main Action / Issue List. When it is closed, the finding will also close and stay in history.</p>
-      <textarea id="findingActionText" rows="3" placeholder="What needs to be corrected / followed up?"></textarea>
+      <textarea id="findingActionText" rows="3" placeholder="What needs to be corrected / followed up? Example: Install barriers around working area."></textarea>
       <div class="grid" style="margin-top:8px"><label>Owner<input id="findingActionOwner" placeholder="Owner"></label><label>Due date<input id="findingActionDue" type="date"></label><label>Status<select id="findingActionStatus"><option value="Open">Open</option><option value="In Progress">In Progress</option></select></label></div>
     </div>
-    <div class="actions noPrint"><button class="secondary" id="clearFindingFormBtn" type="button">Clear</button><button class="primary" id="saveFindingBtn" type="button">Save Finding</button></div>
-  </div>
-  <div class="card">
-    <div class="sectionHeader"><div><h2>Findings History</h2><p class="small">Closed findings stay here as proof and repeat-issue history.</p></div></div>
-    <div class="filterBar noPrint">
-      <button class="filterBtn active" type="button" data-finding-filter="all">All</button>
-      <button class="filterBtn" type="button" data-finding-filter="open">Open</button>
-      <button class="filterBtn" type="button" data-finding-filter="closed">Closed</button>
-      <button class="filterBtn" type="button" data-finding-filter="positive">Positive</button>
-      <button class="filterBtn" type="button" data-finding-filter="negative">Negative / Concern</button>
-      <input class="filterSearch" id="findingSearch" placeholder="Search findings by site, area, contractor, worker or text...">
-    </div>
-    <div id="findingListBox"></div>
+    <div class="actions noPrint"><button class="secondary" id="clearFindingFormBtn" type="button">Clear</button><button class="primary" id="saveFindingBtn" type="button">Finish</button></div>
   </div>
 </section>
 
@@ -337,7 +349,7 @@
   </div>
 </section>
 <section id="screenCloseAction" class="hidden">
-  <div class="card"><span class="step">Close-out</span><h2>Close Action / Issue</h2><div id="closeActionInfo"></div><label>Close-out comment<textarea id="closeActionComment" rows="4" placeholder="Explain what was fixed and how..."></textarea></label><label>Close-out rating<select id="closeActionRating"><option value="">Select close-out rating</option><option value="Very well managed">Very well managed</option><option value="Well managed">Well managed</option><option value="Needs improvement">Needs improvement</option><option value="Poorly managed">Poorly managed</option><option value="N/A">N/A</option></select></label><div class="photo"><b>Close-out photo</b><br><label class="photoBtn">📷 Add close-out photo<input type="file" accept="image/*" capture="environment" id="closeActionPhoto"></label><div id="closeActionPhotoPreview"></div></div><div class="actions noPrint"><button class="secondary" id="cancelCloseActionBtn" type="button">Cancel</button><button class="primary" id="confirmCloseActionBtn" type="button">Close Action</button></div></div>
+  <div class="card"><span class="step">Action Update</span><h2>Update Action / Close-out</h2><div id="closeActionInfo"></div><label>Close-out comment<textarea id="closeActionComment" rows="4" placeholder="Explain what was fixed and how..."></textarea></label><label>Close-out rating<select id="closeActionRating"><option value="">Select close-out rating</option><option value="Very well managed">Very well managed</option><option value="Well managed">Well managed</option><option value="Needs improvement">Needs improvement</option><option value="Poorly managed">Poorly managed</option><option value="N/A">N/A</option></select></label><div class="photo"><b>Close-out photo</b><br><label class="photoBtn">📷 Add close-out photo<input type="file" accept="image/*" capture="environment" id="closeActionPhoto"></label><div id="closeActionPhotoPreview"></div></div><div class="actions noPrint"><button class="secondary" id="cancelCloseActionBtn" type="button">Cancel</button><button class="primary" id="confirmCloseActionBtn" type="button">Close Action</button></div></div>
 </section>
 <section id="screenDetails" class="hidden"><div class="card"><span class="step">Step 2</span><h2>Audit Details</h2><p><b id="selectedCat"></b> <span class="small" id="selectedCount"></span></p><div class="grid"><label>Date<input id="date" type="date"></label><label>Site / Project<input id="site" placeholder="GVX-25"></label><label>Area<input id="area" placeholder="Admin area / upper gallery"></label><label>Auditor<input id="auditor" placeholder="Name"></label><label>PM<input id="pm" placeholder="Project Manager"></label><label>SM / Supervisor<input id="sm" placeholder="Supervisor"></label><label>Contractor<input id="contractor" placeholder="Company / Team"></label><label>Workers observed<input id="workers" type="number" min="0"></label></div><div class="actions noPrint"><button class="secondary" id="backDetails">← Back</button><button class="secondary hidden" id="backToReportDetails">Back to Report</button><button class="primary" id="startQuestions">Start Questions →</button></div></div></section>
 <section id="screenQuestion" class="hidden"><div class="progressCard"><div class="progressTop"><button class="secondary noPrint" id="saveExitBtn">Save & Exit</button><b id="qProgressText">Question</b></div><div class="bar"><div class="fill" id="qProgressFill"></div></div></div><div id="questionBox"></div></section>
@@ -390,7 +402,7 @@ const PORTAL_SCREENS=["screenPortalDashboard","screenCategories","screenDailyChe
 function screenTitle(id){return {screenPortalDashboard:"Dashboard",screenCategories:"Audits",screenDailyChecklists:"Daily Checklists",screenToolboxTalks:"Toolbox Talks",screenRAMS:"RAMS",screenActionList:"Actions",screenFindings:"Findings",screenPPE:"PPE",screenSettings:"Settings",screenAuditList:"Audit List",screenCloseAction:"Close Action",screenDetails:"Audit Details",screenQuestion:"Audit Questions",screenReport:"Audit Report"}[id]||"Barricora"}
 function setActiveNav(id){document.querySelectorAll(".navItem").forEach(function(btn){let target=btn.getAttribute("data-nav-screen");btn.classList.toggle("active",target===id)});if($("portalTitle"))$("portalTitle").textContent=screenTitle(id)}
 function closeMobileMenu(){if($("portalSidebar"))$("portalSidebar").classList.remove("open");if($("mobileMenuOverlay"))$("mobileMenuOverlay").classList.remove("open")}
-function show(id){PORTAL_SCREENS.forEach(function(s){let el=$(s);if(el)el.classList.add("hidden")});let target=$(id);if(target)target.classList.remove("hidden");if($("appShell"))$("appShell").classList.remove("hidden");if($("loginScreen"))$("loginScreen").classList.add("hidden");if(id==="screenPortalDashboard"||id==="screenCategories"||id==="screenActionList"||id==="screenAuditList"||id==="screenFindings")updateHomeDashboard();if(id==="screenFindings")renderFindingList();setActiveNav(id);closeMobileMenu();window.scrollTo(0,0)}
+function show(id){PORTAL_SCREENS.forEach(function(s){let el=$(s);if(el)el.classList.add("hidden")});let target=$(id);if(target)target.classList.remove("hidden");if($("appShell"))$("appShell").classList.remove("hidden");if($("loginScreen"))$("loginScreen").classList.add("hidden");if(id==="screenPortalDashboard"||id==="screenCategories"||id==="screenActionList"||id==="screenAuditList"||id==="screenFindings")updateHomeDashboard();if(id==="screenFindings")showFindingDashboard(false);setActiveNav(id);closeMobileMenu();window.scrollTo(0,0)}
 
 const PORTAL_SESSION_KEY="barricora_portal_session_v40";
 function hasPortalSession(){try{return !!localStorage.getItem(PORTAL_SESSION_KEY)}catch(e){return false}}
@@ -401,7 +413,7 @@ function initPortalShell(){
   if($("logoutBtn"))$("logoutBtn").onclick=function(){if(confirm("Log out from Barricora on this device?")){clearPortalSession();if($("appShell"))$("appShell").classList.add("hidden");if($("loginScreen"))$("loginScreen").classList.remove("hidden")}};
   if($("mobileMenuBtn"))$("mobileMenuBtn").onclick=function(){if($("portalSidebar"))$("portalSidebar").classList.add("open");if($("mobileMenuOverlay"))$("mobileMenuOverlay").classList.add("open")};
   if($("mobileMenuOverlay"))$("mobileMenuOverlay").onclick=closeMobileMenu;
-  document.querySelectorAll("[data-nav-screen]").forEach(function(btn){btn.onclick=function(){let target=this.getAttribute("data-nav-screen");if(target==="screenActionList")renderActionList();if(target==="screenFindings"){fillFindingDefaults();renderFindingList();}if(target==="screenSettings")fillSettingsForm();show(target)}});
+  document.querySelectorAll("[data-nav-screen]").forEach(function(btn){btn.onclick=function(){let target=this.getAttribute("data-nav-screen");if(target==="screenFindings"){openFindings();return;}if(target==="screenActionList")renderActionList();if(target==="screenSettings")fillSettingsForm();show(target)}});
 }
 function startPortalAfterInit(){if(hasPortalSession()){show("screenPortalDashboard");setTimeout(checkResumeDraft,250);}else{if($("loginScreen"))$("loginScreen").classList.remove("hidden");if($("appShell"))$("appShell").classList.add("hidden")}}
 function renderRecentActivity(){let box=$("recentActivityBox");if(!box)return;let list=getAuditList().slice(0,5);if(!list.length){box.innerHTML='<div class="emptyState">No recent activity yet.</div>';return;}let h="";list.forEach(function(a){let label=auditLabel(a);let status=a.status||(a.reportReady?"Finished":"Unfinished");let saved=a.savedAt?new Date(a.savedAt).toLocaleString():"Not saved";h+='<div class="recentItem"><div><b>'+esc(label)+'</b><br><span>'+esc(status)+' • '+esc(saved)+'</span></div><button class="secondary noPrint" type="button" onclick="openSavedAudit('+getAuditList().findIndex(function(x){return x.id===a.id})+')">Open</button></div>'});box.innerHTML=h;}
@@ -418,9 +430,10 @@ function init(){
   if($("openActionListFromAuditsBtn"))$("openActionListFromAuditsBtn").onclick=openActionList;
   if($("openSettingsBtn"))$("openSettingsBtn").onclick=openSettings;
   if($("openFindingsBtn"))$("openFindingsBtn").onclick=openFindings;
-  if($("newFindingBtn"))$("newFindingBtn").onclick=function(){resetFindingForm();show("screenFindings");setTimeout(function(){let c=$("findingFormCard");if(c)c.scrollIntoView({behavior:"smooth",block:"start"});},100)};
+  if($("newFindingBtn"))$("newFindingBtn").onclick=openNewFinding;
   if($("saveFindingBtn"))$("saveFindingBtn").onclick=saveFinding;
   if($("clearFindingFormBtn"))$("clearFindingFormBtn").onclick=resetFindingForm;
+  if($("backFindingDashboardBtn"))$("backFindingDashboardBtn").onclick=function(){showFindingDashboard(true)};
   if($("findingPhotosInput"))$("findingPhotosInput").onchange=handleFindingPhotos;
   if($("findingActionRequired"))$("findingActionRequired").onchange=toggleFindingActionPanel;
   if($("micFindingDesc"))$("micFindingDesc").onclick=function(){startDictation("findingDescription",$("micFindingDesc"))};
@@ -1176,14 +1189,16 @@ function renderFindingPhotoPreview(){let box=$("findingPhotoPreview");if(!box)re
 function handleFindingPhotos(e){let files=Array.from(e.target.files||[]);if(!files.length)return;let remaining=files.length;files.forEach(function(file){readPhotoFile(file,function(photo){findingPhotos.push(photo);remaining--;if(remaining===0)renderFindingPhotoPreview();});});}
 function removeFindingPhoto(i){findingPhotos.splice(i,1);renderFindingPhotoPreview();}
 function collectFindingFromForm(){let actionRequired=$("findingActionRequired")&&$("findingActionRequired").value==="Yes";let f={id:"finding_"+Date.now(),date:$("findingDate")?$("findingDate").value:today(),type:$("findingType")?$("findingType").value:"Unsafe condition",priority:$("findingPriority")?$("findingPriority").value:"Medium",site:$("findingSite")?$("findingSite").value.trim():"",area:$("findingArea")?$("findingArea").value.trim():"",contractor:$("findingContractor")?$("findingContractor").value.trim():"",person:$("findingPerson")?$("findingPerson").value.trim():"",raisedBy:$("findingRaisedBy")?$("findingRaisedBy").value.trim():"",description:$("findingDescription")?$("findingDescription").value.trim():"",photos:findingPhotos.slice(),actionRequired:actionRequired,action:null,status:"Closed",createdAt:new Date().toISOString(),savedAt:new Date().toISOString()};if(actionRequired){let text=$("findingActionText")?$("findingActionText").value.trim():"";f.action={text:text,owner:$("findingActionOwner")?$("findingActionOwner").value.trim():"",due:$("findingActionDue")?$("findingActionDue").value:"",status:$("findingActionStatus")?$("findingActionStatus").value:"Open",source:"Finding"};f.status="Open";}return f;}
-function saveFinding(){let f=collectFindingFromForm();if(!f.type){alert("Select finding type.");return}if(!f.description){alert("Please add finding description.");return}if(f.actionRequired&&!(f.action&&f.action.text)){alert("Action text is required when Action Required is Yes.");return}let list=getFindingsList();list.unshift(f);if(setFindingsList(list)){syncFindingToCloud(f);resetFindingForm();renderFindingList();updateHomeDashboard();alert("Finding saved. It will stay in history after any linked action is closed.");}}
+function saveFinding(){let f=collectFindingFromForm();if(!f.type){alert("Select finding type.");return}if(!f.description){alert("Please add finding description.");return}if(f.actionRequired&&!(f.action&&f.action.text)){alert("Action text is required when Action Required is Yes.");return}let list=getFindingsList();list.unshift(f);if(setFindingsList(list)){syncFindingToCloud(f);resetFindingForm();showFindingDashboard(true);updateHomeDashboard();if($("autosaveStatus"))$("autosaveStatus").textContent="Finding saved";}}
+function showFindingDashboard(scrollTop){let dash=$("findingDashboardWrap"),form=$("findingFormCard");if(dash)dash.classList.remove("hidden");if(form)form.classList.add("hidden");renderFindingList();updateHomeDashboard();if(scrollTop)window.scrollTo(0,0);}
+function openNewFinding(){resetFindingForm();let dash=$("findingDashboardWrap"),form=$("findingFormCard");if(dash)dash.classList.add("hidden");if(form)form.classList.remove("hidden");show("screenFindings");if(dash)dash.classList.add("hidden");if(form)form.classList.remove("hidden");setTimeout(function(){window.scrollTo(0,0);},50);}
 function updateFindingStatsUi(){let s=findingStats();if($("findingTotalStat"))$("findingTotalStat").textContent=s.total;if($("findingOpenStat"))$("findingOpenStat").textContent=s.open;if($("findingClosedStat"))$("findingClosedStat").textContent=s.closed;if($("findingPositiveStat"))$("findingPositiveStat").textContent=s.positive;}
 function updateFilterButtonsExtended(type){updateFilterButtons(type)}
 function renderFindingList(){let box=$("findingListBox");if(!box)return;updateFindingStatsUi();updateFilterButtons("finding");let list=getFindingsList();if(!list.length){box.innerHTML='<div class="emptyState">No findings recorded yet.</div>';return;}let rows=[];list.forEach(function(f,idx){let st=findingStatus(f);let positive=isPositiveFinding(f);let searchable=(findingLabel(f)+" "+(f.description||"")+" "+(f.contractor||"")+" "+(f.person||"")+" "+(f.raisedBy||"")).toLowerCase();if(findingSearchText&&searchable.indexOf(findingSearchText)<0)return;if(findingListFilter==="open"&&st==="Closed")return;if(findingListFilter==="closed"&&st!=="Closed")return;if(findingListFilter==="positive"&&!positive)return;if(findingListFilter==="negative"&&positive)return;rows.push({f:f,idx:idx,st:st,positive:positive});});if(!rows.length){box.innerHTML='<div class="emptyState">No findings match this filter.</div>';return;}let h='';rows.forEach(function(r){let f=r.f, st=r.st, positive=r.positive;let cls=st==="Overdue"?"findingStatusOverdue":(st==="Closed"?(positive?"findingStatusPositive":"findingStatusClosed"):"findingStatusOpen");let photosHtml='';if(Array.isArray(f.photos)&&f.photos.length){photosHtml='<div class="findingPhotoGrid">';f.photos.forEach(function(p){photosHtml+='<div class="findingPhotoThumb"><img src="'+esc(p.data)+'" alt="finding photo"></div>'});photosHtml+='</div>';}let actionHtml='';if(f.actionRequired&&f.action&&f.action.text){let ast=f.action.status||"Open";let overdue=isFindingActionOverdue(f.action);actionHtml='<div class="findingLinkedAction"><b>Linked action:</b> '+esc(f.action.text)+'<br><b>Owner:</b> '+esc(f.action.owner||"TBC")+' | <b>Due:</b> '+esc(duePlain(f.action.due,ast))+' | <b>Status:</b> '+esc(overdue?"Overdue":ast)+'</div>';if(ast==="Closed"){actionHtml+='<div class="findingCloseBox"><b>Closed:</b> '+esc(f.action.closedAt?new Date(f.action.closedAt).toLocaleString():"Closed")+'<br><b>Close-out:</b> '+esc(f.action.closeComment||"")+(f.action.closeRating?'<br><b>Close-out rating:</b> '+esc(f.action.closeRating):'')+(f.action.closePhoto?'<div class="findingPhotoGrid"><div class="findingPhotoThumb"><img src="'+esc(f.action.closePhoto)+'" alt="close-out photo"></div></div>':'')+'</div>';}}
     h+='<div class="findingCard"><div class="findingListTop"><div><span class="statusPill '+cls+'">'+esc(st==="Overdue"?"Overdue":(st==="Closed"?(positive?"Positive / Closed":"Closed"):"Open"))+'</span><h3>'+esc(findingLabel(f))+'</h3></div><div class="actions noPrint"><button class="secondary" type="button" onclick="deleteFindingByIndex('+r.idx+')">Delete</button></div></div>';
     h+='<div class="findingMeta">Date: '+esc(f.date||"")+' | Raised by: '+esc(f.raisedBy||"Not entered")+' | Contractor: '+esc(f.contractor||"Not entered")+(f.person?'<br>Person / card: '+esc(f.person):'')+'</div><div class="findingDesc">'+esc(f.description)+'</div>'+photosHtml+actionHtml+'</div>';});box.innerHTML=h;}
 function deleteFindingByIndex(idx){let list=getFindingsList();if(!list[idx])return;if(confirm("Delete this finding record?")){let id=list[idx].id;list.splice(idx,1);setFindingsList(list);cloudDeleteFinding(id);renderFindingList();updateHomeDashboard();}}
-function openFindings(){fillFindingDefaults();renderFindingList();show("screenFindings");}
+function openFindings(){show("screenFindings");showFindingDashboard(false);}
 async function loadCloudFindings(){if(!cloudAvailable)return;try{let res=await fetch("/api/findings",{cache:"no-store"});if(!res.ok)throw new Error("Could not load cloud findings");let payload=await res.json();let cloud=Array.isArray(payload.findings)?payload.findings:[];let local=getFindingsList();let map={};local.forEach(function(f){if(f&&f.id)map[f.id]=f});let toSync=[];cloud.forEach(function(c){if(!c||!c.id)return;let l=map[c.id];if(!l){map[c.id]=c;return;}let lt=l.savedAt||"",ct=c.savedAt||"";if(ct>=lt)map[c.id]=c;else toSync.push(l);});local.forEach(function(l){if(l&&l.id&&!cloud.find(function(c){return c&&c.id===l.id}))toSync.push(l)});let merged=Object.keys(map).map(function(k){return map[k]}).sort(function(a,b){return String(b.savedAt||"").localeCompare(String(a.savedAt||""))});setFindingsList(merged);updateHomeDashboard();if(!$('screenFindings').classList.contains('hidden'))renderFindingList();if(!$('screenActionList').classList.contains('hidden'))renderActionList();for(let i=0;i<toSync.length;i++)await syncFindingToCloud(toSync[i],true);setCloudStatus("Cloud: synced","cloudOnline");}catch(e){setCloudStatus("Cloud: sync error","cloudError");}}
 async function syncFindingToCloud(data,silent){if(!cloudAvailable||!data||!data.id)return;if(cloudBusy&&!silent)return;cloudBusy=true;if(!silent)setCloudStatus("Cloud: syncing...","cloudSyncing");try{data.savedAt=new Date().toISOString();let res=await fetch("/api/findings",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});if(!res.ok)throw new Error("Cloud finding save failed");let payload=await res.json();if(payload.finding){let list=getFindingsList();let idx=list.findIndex(function(x){return x.id===payload.finding.id});if(idx>=0)list[idx]=payload.finding;else list.unshift(payload.finding);setFindingsList(list);}if(!silent)setCloudStatus("Cloud: synced","cloudOnline");updateHomeDashboard();}catch(e){if(!silent)setCloudStatus("Cloud: save error","cloudError");}finally{cloudBusy=false;}}
 async function cloudDeleteFinding(id){if(!cloudAvailable||!id)return;try{await fetch("/api/findings/"+encodeURIComponent(id),{method:"DELETE"});setCloudStatus("Cloud: synced","cloudOnline");}catch(e){setCloudStatus("Cloud: delete error","cloudError");}}
@@ -1412,6 +1427,7 @@ function deleteAllSavedAudits(){
   }
 }
 
+function findingFirstPhotoSrc(f){let p=(f&&Array.isArray(f.photos)&&f.photos.length)?f.photos[0]:null;return p?(p.data||p.url||""):""}
 function getActionEntries(){
   let list=getAuditList(), entries=[];
   list.forEach(function(audit,auditIdx){
@@ -1429,7 +1445,7 @@ function getActionEntries(){
   });
   getFindingsList().forEach(function(f,idx){
     if(f.actionRequired&&f.action&&(f.action.text||"").trim()){
-      entries.push({source:"finding",finding:f,findingIdx:idx,key:"findingAction",question:"Finding: "+(f.type||"Observation"),action:f.action});
+      entries.push({source:"finding",finding:f,findingIdx:idx,key:"findingAction",question:"Finding: "+(f.action.text||f.description||f.type||"Observation"),action:f.action});
     }
   });
   return entries;
@@ -1459,11 +1475,18 @@ function renderActionList(){
     let due=duePlain(e.action.due,st);
     let dueCls=due.indexOf("OVERDUE")>=0?'overdueText':'';
     h+='<div class="auditListItem"><div class="actionListTopLine"><span class="statusPill '+pillCls+'">'+esc(overdue?"Overdue":st)+'</span><b>'+esc(e.question)+'</b></div>';
-    let sourceLabel=e.source==='finding'?findingLabel(e.finding):auditLabel(e.audit);let sourceText=e.source==='finding'?'Finding':'Audit';h+='<div class="auditListMeta">'+sourceText+': '+esc(sourceLabel)+'<br>Action: '+esc(e.action.text)+'<br>Owner: '+esc(e.action.owner||"TBC")+' | Due: <span class="'+dueCls+'">'+esc(due)+'</span></div>';
+    let sourceLabel=e.source==='finding'?findingLabel(e.finding):auditLabel(e.audit);let sourceText=e.source==='finding'?'Finding':'Audit';
+    let metaHtml=sourceText+': '+esc(sourceLabel)+'<br>Action: '+esc(e.action.text)+'<br>Owner: '+esc(e.action.owner||"TBC")+' | Due: <span class="'+dueCls+'">'+esc(due)+'</span>';
+    if(e.source==='finding'){
+      let fp=findingFirstPhotoSrc(e.finding);let thumb=fp?'<img src="'+esc(fp)+'" alt="Finding photo">':'No photo';
+      h+='<div class="actionFindingLayout"><div class="actionFindingThumb">'+thumb+'</div><div class="auditListMeta">'+metaHtml+(e.finding.description?'<br><b>Finding note:</b> '+esc(e.finding.description).slice(0,180):'')+'</div></div>';
+    }else{
+      h+='<div class="auditListMeta">'+metaHtml+'</div>';
+    }
     h+='<div class="actions noPrint">';
     if(st!=="Closed"){
       if(st==="Open")h+='<button class="secondary" type="button" onclick="setActionInProgressByPosition('+idx+')">Mark In Progress</button>';
-      h+='<button class="primary" type="button" onclick="openCloseActionByPosition('+idx+')">Close Action</button>';
+      h+='<button class="primary" type="button" onclick="openCloseActionByPosition('+idx+')">Update</button>';
     }
     if(e.source==='audit')h+='<button class="secondary" type="button" onclick="openSavedAudit('+e.auditIdx+')">Open Report</button>';else h+='<button class="secondary" type="button" onclick="openFindings()">Open Finding</button>';h+='</div></div>';
   });
