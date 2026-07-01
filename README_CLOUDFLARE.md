@@ -77,3 +77,32 @@ No new D1 schema is required if `schema_v41_findings.sql` was already run. Deplo
 
 ## v43 Action Update Flow
 No new SQL is required. Upload to GitHub and let Cloudflare Pages redeploy. The action list now uses an Update screen where actions can be marked Open/In Progress or closed out with evidence.
+
+
+## v44 Daily Checklists
+
+v44 adds the Daily Checklists module and a new API route:
+
+```text
+/api/daily
+```
+
+Before using daily checklists in cloud mode, run this SQL file in your D1 database:
+
+```text
+schema_v44_daily_checklists.sql
+```
+
+Then test:
+
+```text
+https://your-pages-url.pages.dev/api/daily
+```
+
+Expected first result:
+
+```json
+{"ok":true,"daily":[]}
+```
+
+Daily checklist photos and close-out photos are stored in the same R2 bucket using the `AUDIT_PHOTOS` binding.
