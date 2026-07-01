@@ -1,1 +1,2 @@
-Barricora v50 Stable Focused Checklists Fix. Rebuilt from stable v46, adds focused daily walk tiles, and visible v50 badge. No new SQL needed.
+Barricora v51 MEWP Spotter Question.
+Built from stable v50. Adds Spotter / ground person question to focused MEWP checklist between harness/lanyard and emergency lowering.
