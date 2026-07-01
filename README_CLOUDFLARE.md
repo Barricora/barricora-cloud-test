@@ -120,14 +120,5 @@ Daily checklist photos and close-out photos are stored in the same R2 bucket usi
 This version only changes action list styling so the whole action tile/card uses the status colour. No new D1 SQL is required.
 
 
-V47 Focused Daily Checklists
-- Removes old Checklist Templates section.
-- Adds Focused Walk button with MEWP, Harness / Lanyard and Telehandler checklist tiles.
-- Focused checklist records use the existing daily checklist cloud storage, no new SQL required.
-
-
-## v48 Focused Tiles Fix
-- Fixed Focused Walk checklist tile clicks with robust inline and JS binding.
-- Improved Focused Walk panel opening behavior.
-- Added API health-check timeout so cloud status does not stay on checking forever if a request hangs.
-- No new SQL needed after v47.
+## v49
+Rebuilt focused daily checklist changes from stable v46 to avoid the v47/v48 button binding issue. No new SQL needed.
