@@ -50,3 +50,22 @@ New API route: `GET/POST /api/settings`
 ## v40 Portal Shell
 
 This version adds a portal UI shell with a demo login screen, sidebar navigation and placeholder modules. It keeps the existing Cloudflare D1/R2 API from v39. The login screen is not production security; protect the app with Cloudflare Access or proper authentication before real data.
+
+
+## v41 Findings setup
+
+After uploading v41 to GitHub and redeploying Cloudflare Pages, run this new SQL file in your D1 database console:
+
+```sql
+-- use file: schema_v41_findings.sql
+```
+
+This creates the `findings` table. Existing audit/settings tables do not need to be changed.
+
+New API routes:
+
+- `GET /api/findings`
+- `POST /api/findings`
+- `DELETE /api/findings/:id`
+
+Finding photos and close-out photos are stored in the existing R2 binding `AUDIT_PHOTOS`.

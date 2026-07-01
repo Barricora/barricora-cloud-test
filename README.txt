@@ -9,3 +9,12 @@ Built from v39 App Settings.
 - Keeps D1/R2 cloud functions from v39.
 
 Important: the login screen is a UI/demo layer only. Use Cloudflare Access or proper authentication before real client data.
+
+
+Barricora v41 Findings Module
+- Adds real Findings module with multiple photo upload.
+- Findings can create linked actions.
+- Linked finding actions appear in main Action / Issue List.
+- Closing a linked action also closes the finding, while keeping it in history.
+- Adds Cloudflare API route /api/findings and D1 table findings.
+- Run schema_v41_findings.sql in D1 after deployment.
