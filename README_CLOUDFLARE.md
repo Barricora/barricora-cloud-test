@@ -120,5 +120,7 @@ Daily checklist photos and close-out photos are stored in the same R2 bucket usi
 This version only changes action list styling so the whole action tile/card uses the status colour. No new D1 SQL is required.
 
 
-## v49
-Rebuilt focused daily checklist changes from stable v46 to avoid the v47/v48 button binding issue. No new SQL needed.
+## v50
+- Rebuilt from stable v46.
+- Adds focused daily checklist tiles safely.
+- Visible v50 badge added to dashboard to confirm deployment/cache.
