@@ -12,12 +12,12 @@ function dataUrlToBytes(dataUrl) {
   return { mime, bytes };
 }
 
-async function storeDataUrl(env, talkId, folder, name, dataUrl) {
-  if (!dataUrl || !String(dataUrl).startsWith("data:image")) return dataUrl;
+async function storeDataUrl(env, talkId, folder, name, dataUrl, allowedPrefix) {
+  if (!dataUrl || !String(dataUrl).startsWith(allowedPrefix || "data:")) return dataUrl;
   const converted = dataUrlToBytes(dataUrl);
   if (!converted) return dataUrl;
-  const cleanName = String(name || "photo").replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 80);
-  const key = `toolbox/${talkId}/${folder}/${crypto.randomUUID()}-${cleanName || "photo.jpg"}`;
+  const cleanName = String(name || "document").replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 100);
+  const key = `toolbox/${talkId}/${folder}/${crypto.randomUUID()}-${cleanName || "document"}`;
   await env.AUDIT_PHOTOS.put(key, converted.bytes, { httpMetadata: { contentType: converted.mime } });
   return `/api/photos?key=${encodeURIComponent(key)}`;
 }
@@ -26,13 +26,24 @@ async function normaliseToolbox(env, talk) {
   talk.id = talk.id || `toolbox_${Date.now()}`;
   talk.savedAt = new Date().toISOString();
   talk.status = talk.status || "Completed";
+
+  // Old records may still have image photos. Keep supporting them.
   const arr = Array.isArray(talk.photos) ? talk.photos : [];
   for (const p of arr) {
     if (p && p.data && String(p.data).startsWith("data:image")) {
-      p.data = await storeDataUrl(env, talk.id, "photos", p.name || "toolbox-photo.jpg", p.data);
+      p.data = await storeDataUrl(env, talk.id, "photos", p.name || "toolbox-photo.jpg", p.data, "data:image");
     }
   }
   talk.photos = arr;
+
+  // v54 PDF document uploads.
+  if (talk.toolboxTalkPdf && talk.toolboxTalkPdf.data && String(talk.toolboxTalkPdf.data).startsWith("data:application/pdf")) {
+    talk.toolboxTalkPdf.data = await storeDataUrl(env, talk.id, "pdfs", talk.toolboxTalkPdf.name || "toolbox-talk.pdf", talk.toolboxTalkPdf.data, "data:application/pdf");
+  }
+  if (talk.signaturePdf && talk.signaturePdf.data && String(talk.signaturePdf.data).startsWith("data:application/pdf")) {
+    talk.signaturePdf.data = await storeDataUrl(env, talk.id, "pdfs", talk.signaturePdf.name || "signature-list.pdf", talk.signaturePdf.data, "data:application/pdf");
+  }
+
   talk.attendees = Array.isArray(talk.attendees) ? talk.attendees : [];
   return talk;
 }

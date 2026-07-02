@@ -1,6 +1,10 @@
-Barricora v53 Remove Resume Draft Prompt
-- Built from v52 Toolbox Talks stable cloud version.
-- Removes the dashboard Resume Current Draft button.
-- Disables the previous unfinished audit prompt on refresh/login.
-- Keeps audits, findings, daily checklists, toolbox talks, action flows and cloud sync.
-- No new SQL required if v52 schema is already applied.
+Barricora v54 Toolbox PDF Uploads
+- Built from v53.
+- Toolbox Talks now use paper sign-on workflow.
+- Removed manual worker/signature rows from toolbox talks.
+- Single Choose Topic button starts a toolbox talk record.
+- Added Environmental toolbox talk topic.
+- Added Toolbox Talk PDF upload.
+- Added Signature List PDF upload.
+- Toolbox history shows PDF links.
+- No new SQL needed if schema_v52_toolbox_talks.sql has already been run.

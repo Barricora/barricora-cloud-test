@@ -134,3 +134,6 @@ Run `schema_v52_toolbox_talks.sql` in your D1 database before testing the Toolbo
 
 ## v53 note
 No new database schema is required. This version removes the Resume Current Draft prompt/button to avoid stale local audit drafts interrupting the portal.
+
+## v54 note
+No new D1 schema is required for v54. Toolbox PDF files are saved in the same R2 binding (`AUDIT_PHOTOS`) and the toolbox record is stored in the existing `toolbox_talks` table.
