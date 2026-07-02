@@ -126,3 +126,11 @@ This version only changes action list styling so the whole action tile/card uses
 - Rebuilt from stable v46.
 - Adds focused daily checklist tiles safely.
 - Visible v50 badge added to dashboard to confirm deployment/cache.
+
+
+## v53 Remove Resume Draft Prompt
+Run `schema_v52_toolbox_talks.sql` in your D1 database before testing the Toolbox Talks cloud sync. Then test `/api/toolbox`; first result should be `{"ok":true,"toolbox":[]}`.
+
+
+## v53 note
+No new database schema is required. This version removes the Resume Current Draft prompt/button to avoid stale local audit drafts interrupting the portal.
