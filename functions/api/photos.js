@@ -10,6 +10,11 @@ export async function onRequestGet({ request, env }) {
   if (!obj) return json({ error: "Photo not found" }, 404);
   const headers = new Headers();
   obj.writeHttpMetadata(headers);
+  if (!headers.get("Content-Type")) headers.set("Content-Type", "application/octet-stream");
+  if (headers.get("Content-Type") === "application/pdf") {
+    const filename = (key.split("/").pop() || "document.pdf").replace(/^[0-9a-f-]+-/i, "");
+    headers.set("Content-Disposition", `inline; filename="${filename.replace(/"/g, "") || "document.pdf"}"`);
+  }
   headers.set("etag", obj.httpEtag);
   headers.set("Cache-Control", "private, max-age=3600");
   return new Response(obj.body, { headers });

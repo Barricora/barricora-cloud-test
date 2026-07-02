@@ -220,7 +220,7 @@
 .toolboxPdfPreview{margin-top:8px;font-size:13px;color:#30465b}
 .toolboxPdfPreview a{font-weight:800;color:#0b4f86;text-decoration:none}
 .toolboxDocLinks{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-.toolboxDocLink{display:inline-flex;align-items:center;gap:6px;background:#eef7ff;border:1px solid #c8e3fb;color:#0b4f86;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:800;text-decoration:none}
+.toolboxDocLink{display:inline-flex;align-items:center;gap:6px;background:#eef7ff;border:1px solid #c8e3fb;color:#0b4f86;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:800;text-decoration:none;cursor:pointer;font-family:inherit}
 @media(max-width:800px){.toolboxFormGrid,.toolboxTopicGrid,.toolboxPdfUploadGrid{grid-template-columns:1fr}.toolboxAttendeeRow{grid-template-columns:1fr}.toolboxSignedBox{padding-bottom:0}}
 
 </style></head><body>
@@ -260,7 +260,7 @@
     <div class="sectionHeader"><div><span class="step">Home</span><h2>Safety Portal Dashboard</h2><p class="small">Overall snapshot of audits, actions, findings, toolbox talks, daily checks and PPE.</p></div><button class="primary noPrint" id="dashboardStartAuditBtn" type="button">Start Audit</button></div>
     <div class="cloudPanel noPrint">
       <span id="cloudStatus">Cloud: checking...</span>
-      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v54</span>
+      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v55</span>
       <button class="secondary" id="syncNowBtn" type="button">Sync now</button>
     </div>
     <div class="kpiGrid" id="homeDashGrid">
@@ -1477,6 +1477,41 @@ function getToolboxList(){try{let raw=localStorage.getItem(TOOLBOX_KEY);return r
 function setToolboxList(list){try{localStorage.setItem(TOOLBOX_KEY,JSON.stringify(list||[]));return true}catch(e){alert("Could not save toolbox talk. PDF files may be too large for this browser storage. Try smaller scanned PDFs or use cloud sync.");return false}}
 function toolboxLabel(t){return [t.topic||"Toolbox Talk",t.site,t.area].filter(Boolean).join(" - ")||"Toolbox Talk"}
 function toolboxDocUrl(doc){return doc?(doc.data||doc.url||""):""}
+function dataUrlToBlobUrl(dataUrl){
+  let m=/^data:([^;]+);base64,(.*)$/i.exec(dataUrl||"");
+  if(!m)return "";
+  let mime=m[1]||"application/pdf";
+  let bin=atob(m[2]);
+  let len=bin.length;
+  let bytes=new Uint8Array(len);
+  for(let i=0;i<len;i++)bytes[i]=bin.charCodeAt(i);
+  return URL.createObjectURL(new Blob([bytes],{type:mime}));
+}
+function openPdfUrl(url,name){
+  if(!url){alert("No PDF uploaded for this record.");return;}
+  let openUrl=url;
+  let revokeLater=false;
+  if(String(url).startsWith("data:application/pdf")){
+    openUrl=dataUrlToBlobUrl(url);
+    revokeLater=true;
+  }
+  if(!openUrl){alert("Could not open this PDF. Try re-uploading the file.");return;}
+  let w=window.open(openUrl,"_blank","noopener");
+  if(!w){
+    let a=document.createElement("a");
+    a.href=openUrl;
+    a.target="_blank";
+    a.rel="noopener";
+    a.download=name||"toolbox-document.pdf";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+  if(revokeLater)setTimeout(function(){try{URL.revokeObjectURL(openUrl)}catch(e){}},60000);
+}
+function openToolboxDoc(doc){openPdfUrl(toolboxDocUrl(doc),doc&&doc.name?doc.name:"toolbox-document.pdf")}
+function openToolboxPreviewDoc(kind){openToolboxDoc(kind==="signature"?toolboxSignaturePdf:toolboxTalkPdf)}
+function openToolboxDocByIndex(idx,kind){let list=getToolboxList();let t=list[idx];if(!t){alert("Toolbox talk not found.");return;}openToolboxDoc(kind==="signature"?t.signaturePdf:t.toolboxTalkPdf)}
 function toolboxStats(){let list=getToolboxList(),todayStr=today();let seven=new Date();seven.setDate(seven.getDate()-7);let sevenStr=seven.toISOString().slice(0,10);let s={total:list.length,today:0,signedToday:0,recent:0,workers:0};list.forEach(function(t){if(t.date===todayStr)s.today++;if((t.date||"")>=sevenStr)s.recent++;if(toolboxDocUrl(t.signaturePdf))s.signedToday++;});return s}
 function topicHint(name){let item=TOOLBOX_TOPICS.find(function(t){return t.name===name});return item?item.hint:"Record the talk topic, key points and attach the paper records."}
 function openToolboxTalks(){showToolboxDashboard(false);show("screenToolboxTalks")}
@@ -1488,11 +1523,11 @@ function openNewToolboxTalk(topic){currentToolboxTopic=topic||"";toolboxPhotos=[
 function readPdfFile(file,done){if(!file)return;if(file.type&&file.type!=="application/pdf"){alert("Please upload a PDF file.");return;}let max=12*1024*1024;if(file.size>max){alert("PDF is quite large. Please scan/compress it below about 12 MB for now.");return;}let reader=new FileReader();reader.onload=function(ev){done({name:file.name||"document.pdf",type:file.type||"application/pdf",size:file.size||0,data:ev.target.result});};reader.readAsDataURL(file);}
 function handleToolboxPdf(e,kind){let file=(e.target.files||[])[0];if(!file)return;readPdfFile(file,function(doc){if(kind==="signature")toolboxSignaturePdf=doc;else toolboxTalkPdf=doc;renderToolboxPdfPreview();});}
 function removeToolboxPdf(kind){if(kind==="signature")toolboxSignaturePdf=null;else toolboxTalkPdf=null;renderToolboxPdfPreview();}
-function renderToolboxPdfPreview(){let talkBox=$("toolboxTalkPdfPreview"),sigBox=$("toolboxSignaturePdfPreview");function htmlFor(doc,kind){if(!doc)return '<span class="small">No PDF uploaded yet.</span>';let url=toolboxDocUrl(doc);let name=doc.name||"document.pdf";let size=doc.size?(' • '+Math.round(doc.size/1024)+' KB'):'';return '<a href="'+esc(url)+'" target="_blank" rel="noopener">📄 '+esc(name)+'</a><span class="small">'+esc(size)+'</span> <button class="secondary noPrint" type="button" onclick="removeToolboxPdf(\''+kind+'\')">Remove</button>';}if(talkBox)talkBox.innerHTML=htmlFor(toolboxTalkPdf,"talk");if(sigBox)sigBox.innerHTML=htmlFor(toolboxSignaturePdf,"signature");}
+function renderToolboxPdfPreview(){let talkBox=$("toolboxTalkPdfPreview"),sigBox=$("toolboxSignaturePdfPreview");function htmlFor(doc,kind){if(!doc)return '<span class="small">No PDF uploaded yet.</span>';let name=doc.name||"document.pdf";let size=doc.size?(' • '+Math.round(doc.size/1024)+' KB'):'';return '<button class="toolboxDocLink" type="button" onclick="openToolboxPreviewDoc(\''+kind+'\')">📄 '+esc(name)+'</button><span class="small">'+esc(size)+'</span> <button class="secondary noPrint" type="button" onclick="removeToolboxPdf(\''+kind+'\')">Remove</button>';}if(talkBox)talkBox.innerHTML=htmlFor(toolboxTalkPdf,"talk");if(sigBox)sigBox.innerHTML=htmlFor(toolboxSignaturePdf,"signature");}
 function collectToolboxFromForm(){return {id:"toolbox_"+Date.now(),date:$("toolboxDate")?$("toolboxDate").value:today(),site:$("toolboxSite")?$("toolboxSite").value.trim():"",area:$("toolboxArea")?$("toolboxArea").value.trim():"",topic:$("toolboxTopic")?$("toolboxTopic").value.trim():"",deliveredBy:$("toolboxDeliveredBy")?$("toolboxDeliveredBy").value.trim():"",company:$("toolboxCompany")?$("toolboxCompany").value.trim():"",notes:$("toolboxNotes")?$("toolboxNotes").value.trim():"",toolboxTalkPdf:toolboxTalkPdf,signaturePdf:toolboxSignaturePdf,attendees:[],photos:[],score:{toolboxPdf:!!toolboxTalkPdf,signaturePdf:!!toolboxSignaturePdf},status:"Completed",createdAt:new Date().toISOString(),savedAt:new Date().toISOString()};}
 function saveToolboxTalk(){let t=collectToolboxFromForm();if(!t.date){alert("Please select date.");return}if(!t.site){alert("Please enter site / project.");return}if(!t.topic){alert("Please enter toolbox talk topic.");return}if(!t.deliveredBy){alert("Please enter delivered by.");return}let list=getToolboxList();list.unshift(t);if(setToolboxList(list)){syncToolboxToCloud(t);toolboxTalkPdf=null;toolboxSignaturePdf=null;toolboxPhotos=[];toolboxAttendees=[];showToolboxDashboard(true);updateHomeDashboard();if($("autosaveStatus"))$("autosaveStatus").textContent="Toolbox talk saved";}}
 function updateToolboxStatsUi(){let s=toolboxStats();if($("toolboxTotalStat"))$("toolboxTotalStat").textContent=s.total;if($("toolboxTodayStat"))$("toolboxTodayStat").textContent=s.today;if($("toolboxSignedTodayStat"))$("toolboxSignedTodayStat").textContent=s.signedToday;if($("toolboxRecentStat"))$("toolboxRecentStat").textContent=s.recent;if($("dashToolboxDone"))$("dashToolboxDone").textContent=s.total;}
-function renderToolboxList(){let box=$("toolboxListBox");if(!box)return;updateToolboxStatsUi();updateFilterButtons("toolbox");let list=getToolboxList();if(!list.length){box.innerHTML='<div class="emptyState">No toolbox talks recorded yet.</div>';return;}let todayStr=today();let seven=new Date();seven.setDate(seven.getDate()-7);let sevenStr=seven.toISOString().slice(0,10);let rows=[];list.forEach(function(t,idx){let label=(toolboxLabel(t)+" "+(t.deliveredBy||"")+" "+(t.company||"")+" "+(t.notes||"")).toLowerCase();if(toolboxSearchText&&label.indexOf(toolboxSearchText)<0)return;if(toolboxListFilter==="today"&&t.date!==todayStr)return;if(toolboxListFilter==="7days"&&(t.date||"")<sevenStr)return;rows.push({t:t,idx:idx});});if(!rows.length){box.innerHTML='<div class="emptyState">No toolbox talks match this filter.</div>';return;}let h="";rows.forEach(function(row){let t=row.t;let docs='';let talkUrl=toolboxDocUrl(t.toolboxTalkPdf);let sigUrl=toolboxDocUrl(t.signaturePdf);if(talkUrl)docs+='<a class="toolboxDocLink" href="'+esc(talkUrl)+'" target="_blank" rel="noopener">📄 Toolbox PDF</a>';if(sigUrl)docs+='<a class="toolboxDocLink" href="'+esc(sigUrl)+'" target="_blank" rel="noopener">✍️ Signature List</a>';if(!docs)docs='<span class="small">No PDFs uploaded</span>';h+='<div class="toolboxTalkCard"><div class="findingListTop"><div><span class="statusPill findingStatusClosed">Completed</span><h3>'+esc(toolboxLabel(t))+'</h3></div><div class="actions noPrint"><button class="secondary" type="button" onclick="deleteToolboxByIndex('+row.idx+')">Delete</button></div></div><div class="toolboxMeta">Date: '+esc(t.date||"")+' | Delivered by: '+esc(t.deliveredBy||"Not entered")+'<br>Company: '+esc(t.company||"Not entered")+' | Documents: '+(talkUrl?'Toolbox PDF ':'')+(sigUrl?'Signature List':'')+(t.notes?'<div class="toolboxNotes">'+esc(t.notes)+'</div>':'')+'<div class="toolboxDocLinks">'+docs+'</div></div></div>';});box.innerHTML=h;}
+function renderToolboxList(){let box=$("toolboxListBox");if(!box)return;updateToolboxStatsUi();updateFilterButtons("toolbox");let list=getToolboxList();if(!list.length){box.innerHTML='<div class="emptyState">No toolbox talks recorded yet.</div>';return;}let todayStr=today();let seven=new Date();seven.setDate(seven.getDate()-7);let sevenStr=seven.toISOString().slice(0,10);let rows=[];list.forEach(function(t,idx){let label=(toolboxLabel(t)+" "+(t.deliveredBy||"")+" "+(t.company||"")+" "+(t.notes||"")).toLowerCase();if(toolboxSearchText&&label.indexOf(toolboxSearchText)<0)return;if(toolboxListFilter==="today"&&t.date!==todayStr)return;if(toolboxListFilter==="7days"&&(t.date||"")<sevenStr)return;rows.push({t:t,idx:idx});});if(!rows.length){box.innerHTML='<div class="emptyState">No toolbox talks match this filter.</div>';return;}let h="";rows.forEach(function(row){let t=row.t;let docs='';let talkUrl=toolboxDocUrl(t.toolboxTalkPdf);let sigUrl=toolboxDocUrl(t.signaturePdf);if(talkUrl)docs+='<button class="toolboxDocLink" type="button" onclick="openToolboxDocByIndex('+row.idx+',\'talk\')">📄 Toolbox PDF</button>';if(sigUrl)docs+='<button class="toolboxDocLink" type="button" onclick="openToolboxDocByIndex('+row.idx+',\'signature\')">✍️ Signature List</button>';if(!docs)docs='<span class="small">No PDFs uploaded</span>';h+='<div class="toolboxTalkCard"><div class="findingListTop"><div><span class="statusPill findingStatusClosed">Completed</span><h3>'+esc(toolboxLabel(t))+'</h3></div><div class="actions noPrint"><button class="secondary" type="button" onclick="deleteToolboxByIndex('+row.idx+')">Delete</button></div></div><div class="toolboxMeta">Date: '+esc(t.date||"")+' | Delivered by: '+esc(t.deliveredBy||"Not entered")+'<br>Company: '+esc(t.company||"Not entered")+' | Documents: '+(talkUrl?'Toolbox PDF ':'')+(sigUrl?'Signature List':'')+(t.notes?'<div class="toolboxNotes">'+esc(t.notes)+'</div>':'')+'<div class="toolboxDocLinks">'+docs+'</div></div></div>';});box.innerHTML=h;}
 function deleteToolboxByIndex(idx){let list=getToolboxList();if(!list[idx])return;if(confirm("Delete this toolbox talk?")){let id=list[idx].id;list.splice(idx,1);setToolboxList(list);cloudDeleteToolbox(id);renderToolboxList();updateHomeDashboard();}}
 async function loadCloudToolbox(){if(!cloudAvailable)return;try{let res=await fetch("/api/toolbox",{cache:"no-store"});if(!res.ok)throw new Error("Could not load cloud toolbox talks");let payload=await res.json();let cloud=Array.isArray(payload.toolbox)?payload.toolbox:[];let local=getToolboxList();let map={};local.forEach(function(t){if(t&&t.id)map[t.id]=t});let toSync=[];cloud.forEach(function(c){if(!c||!c.id)return;let l=map[c.id];if(!l){map[c.id]=c;return;}let lt=l.savedAt||"",ct=c.savedAt||"";if(ct>=lt)map[c.id]=c;else toSync.push(l);});local.forEach(function(l){if(l&&l.id&&!cloud.find(function(c){return c&&c.id===l.id}))toSync.push(l)});let merged=Object.keys(map).map(function(k){return map[k]}).sort(function(a,b){return String(b.savedAt||"").localeCompare(String(a.savedAt||""))});setToolboxList(merged);updateHomeDashboard();if(!$("screenToolboxTalks").classList.contains("hidden"))renderToolboxList();for(let i=0;i<toSync.length;i++)await syncToolboxToCloud(toSync[i],true);setCloudStatus("Cloud: synced","cloudOnline");}catch(e){setCloudStatus("Cloud: sync error","cloudError");}}
 async function syncToolboxToCloud(data,silent){if(!cloudAvailable||!data||!data.id)return;if(cloudBusy&&!silent)return;cloudBusy=true;if(!silent)setCloudStatus("Cloud: syncing...","cloudSyncing");try{data.savedAt=new Date().toISOString();let res=await fetch("/api/toolbox",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});if(!res.ok)throw new Error("Cloud toolbox save failed");let payload=await res.json();if(payload.toolboxTalk){let list=getToolboxList();let idx=list.findIndex(function(x){return x.id===payload.toolboxTalk.id});if(idx>=0)list[idx]=payload.toolboxTalk;else list.unshift(payload.toolboxTalk);setToolboxList(list);}if(!silent)setCloudStatus("Cloud: synced","cloudOnline");updateHomeDashboard();}catch(e){if(!silent)setCloudStatus("Cloud: save error","cloudError");}finally{cloudBusy=false;}}
