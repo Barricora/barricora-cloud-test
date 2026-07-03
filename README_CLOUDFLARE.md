@@ -1,3 +1,5 @@
+# Barricora v60 Fixed PPE List
+
 Barricora v51 MEWP Spotter Question
 
 # Barricora v37 Cloud Foundation
@@ -153,6 +155,6 @@ V58 update:
 - Helmet/glasses issuing will be handled later in PPE module.
 
 
-## v59 PPE Base
+## v60 Fixed PPE List
 
 No new D1 SQL is required. PPE stock and issue log are local-first in this step. Next step can connect PPE to the Workers database and cloud storage.
