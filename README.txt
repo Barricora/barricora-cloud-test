@@ -1,5 +1,5 @@
-Barricora v60 Fixed PPE List
-- Built from v59 PPE base.
-- PPE stock now auto-loads a fixed standard list.
-- New PPE button remains for custom PPE items.
+Barricora v61 PPE Category Tiles
+- Built from v60 fixed PPE list.
+- PPE section now uses category tiles.
+- Added custom PPE builder with free PPE type, category, brand/model and multiple sizes.
 - No new SQL required.

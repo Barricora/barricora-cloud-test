@@ -1,4 +1,4 @@
-# Barricora v60 Fixed PPE List
+# Barricora v61 Fixed PPE List
 
 Barricora v51 MEWP Spotter Question
 
@@ -155,6 +155,12 @@ V58 update:
 - Helmet/glasses issuing will be handled later in PPE module.
 
 
-## v60 Fixed PPE List
+## v61 Fixed PPE List
 
 No new D1 SQL is required. PPE stock and issue log are local-first in this step. Next step can connect PPE to the Workers database and cloud storage.
+
+
+## v61 PPE Category Tiles
+- PPE stock is grouped by category tiles.
+- Custom PPE can be created with free type, category, brand/model and multiple sizes.
+- No new SQL required.
