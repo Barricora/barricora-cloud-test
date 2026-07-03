@@ -141,3 +141,7 @@ No new D1 schema is required for v55. Toolbox PDF files are saved in the same R2
 
 ## v55 note
 Fixes toolbox talk PDF links opening blank windows by using a safe PDF opener and adding inline PDF response headers. No new SQL required.
+
+
+## v57
+- Workers page now has separate phone number and email fields. No new SQL needed.
