@@ -1,5 +1,8 @@
-Barricora v63 PPE Save Return Home
-- Save Stock Item now returns to PPE home/dashboard after saving.
-- Cancel New PPE also returns to PPE home/dashboard.
-- Kept v62 Head / Face PPE cleanup.
+Barricora v64 PPE Worker Issue Flow
+- PPE Issue now selects workers from the Workers database.
+- Worker search added for issuing PPE.
+- Multiple PPE items can be ticked and issued at once.
+- PPE list is grouped by category in the issue flow.
+- Stock is reduced per selected item and issue log remains.
+- Return PPE button opens the issue log, where Delete / Return Stock returns stock.
 - No new SQL needed.

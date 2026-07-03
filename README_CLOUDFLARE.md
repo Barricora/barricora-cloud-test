@@ -170,3 +170,7 @@ No new D1 SQL is required. PPE stock and issue log are local-first in this step.
 - PPE stock is grouped by category tiles.
 - Custom PPE can be created with free type, category, brand/model and multiple sizes.
 - No new SQL required.
+
+
+## v64 PPE Worker Issue Flow
+No new SQL is required. Upload to GitHub and let Cloudflare Pages redeploy. PPE issuing now uses local Workers database records and supports selecting multiple PPE stock items in one issue flow.

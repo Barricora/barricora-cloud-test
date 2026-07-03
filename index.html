@@ -224,7 +224,7 @@
 @media(max-width:800px){.toolboxFormGrid,.toolboxTopicGrid,.toolboxPdfUploadGrid{grid-template-columns:1fr}.toolboxAttendeeRow{grid-template-columns:1fr}.toolboxSignedBox{padding-bottom:0}}
 
 
-/* v63 PPE save/cancel returns home */
+/* v64 PPE worker issue connection */
 .ppeCreateBar{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:12px 0}
 .ppeFormCard.hidden{display:none!important}
 .ppeList{display:grid;gap:10px;margin-top:12px}
@@ -247,8 +247,21 @@
 .ppeCategoryTile b{display:block;color:#062746;font-size:17px;margin:5px 0}.ppeCategoryTile span{font-size:26px}.ppeCategoryTile small{color:#4a5d70}
 .ppeCategorySummary{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .ppeBrandLine{font-size:12px;color:#4a5d70;margin-top:4px}
+.ppeWorkerResults{display:grid;gap:8px;margin:10px 0 12px}
+.ppeWorkerOption{border:1px solid #dce6ef;border-radius:14px;background:#fbfcfe;padding:10px;text-align:left;cursor:pointer;display:block;width:100%;font-family:inherit;color:#0b2948}
+.ppeWorkerOption:hover{border-color:#2563eb;background:#f3f8ff}
+.ppeWorkerOption.selected{border-color:#2563eb;background:#eaf4ff;box-shadow:0 4px 14px rgba(37,99,235,.12)}
+.ppeWorkerOption b{display:block;margin-bottom:3px}.ppeWorkerOption small{color:#4a5d70}
+.ppeSelectedWorker{border:1px solid #c8e3fb;background:#eef7ff;border-radius:14px;padding:10px;margin-top:10px;color:#0b4f86;font-weight:800}
+.ppeIssueChecklist{display:grid;gap:10px;margin-top:10px}
+.ppeIssueGroup{border:1px solid #dce6ef;border-radius:16px;background:#fbfcfe;padding:10px}
+.ppeIssueGroup h3{margin:0 0 8px;color:#062746;font-size:16px}
+.ppeIssueRow{display:grid;grid-template-columns:auto 1fr 80px;gap:10px;align-items:center;background:white;border:1px solid #e5edf5;border-radius:12px;padding:9px;margin:6px 0}
+.ppeIssueRow.disabled{opacity:.55;background:#f8fafc}
+.ppeIssueRow label{margin:0;font-weight:700;color:#0b2948}.ppeIssueRow input[type=checkbox]{width:18px;height:18px}.ppeIssueRow input[type=number]{margin:0;padding:8px}
+.ppeIssueRow .small{font-size:12px;color:#4a5d70}
 @media(max-width:800px){.ppeCategoryGrid{grid-template-columns:1fr 1fr}}
-@media(max-width:700px){.ppeCategoryGrid{grid-template-columns:1fr}.ppeCard,.ppeIssueCard{grid-template-columns:1fr}.ppeActions{justify-content:flex-start}.ppeCreateBar .primary,.ppeCreateBar .secondary{width:100%}.ppeIssueQty{justify-content:flex-start;width:100%;height:auto;padding:10px}}
+@media(max-width:700px){.ppeCategoryGrid{grid-template-columns:1fr}.ppeCard,.ppeIssueCard{grid-template-columns:1fr}.ppeActions{justify-content:flex-start}.ppeCreateBar .primary,.ppeCreateBar .secondary{width:100%}.ppeIssueQty{justify-content:flex-start;width:100%;height:auto;padding:10px}.ppeIssueRow{grid-template-columns:auto 1fr 70px}}
 
 
 /* v58 Workers cleaned PPE note field */
@@ -301,7 +314,7 @@
     <div class="sectionHeader"><div><span class="step">Home</span><h2>Safety Portal Dashboard</h2><p class="small">Overall snapshot of audits, actions, findings, toolbox talks, daily checks and PPE.</p></div><button class="primary noPrint" id="dashboardStartAuditBtn" type="button">Start Audit</button></div>
     <div class="cloudPanel noPrint">
       <span id="cloudStatus">Cloud: checking...</span>
-      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v63</span>
+      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v64</span>
       <button class="secondary" id="syncNowBtn" type="button">Sync now</button>
     </div>
     <div class="kpiGrid" id="homeDashGrid">
@@ -524,7 +537,7 @@
       <div id="ppeStockList" class="ppeList"></div>
     </div>
     <div class="card">
-      <div class="sectionHeader"><div><h2>PPE Issue Log</h2><p class="small">For now, worker name is typed manually. Next version can pick worker from the Workers database.</p></div><button class="primary noPrint" id="issuePPEBtn" type="button">Issue PPE</button></div>
+      <div class="sectionHeader"><div><h2>PPE Issue Log</h2><p class="small">PPE issued to workers. Use Issue PPE to select a worker and tick multiple PPE items from stock.</p></div><div class="actions noPrint"><button class="primary" id="issuePPEBtn" type="button">Issue PPE</button><button class="secondary" id="returnPPEBtn" type="button">Return PPE</button></div></div>
       <div id="ppeIssueList"></div>
     </div>
   </div>
@@ -547,17 +560,20 @@
   </div>
 
   <div id="ppeIssueFormCard" class="card ppeFormCard hidden">
-    <div class="sectionHeader"><div><span class="step">PPE Issue</span><h2>Issue PPE</h2><p class="small">Issue PPE from stock. Worker link will come in the next step.</p></div><button class="secondary noPrint" id="backPPEIssueBtn" type="button">Back to PPE</button></div>
+    <div class="sectionHeader"><div><span class="step">PPE Issue</span><h2>Issue PPE to Worker</h2><p class="small">Search worker, select one person, tick PPE items from stock and save. Each selected PPE creates an issue record and reduces stock.</p></div><button class="secondary noPrint" id="backPPEIssueBtn" type="button">Back to PPE</button></div>
+    <input id="ppeIssueWorkerId" type="hidden">
     <div class="grid">
       <label>Date<input id="ppeIssueDate" type="date"></label>
-      <label>PPE item<select id="ppeIssueItem"></select></label>
-      <label>Worker name<input id="ppeIssueWorker" placeholder="Worker name"></label>
-      <label>Company / contractor<input id="ppeIssueCompany" placeholder="Company"></label>
-      <label>Quantity<input id="ppeIssueQty" type="number" min="1" step="1" value="1"></label>
       <label>Issued by<input id="ppeIssueBy" placeholder="Your name"></label>
     </div>
+    <label style="margin-top:10px">Search worker<input id="ppeWorkerSearch" placeholder="Type worker name, company, role or site..."></label>
+    <div id="ppeSelectedWorker" class="ppeSelectedWorker hidden"></div>
+    <div id="ppeWorkerResults" class="ppeWorkerResults"></div>
+    <div class="sectionHeader" style="margin-top:14px"><div><h2>Select PPE from stock</h2><p class="small">Tick one or more items. Quantity defaults to 1 but can be changed per item.</p></div></div>
+    <input class="filterSearch" id="ppeIssueSearch" placeholder="Search PPE by category, type, size, brand or location...">
+    <div id="ppeIssueChecklist" class="ppeIssueChecklist"></div>
     <label style="margin-top:10px">Issue note<textarea id="ppeIssueNote" rows="3" placeholder="Reason, replacement, damaged PPE, etc..."></textarea></label>
-    <div class="actions noPrint"><button class="secondary" id="cancelPPEIssueBtn" type="button">Cancel</button><button class="primary" id="savePPEIssueBtn" type="button">Finish Issue</button></div>
+    <div class="actions noPrint"><button class="secondary" id="cancelPPEIssueBtn" type="button">Cancel</button><button class="primary" id="savePPEIssueBtn" type="button">Save Issue</button></div>
   </div>
 </section>
 
@@ -695,10 +711,11 @@ function renderWorkers(){let s=workerStats();if($("workersTotalStat"))$("workers
 function initWorkersModule(){if($("addWorkerBtn"))$("addWorkerBtn").onclick=addWorkerForm;if($("backWorkersListBtn"))$("backWorkersListBtn").onclick=function(){showWorkersDashboard(false)};if($("cancelWorkerBtn"))$("cancelWorkerBtn").onclick=function(){showWorkersDashboard(false)};if($("saveWorkerBtn"))$("saveWorkerBtn").onclick=saveWorker;if($("workersSearch"))$("workersSearch").oninput=renderWorkers;if($("clearWorkersSearchBtn"))$("clearWorkersSearchBtn").onclick=function(){if($("workersSearch"))$("workersSearch").value="";renderWorkers()};}
 
 
-/* v63 PPE save/cancel returns home */
+/* v64 PPE worker issue connection */
 const PPE_STOCK_KEY="barricora_ppe_stock_v59";
 const PPE_ISSUE_KEY="barricora_ppe_issue_log_v59";
 let currentPPECategory="";
+let selectedPPEIssueWorkerId="";
 const PPE_CATEGORIES=[
   {id:"Gloves",icon:"🧤",hint:"Glove sizes and types."},
   {id:"Hi-viz",icon:"🦺",hint:"Hi-vis and spotter vests."},
@@ -749,9 +766,17 @@ function categoryStockSummary(cat){let items=ensureFixedPPEList().filter(functio
 function renderPPECategories(){let box=$("ppeCategoryGrid");if(!box)return;let h="";PPE_CATEGORIES.forEach(function(c){let s=categoryStockSummary(c.id);h+='<button class="ppeCategoryTile" type="button" onclick="openPPECategory(\''+esc(c.id)+'\')"><span>'+esc(c.icon)+'</span><b>'+esc(c.id)+'</b><small>'+esc(c.hint)+'</small><div class="ppeCategorySummary"><span class="ppePill">Items: '+esc(s.items)+'</span><span class="ppePill">Stock: '+esc(s.qty)+'</span>'+(s.low?'<span class="ppePill warn">Low: '+esc(s.low)+'</span>':'<span class="ppePill ok">OK</span>')+'</div></button>'});box.innerHTML=h;}
 function openPPECategory(cat,scrollTop){currentPPECategory=cat||"Other";ensureFixedPPEList();if($("ppeCategoryCard"))$("ppeCategoryCard").classList.add("hidden");if($("ppeCategoryStockCard"))$("ppeCategoryStockCard").classList.remove("hidden");if($("ppeCategoryTitle"))$("ppeCategoryTitle").textContent=currentPPECategory;if($("ppeCategoryStep"))$("ppeCategoryStep").textContent="PPE Stock / "+currentPPECategory;if($("ppeSearch"))$("ppeSearch").value="";renderPPEStats();renderPPEStock();if(scrollTop)window.scrollTo(0,0);}
 function renderPPEStock(){let box=$("ppeStockList");if(!box)return;if(!currentPPECategory){box.innerHTML="";return;}let q=($("ppeSearch")?$("ppeSearch").value.toLowerCase().trim():"");let list=ensureFixedPPEList().filter(function(i){if(ppeCategoryFor(i)!==currentPPECategory)return false;let hay=[i.type,i.category,i.size,i.brand,i.qty,i.minQty,i.location,i.unit,i.notes].join(" ").toLowerCase();return !q||hay.indexOf(q)>=0});if(!list.length){box.innerHTML='<div class="emptyState">No PPE items in this category yet. Click <b>New PPE</b> to add one.</div>';return;}let h="";list.forEach(function(i){let st=ppeStockStatus(i);let statusText=st==="low"?"Out / critical":(st==="warn"?"Low stock":"Stock OK");let deleteBtn=i.standard?'<span class="ppePill">Fixed list</span>':'<button class="secondary" type="button" onclick="deletePPEStock(\''+esc(i.id)+'\')">Delete</button>';h+='<div class="ppeCard '+(st==="low"?'low':(st==="warn"?'warn':''))+'"><div><h3>'+esc(ppeLabel(i))+'</h3>'+(i.brand?'<div class="ppeBrandLine"><b>Brand/model:</b> '+esc(i.brand)+'</div>':'')+'<div class="ppeMeta"><span class="ppePill '+st+'">'+esc(statusText)+'</span><span class="ppePill">Stock: '+esc(i.qty||0)+' '+esc(i.unit||"pcs")+'</span><span class="ppePill">Min: '+esc(i.minQty||0)+'</span><span class="ppePill">📍 '+esc(i.location||"Location not set")+'</span></div>'+(i.notes?'<div class="small" style="margin-top:6px">Notes: '+esc(i.notes)+'</div>':'')+'</div><div class="ppeActions noPrint"><button class="secondary" type="button" onclick="openPPEStockForm(\''+esc(i.id)+'\')">Edit</button>'+deleteBtn+'</div></div>'});box.innerHTML=h;}
-function fillPPEIssueItems(){let sel=$("ppeIssueItem");if(!sel)return;let stock=ensureFixedPPEList();if(!stock.length){sel.innerHTML='<option value="">No stock items created yet</option>';return;}sel.innerHTML=stock.map(function(i){return '<option value="'+esc(i.id)+'">'+esc(ppeCategoryFor(i))+' / '+esc(ppeLabel(i))+(i.brand?' / '+esc(i.brand):'')+' — stock '+esc(i.qty||0)+'</option>'}).join("")}
-function openPPEIssueForm(){fillPPEIssueItems();if($("ppeIssueDate"))$("ppeIssueDate").value=today();if($("ppeIssueWorker"))$("ppeIssueWorker").value="";if($("ppeIssueCompany"))$("ppeIssueCompany").value="";if($("ppeIssueQty"))$("ppeIssueQty").value=1;if($("ppeIssueBy"))$("ppeIssueBy").value=(appSettings&&appSettings.auditor)||"";if($("ppeIssueNote"))$("ppeIssueNote").value="";if($("ppeDashboardWrap"))$("ppeDashboardWrap").classList.add("hidden");if($("ppeStockFormCard"))$("ppeStockFormCard").classList.add("hidden");if($("ppeIssueFormCard"))$("ppeIssueFormCard").classList.remove("hidden");window.scrollTo(0,0)}
-function savePPEIssue(){let itemId=$("ppeIssueItem")?$("ppeIssueItem").value:"";let stock=ensureFixedPPEList();let item=stock.find(function(i){return i.id===itemId});if(!item){alert("Create/select a PPE stock item first.");return;}let worker=($("ppeIssueWorker")?$("ppeIssueWorker").value.trim():"");if(!worker){alert("Enter worker name.");return;}let qty=Math.max(1,Number($("ppeIssueQty")?$("ppeIssueQty").value:1)||1);let rec={id:"ppe_issue_"+Date.now(),date:$("ppeIssueDate")?$("ppeIssueDate").value||today():today(),itemId:item.id,itemType:item.type||"PPE",size:item.size||"",category:ppeCategoryFor(item),brand:item.brand||"",qty:qty,worker:worker,company:$("ppeIssueCompany")?$("ppeIssueCompany").value.trim():"",issuedBy:$("ppeIssueBy")?$("ppeIssueBy").value.trim():"",note:$("ppeIssueNote")?$("ppeIssueNote").value.trim():"",createdAt:new Date().toISOString()};item.qty=Math.max(0,Number(item.qty||0)-qty);savePPEStock(stock);let issues=getPPEIssues();issues.unshift(rec);savePPEIssues(issues);showPPEDashboard(true)}
+function activeWorkersForPPE(){return getWorkerList().filter(function(w){return (w.status||"Active")!=="Inactive"})}
+function workerLabel(w){return (w&&w.name)||"Worker"}
+function renderPPEWorkerResults(){let box=$("ppeWorkerResults");if(!box)return;let q=($("ppeWorkerSearch")?$("ppeWorkerSearch").value.toLowerCase().trim():"");let workers=activeWorkersForPPE();if(q){workers=workers.filter(function(w){let hay=[w.name,w.company,w.role,w.site,w.phone,w.email,w.notes].join(" ").toLowerCase();return hay.indexOf(q)>=0})}workers=workers.slice(0,30);if(!workers.length){box.innerHTML='<div class="emptyState">No worker found. Add the worker in the Workers page first.</div>';return;}let h="";workers.forEach(function(w){let sel=w.id===selectedPPEIssueWorkerId;h+='<button class="ppeWorkerOption '+(sel?'selected':'')+'" type="button" onclick="selectPPEIssueWorker(\''+esc(w.id)+'\')"><b>'+esc(w.name||"Unnamed worker")+'</b><small>'+esc(w.company||"Company not set")+' • '+esc(w.role||"Role not set")+' • '+esc(w.site||"Site not set")+'</small></button>'});box.innerHTML=h;renderPPESelectedWorker();}
+function renderPPESelectedWorker(){let box=$("ppeSelectedWorker");if(!box)return;let w=activeWorkersForPPE().find(function(x){return x.id===selectedPPEIssueWorkerId});if(!w){box.classList.add("hidden");box.innerHTML="";return;}box.classList.remove("hidden");box.innerHTML='Selected worker: '+esc(w.name||"Worker")+' <span class="small">('+esc(w.company||"Company not set")+')</span>';if($("ppeIssueWorkerId"))$("ppeIssueWorkerId").value=w.id;}
+function selectPPEIssueWorker(id){selectedPPEIssueWorkerId=id||"";renderPPEWorkerResults();}
+function renderPPEIssueChecklist(){let box=$("ppeIssueChecklist");if(!box)return;let q=($("ppeIssueSearch")?$("ppeIssueSearch").value.toLowerCase().trim():"");let groups={};PPE_CATEGORIES.forEach(function(c){groups[c.id]=[]});ensureFixedPPEList().forEach(function(i){let cat=ppeCategoryFor(i);let hay=[cat,i.type,i.size,i.brand,i.location,i.notes].join(" ").toLowerCase();if(q&&hay.indexOf(q)<0)return;if(!groups[cat])groups[cat]=[];groups[cat].push(i);});let h="";PPE_CATEGORIES.forEach(function(c){let list=groups[c.id]||[];if(!list.length)return;h+='<div class="ppeIssueGroup"><h3>'+esc(c.icon)+' '+esc(c.id)+'</h3>';list.forEach(function(i){let qty=Number(i.qty||0);let disabled=qty<=0;h+='<div class="ppeIssueRow '+(disabled?'disabled':'')+'"><input type="checkbox" class="ppeIssueCheck" data-ppe-id="'+esc(i.id)+'" '+(disabled?'disabled':'')+'><label>'+esc(ppeLabel(i))+(i.brand?' <span class="small">('+esc(i.brand)+')</span>':'')+'<div class="small">Stock: '+esc(qty)+' '+esc(i.unit||"pcs")+' • '+esc(i.location||"Location not set")+'</div></label><input type="number" class="ppeIssueQtyInput" data-ppe-qty="'+esc(i.id)+'" min="1" max="'+esc(Math.max(1,qty))+'" step="1" value="1" '+(disabled?'disabled':'')+'></div>'});h+='</div>';});box.innerHTML=h||'<div class="emptyState">No PPE stock items found.</div>';}
+function openPPEIssueForm(){ensureFixedPPEList();selectedPPEIssueWorkerId="";if($("ppeIssueDate"))$("ppeIssueDate").value=today();if($("ppeIssueBy"))$("ppeIssueBy").value=(appSettings&&appSettings.auditor)||"";if($("ppeIssueNote"))$("ppeIssueNote").value="";if($("ppeWorkerSearch"))$("ppeWorkerSearch").value="";if($("ppeIssueSearch"))$("ppeIssueSearch").value="";if($("ppeDashboardWrap"))$("ppeDashboardWrap").classList.add("hidden");if($("ppeStockFormCard"))$("ppeStockFormCard").classList.add("hidden");if($("ppeIssueFormCard"))$("ppeIssueFormCard").classList.remove("hidden");renderPPEWorkerResults();renderPPEIssueChecklist();window.scrollTo(0,0)}
+function selectedPPEIssueItems(){let selected=[];document.querySelectorAll(".ppeIssueCheck:checked").forEach(function(cb){let id=cb.getAttribute("data-ppe-id");let qtyInput=document.querySelector('[data-ppe-qty="'+CSS.escape(id)+'"]');let qty=Math.max(1,Number(qtyInput?qtyInput.value:1)||1);selected.push({id:id,qty:qty});});return selected;}
+function savePPEIssue(){let worker=activeWorkersForPPE().find(function(w){return w.id===selectedPPEIssueWorkerId});if(!worker){alert("Select worker first.");return;}let picked=selectedPPEIssueItems();if(!picked.length){alert("Select at least one PPE item.");return;}let stock=ensureFixedPPEList();let issues=getPPEIssues();let date=$("ppeIssueDate")?$("ppeIssueDate").value||today():today();let issuedBy=$("ppeIssueBy")?$("ppeIssueBy").value.trim():"";let note=$("ppeIssueNote")?$("ppeIssueNote").value.trim():"";let created=0;for(let p of picked){let item=stock.find(function(i){return i.id===p.id});if(!item)continue;let available=Number(item.qty||0);let qty=Math.min(Math.max(1,p.qty||1),available);if(qty<=0)continue;let rec={id:"ppe_issue_"+Date.now()+"_"+Math.random().toString(16).slice(2),date:date,itemId:item.id,itemType:item.type||"PPE",size:item.size||"",category:ppeCategoryFor(item),brand:item.brand||"",qty:qty,workerId:worker.id,worker:worker.name||"",company:worker.company||"",issuedBy:issuedBy,note:note,createdAt:new Date().toISOString()};item.qty=Math.max(0,available-qty);issues.unshift(rec);created++;}
+  if(!created){alert("Selected PPE is out of stock.");return;}savePPEStock(stock);savePPEIssues(issues);showPPEDashboard(true)}
+function openPPEReturnView(){showPPEDashboard(true);setTimeout(function(){let el=$("ppeIssueList");if(el)el.scrollIntoView({behavior:"smooth",block:"start"});},50)}
 function deletePPEIssue(id){let issues=getPPEIssues();let rec=issues.find(function(i){return i.id===id});if(!rec)return;if(!confirm("Delete this PPE issue record? Stock quantity will be returned if the stock item still exists."))return;let stock=getPPEStock();let item=stock.find(function(i){return i.id===rec.itemId});if(item){item.qty=Number(item.qty||0)+Number(rec.qty||0);savePPEStock(stock)}savePPEIssues(issues.filter(function(i){return i.id!==id}));renderPPE();updateHomeDashboard()}
 function renderPPEIssues(){let box=$("ppeIssueList");if(!box)return;let list=getPPEIssues();if(!list.length){box.innerHTML='<div class="emptyState">No PPE issue records yet.</div>';return;}let h="";list.slice(0,50).forEach(function(i){h+='<div class="ppeIssueCard"><div><h3>'+esc(i.worker||"Worker")+' — '+esc((i.itemType||"PPE")+(i.size?" "+i.size:""))+'</h3><div class="ppeIssueSmall"><b>Date:</b> '+esc(i.date||"-")+' • <b>Category:</b> '+esc(i.category||"-")+' • <b>Company:</b> '+esc(i.company||"-")+' • <b>Issued by:</b> '+esc(i.issuedBy||"-")+'</div>'+(i.brand?'<div class="small" style="margin-top:4px"><b>Brand/model:</b> '+esc(i.brand)+'</div>':'')+(i.note?'<div class="small" style="margin-top:6px">Note: '+esc(i.note)+'</div>':'')+'<div class="actions noPrint" style="margin-top:8px"><button class="secondary" type="button" onclick="deletePPEIssue(\''+esc(i.id)+'\')">Delete / Return Stock</button></div></div><div class="ppeIssueQty">×'+esc(i.qty||1)+'</div></div>'});box.innerHTML=h;}
 function renderPPE(){ensureFixedPPEList();renderPPEStats();renderPPECategories();if(currentPPECategory)renderPPEStock();renderPPEIssues()}
@@ -762,12 +787,15 @@ function initPPEModule(){
   if($("backPPECategoriesBtn"))$("backPPECategoriesBtn").onclick=function(){showPPEDashboard(true)};
   if($("loadStarterPPEBtn"))$("loadStarterPPEBtn").onclick=loadStarterPPE;
   if($("issuePPEBtn"))$("issuePPEBtn").onclick=openPPEIssueForm;
+  if($("returnPPEBtn"))$("returnPPEBtn").onclick=openPPEReturnView;
   if($("backPPEDashboardBtn"))$("backPPEDashboardBtn").onclick=function(){showPPEDashboard(true)};
   if($("cancelPPEStockBtn"))$("cancelPPEStockBtn").onclick=function(){showPPEDashboard(true)};
   if($("savePPEStockBtn"))$("savePPEStockBtn").onclick=function(e){e.preventDefault();savePPEStockItem()};
   if($("backPPEIssueBtn"))$("backPPEIssueBtn").onclick=function(){showPPEDashboard(true)};
   if($("cancelPPEIssueBtn"))$("cancelPPEIssueBtn").onclick=function(){showPPEDashboard(true)};
   if($("savePPEIssueBtn"))$("savePPEIssueBtn").onclick=function(e){e.preventDefault();savePPEIssue()};
+  if($("ppeWorkerSearch"))$("ppeWorkerSearch").oninput=renderPPEWorkerResults;
+  if($("ppeIssueSearch"))$("ppeIssueSearch").oninput=renderPPEIssueChecklist;
   if($("ppeSearch"))$("ppeSearch").oninput=renderPPEStock;
   if($("clearPPESearchBtn"))$("clearPPESearchBtn").onclick=function(){if($("ppeSearch"))$("ppeSearch").value="";renderPPEStock()};
   document.addEventListener("click",function(e){
