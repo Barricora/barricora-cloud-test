@@ -224,7 +224,7 @@
 @media(max-width:800px){.toolboxFormGrid,.toolboxTopicGrid,.toolboxPdfUploadGrid{grid-template-columns:1fr}.toolboxAttendeeRow{grid-template-columns:1fr}.toolboxSignedBox{padding-bottom:0}}
 
 
-/* v62 PPE category cleanup and New PPE button fix */
+/* v63 PPE save/cancel returns home */
 .ppeCreateBar{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:12px 0}
 .ppeFormCard.hidden{display:none!important}
 .ppeList{display:grid;gap:10px;margin-top:12px}
@@ -301,7 +301,7 @@
     <div class="sectionHeader"><div><span class="step">Home</span><h2>Safety Portal Dashboard</h2><p class="small">Overall snapshot of audits, actions, findings, toolbox talks, daily checks and PPE.</p></div><button class="primary noPrint" id="dashboardStartAuditBtn" type="button">Start Audit</button></div>
     <div class="cloudPanel noPrint">
       <span id="cloudStatus">Cloud: checking...</span>
-      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v62</span>
+      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v63</span>
       <button class="secondary" id="syncNowBtn" type="button">Sync now</button>
     </div>
     <div class="kpiGrid" id="homeDashGrid">
@@ -695,7 +695,7 @@ function renderWorkers(){let s=workerStats();if($("workersTotalStat"))$("workers
 function initWorkersModule(){if($("addWorkerBtn"))$("addWorkerBtn").onclick=addWorkerForm;if($("backWorkersListBtn"))$("backWorkersListBtn").onclick=function(){showWorkersDashboard(false)};if($("cancelWorkerBtn"))$("cancelWorkerBtn").onclick=function(){showWorkersDashboard(false)};if($("saveWorkerBtn"))$("saveWorkerBtn").onclick=saveWorker;if($("workersSearch"))$("workersSearch").oninput=renderWorkers;if($("clearWorkersSearchBtn"))$("clearWorkersSearchBtn").onclick=function(){if($("workersSearch"))$("workersSearch").value="";renderWorkers()};}
 
 
-/* v62 PPE category cleanup and New PPE button fix */
+/* v63 PPE save/cancel returns home */
 const PPE_STOCK_KEY="barricora_ppe_stock_v59";
 const PPE_ISSUE_KEY="barricora_ppe_issue_log_v59";
 let currentPPECategory="";
@@ -738,9 +738,9 @@ function clearPPEStockForm(){if($("ppeStockFormTitle"))$("ppeStockFormTitle").te
 function openPPEStockForm(id,category){if(category)currentPPECategory=category;clearPPEStockForm();if(id){let item=getPPEStock().find(function(x){return x.id===id});if(item){if($("ppeStockFormTitle"))$("ppeStockFormTitle").textContent="Edit PPE Stock Item";if($("ppeStockEditId"))$("ppeStockEditId").value=item.id||"";if($("ppeType"))$("ppeType").value=item.type||"";if($("ppeCategory"))$("ppeCategory").value=ppeCategoryFor(item);if($("ppeBrand"))$("ppeBrand").value=item.brand||"";if($("ppeSize"))$("ppeSize").value=item.size||"";if($("ppeQty"))$("ppeQty").value=item.qty||0;if($("ppeMinQty"))$("ppeMinQty").value=item.minQty||0;if($("ppeLocation"))$("ppeLocation").value=item.location||"";if($("ppeUnit"))$("ppeUnit").value=item.unit||"pcs";if($("ppeNotes"))$("ppeNotes").value=item.notes||"";}}else{if($("ppeCategory"))$("ppeCategory").value=currentPPECategory||"Gloves";}if($("ppeDashboardWrap"))$("ppeDashboardWrap").classList.add("hidden");if($("ppeIssueFormCard"))$("ppeIssueFormCard").classList.add("hidden");if($("ppeStockFormCard"))$("ppeStockFormCard").classList.remove("hidden");window.scrollTo(0,0)}
 function parsePPESizes(text){let raw=(text||"").split(/[\n,;]+/).map(function(x){return x.trim()}).filter(Boolean);if(!raw.length)raw=["Standard"];let out=[];raw.forEach(function(x){if(out.indexOf(x)<0)out.push(x)});return out;}
 function savePPEStockItem(){let type=($("ppeType")?$("ppeType").value.trim():"");if(!type){alert("Enter PPE type, for example Rain coat.");return;}let category=($("ppeCategory")?$("ppeCategory").value:"Other")||"Other";let brand=($("ppeBrand")?$("ppeBrand").value.trim():"");let id=($("ppeStockEditId")?$("ppeStockEditId").value:"");let list=ensureFixedPPEList();let base={qty:Math.max(0,Number($("ppeQty")?$("ppeQty").value:0)||0),minQty:Math.max(0,Number($("ppeMinQty")?$("ppeMinQty").value:0)||0),location:$("ppeLocation")?$("ppeLocation").value.trim():"",unit:$("ppeUnit")?$("ppeUnit").value.trim()||"pcs":"pcs",notes:$("ppeNotes")?$("ppeNotes").value.trim():"",updatedAt:new Date().toISOString()};
-  if(id){let idx=list.findIndex(function(x){return x.id===id});if(idx>=0){let oldItem=list[idx];list[idx]=Object.assign({},oldItem,{type:type,category:category,brand:brand,size:($("ppeSize")?$("ppeSize").value.trim():"")||"Standard"},base,{standard:!!oldItem.standard});savePPEStock(list);openPPECategory(category,true);return;}}
+  if(id){let idx=list.findIndex(function(x){return x.id===id});if(idx>=0){let oldItem=list[idx];list[idx]=Object.assign({},oldItem,{type:type,category:category,brand:brand,size:($("ppeSize")?$("ppeSize").value.trim():"")||"Standard"},base,{standard:!!oldItem.standard});savePPEStock(list);showPPEDashboard(true);return;}}
   parsePPESizes($("ppeSize")?$("ppeSize").value:"").forEach(function(size){let existing=list.find(function(x){return ppeKey(x.type,x.size||"Standard",x.brand||"",ppeCategoryFor(x))===ppeKey(type,size,brand,category)});if(existing){Object.assign(existing,{type:type,category:category,brand:brand,size:size},base,{standard:!!existing.standard});}else{list.unshift(Object.assign({id:"ppe_"+Date.now()+"_"+Math.random().toString(16).slice(2),type:type,category:category,brand:brand,size:size,standard:false},base));}});
-  savePPEStock(list);openPPECategory(category,true);
+  savePPEStock(list);showPPEDashboard(true);
 }
 function deletePPEStock(id){let item=getPPEStock().find(function(i){return i.id===id});if(item&&item.standard){alert("This is part of the standard PPE list. You can edit stock/minimum levels, but it stays in the fixed list.");return;}if(!confirm("Delete this custom PPE stock item? Issue history will stay, but this item will be removed from stock."))return;let cat=item?ppeCategoryFor(item):currentPPECategory;savePPEStock(getPPEStock().filter(function(i){return i.id!==id}));openPPECategory(cat,false);updateHomeDashboard()}
 function loadStarterPPE(){ensureFixedPPEList();renderPPE();updateHomeDashboard()}
@@ -763,7 +763,7 @@ function initPPEModule(){
   if($("loadStarterPPEBtn"))$("loadStarterPPEBtn").onclick=loadStarterPPE;
   if($("issuePPEBtn"))$("issuePPEBtn").onclick=openPPEIssueForm;
   if($("backPPEDashboardBtn"))$("backPPEDashboardBtn").onclick=function(){showPPEDashboard(true)};
-  if($("cancelPPEStockBtn"))$("cancelPPEStockBtn").onclick=function(){currentPPECategory?openPPECategory(safeCat(currentPPECategory),true):showPPEDashboard(true)};
+  if($("cancelPPEStockBtn"))$("cancelPPEStockBtn").onclick=function(){showPPEDashboard(true)};
   if($("savePPEStockBtn"))$("savePPEStockBtn").onclick=function(e){e.preventDefault();savePPEStockItem()};
   if($("backPPEIssueBtn"))$("backPPEIssueBtn").onclick=function(){showPPEDashboard(true)};
   if($("cancelPPEIssueBtn"))$("cancelPPEIssueBtn").onclick=function(){showPPEDashboard(true)};
@@ -773,7 +773,7 @@ function initPPEModule(){
   document.addEventListener("click",function(e){
     let t=e.target;if(!t||!t.id)return;
     if(t.id==="savePPEStockBtn"){e.preventDefault();savePPEStockItem();}
-    if(t.id==="cancelPPEStockBtn"){e.preventDefault();currentPPECategory?openPPECategory(safeCat(currentPPECategory),true):showPPEDashboard(true);}
+    if(t.id==="cancelPPEStockBtn"){e.preventDefault();showPPEDashboard(true);}
     if(t.id==="backPPEDashboardBtn"){e.preventDefault();showPPEDashboard(true);}
     if(t.id==="savePPEIssueBtn"){e.preventDefault();savePPEIssue();}
     if(t.id==="cancelPPEIssueBtn"||t.id==="backPPEIssueBtn"){e.preventDefault();showPPEDashboard(true);}

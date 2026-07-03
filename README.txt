@@ -1,5 +1,5 @@
-Barricora v62 PPE Head/Face Cleanup
-- Removed separate Glasses PPE tile.
-- Moved Glasses and Dark glasses into Head / Face.
-- Fixed New PPE form buttons / save/cancel flow.
+Barricora v63 PPE Save Return Home
+- Save Stock Item now returns to PPE home/dashboard after saving.
+- Cancel New PPE also returns to PPE home/dashboard.
+- Kept v62 Head / Face PPE cleanup.
 - No new SQL needed.
