@@ -143,5 +143,11 @@ No new D1 schema is required for v55. Toolbox PDF files are saved in the same R2
 Fixes toolbox talk PDF links opening blank windows by using a safe PDF opener and adding inline PDF response headers. No new SQL required.
 
 
-## v57
+## v58
 - Workers page now has separate phone number and email fields. No new SQL needed.
+
+
+V58 update:
+- Removed Helmet / glasses note from worker profile.
+- Worker profile keeps gloves and hi-vis sizes only.
+- Helmet/glasses issuing will be handled later in PPE module.
