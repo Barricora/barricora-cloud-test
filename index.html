@@ -223,6 +223,19 @@
 .toolboxDocLink{display:inline-flex;align-items:center;gap:6px;background:#eef7ff;border:1px solid #c8e3fb;color:#0b4f86;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:800;text-decoration:none;cursor:pointer;font-family:inherit}
 @media(max-width:800px){.toolboxFormGrid,.toolboxTopicGrid,.toolboxPdfUploadGrid{grid-template-columns:1fr}.toolboxAttendeeRow{grid-template-columns:1fr}.toolboxSignedBox{padding-bottom:0}}
 
+
+/* v56 Workers module */
+.workerCreateBar{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:12px 0}
+.workerFormCard.hidden{display:none!important}
+.workerList{display:grid;gap:10px;margin-top:12px}
+.workerCard{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start;background:#fff;border:1px solid #dce6ef;border-left:8px solid #2563eb;border-radius:16px;padding:12px;box-shadow:0 3px 10px rgba(6,39,70,.05)}
+.workerCard.inactive{border-left-color:#94a3b8;background:#f8fafc;color:#64748b}
+.workerCard h3{margin:0 0 4px;font-size:16px;color:#0b2948}
+.workerMeta{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0}
+.workerPill{display:inline-flex;align-items:center;gap:4px;border:1px solid #d7e5f1;background:#f8fbff;border-radius:999px;padding:4px 8px;font-size:12px;color:#35516b}
+.workerActions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+@media(max-width:700px){.workerCard{grid-template-columns:1fr}.workerActions{justify-content:flex-start}.workerCreateBar .primary,.workerCreateBar .secondary{width:100%}}
+
 </style></head><body>
 <section id="loginScreen" class="loginScreen noPrint">
   <div class="loginCard">
@@ -246,6 +259,7 @@
       <button class="navItem" type="button" data-nav-screen="screenRAMS"><span>📄</span>RAMS</button>
       <button class="navItem" type="button" data-nav-screen="screenActionList"><span>⚠️</span>Actions</button>
       <button class="navItem" type="button" data-nav-screen="screenFindings"><span>🔎</span>Findings</button>
+      <button class="navItem" type="button" data-nav-screen="screenWorkers"><span>👷</span>Workers</button>
       <button class="navItem" type="button" data-nav-screen="screenPPE"><span>🦺</span>PPE</button>
       <button class="navItem" type="button" data-nav-screen="screenSettings"><span>⚙️</span>Settings</button>
     </nav>
@@ -260,7 +274,7 @@
     <div class="sectionHeader"><div><span class="step">Home</span><h2>Safety Portal Dashboard</h2><p class="small">Overall snapshot of audits, actions, findings, toolbox talks, daily checks and PPE.</p></div><button class="primary noPrint" id="dashboardStartAuditBtn" type="button">Start Audit</button></div>
     <div class="cloudPanel noPrint">
       <span id="cloudStatus">Cloud: checking...</span>
-      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v55</span>
+      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v56</span>
       <button class="secondary" id="syncNowBtn" type="button">Sync now</button>
     </div>
     <div class="kpiGrid" id="homeDashGrid">
@@ -431,6 +445,39 @@
   </div>
 </section>
 
+
+<section id="screenWorkers" class="hidden">
+  <div id="workersDashboardWrap">
+    <div class="card">
+      <div class="sectionHeader"><div><span class="step">Workers</span><h2>Workers Database</h2><p class="small">Starting point for worker profiles. Later this will connect to PPE issue records, training and worker cards.</p></div></div>
+      <div class="miniStats"><div class="miniStat"><b id="workersTotalStat">0</b><span>Total Workers</span></div><div class="miniStat"><b id="workersActiveStat">0</b><span>Active</span></div><div class="miniStat"><b id="workersCompanyStat">0</b><span>Companies</span></div><div class="miniStat"><b id="workersInactiveStat">0</b><span>Inactive</span></div></div>
+    </div>
+    <div class="card">
+      <div class="sectionHeader"><div><h2>Worker List</h2><p class="small">Search and manage people before we link this to PPE.</p></div></div>
+      <div class="workerCreateBar noPrint"><button class="primary" id="addWorkerBtn" type="button">Add Worker</button><button class="secondary" id="clearWorkersSearchBtn" type="button">Clear Search</button></div>
+      <input class="filterSearch" id="workersSearch" placeholder="Search by name, company, role, site or notes...">
+      <div id="workersList" class="workerList"></div>
+    </div>
+  </div>
+  <div id="workerFormCard" class="card workerFormCard hidden">
+    <div class="sectionHeader"><div><span class="step">Worker Profile</span><h2 id="workerFormTitle">Add Worker</h2><p class="small">Keep it simple for now. PPE sizes are included as placeholders for the next PPE module.</p></div><button class="secondary noPrint" id="backWorkersListBtn" type="button">Back to Workers</button></div>
+    <input id="workerEditId" type="hidden">
+    <div class="grid">
+      <label>Full name<input id="workerName" placeholder="Worker full name"></label>
+      <label>Company / contractor<input id="workerCompany" placeholder="Company / subcontractor"></label>
+      <label>Role / trade<input id="workerRole" placeholder="Duct fitter, electrician, operator..."></label>
+      <label>Site / project<input id="workerSite" placeholder="GVX-25 / project"></label>
+      <label>Status<select id="workerStatus"><option>Active</option><option>Inactive</option></select></label>
+      <label>Phone / email <span class="small">optional</span><input id="workerContact" placeholder="Optional contact"></label>
+      <label>Gloves size<input id="workerGloves" placeholder="8 / 9 / 10"></label>
+      <label>Hi-vis size<input id="workerVest" placeholder="M / L / XL"></label>
+      <label>Helmet / glasses note<input id="workerPpeNote" placeholder="Helmet issued, clear glasses, dark glasses..."></label>
+    </div>
+    <label style="margin-top:10px">Notes<textarea id="workerNotes" rows="3" placeholder="Training, worker card, restrictions, comments..."></textarea></label>
+    <div class="actions noPrint"><button class="secondary" id="cancelWorkerBtn" type="button">Cancel</button><button class="primary" id="saveWorkerBtn" type="button">Save Worker</button></div>
+  </div>
+</section>
+
 <section id="screenPPE" class="hidden"><div class="card"><div class="portalPlaceholderHero"><div class="bigIcon">🦺</div><div><span class="step">PPE</span><h2>PPE Database</h2><p class="small">Future PPE issue log with worker names, sizes, stock levels and low-stock warnings.</p></div></div><div class="miniStats"><div class="miniStat"><b>0</b><span>Issued this month</span></div><div class="miniStat"><b>0</b><span>Low stock</span></div><div class="miniStat"><b>0</b><span>Workers</span></div></div></div></section>
 
 <section id="screenSettings" class="hidden">
@@ -544,11 +591,27 @@ let detailIds=["date","site","area","auditor","pm","sm","contractor","workers"];
 function $(id){return document.getElementById(id)}
 function esc(s){return String(s||"").replace(/[&<>"']/g,function(m){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]})}
 function today(){return new Date().toISOString().slice(0,10)}
-const PORTAL_SCREENS=["screenPortalDashboard","screenCategories","screenDailyChecklists","screenToolboxTalks","screenRAMS","screenActionList","screenFindings","screenPPE","screenSettings","screenAuditList","screenCloseAction","screenDetails","screenQuestion","screenReport"];
-function screenTitle(id){return {screenPortalDashboard:"Dashboard",screenCategories:"Audits",screenDailyChecklists:"Daily Checklists",screenToolboxTalks:"Toolbox Talks",screenRAMS:"RAMS",screenActionList:"Actions",screenFindings:"Findings",screenPPE:"PPE",screenSettings:"Settings",screenAuditList:"Audit List",screenCloseAction:"Update Action",screenDetails:"Audit Details",screenQuestion:"Audit Questions",screenReport:"Audit Report"}[id]||"Barricora"}
+const PORTAL_SCREENS=["screenPortalDashboard","screenCategories","screenDailyChecklists","screenToolboxTalks","screenRAMS","screenActionList","screenFindings","screenWorkers","screenPPE","screenSettings","screenAuditList","screenCloseAction","screenDetails","screenQuestion","screenReport"];
+function screenTitle(id){return {screenPortalDashboard:"Dashboard",screenCategories:"Audits",screenDailyChecklists:"Daily Checklists",screenToolboxTalks:"Toolbox Talks",screenRAMS:"RAMS",screenActionList:"Actions",screenFindings:"Findings",screenWorkers:"Workers",screenPPE:"PPE",screenSettings:"Settings",screenAuditList:"Audit List",screenCloseAction:"Update Action",screenDetails:"Audit Details",screenQuestion:"Audit Questions",screenReport:"Audit Report"}[id]||"Barricora"}
 function setActiveNav(id){document.querySelectorAll(".navItem").forEach(function(btn){let target=btn.getAttribute("data-nav-screen");btn.classList.toggle("active",target===id)});if($("portalTitle"))$("portalTitle").textContent=screenTitle(id)}
 function closeMobileMenu(){if($("portalSidebar"))$("portalSidebar").classList.remove("open");if($("mobileMenuOverlay"))$("mobileMenuOverlay").classList.remove("open")}
-function show(id){PORTAL_SCREENS.forEach(function(s){let el=$(s);if(el)el.classList.add("hidden")});let target=$(id);if(target)target.classList.remove("hidden");if($("appShell"))$("appShell").classList.remove("hidden");if($("loginScreen"))$("loginScreen").classList.add("hidden");if(id==="screenPortalDashboard"||id==="screenCategories"||id==="screenActionList"||id==="screenAuditList"||id==="screenFindings"||id==="screenDailyChecklists")updateHomeDashboard();if(id==="screenFindings")showFindingDashboard(false);if(id==="screenDailyChecklists")showDailyDashboard(false);setActiveNav(id);closeMobileMenu();window.scrollTo(0,0)}
+function show(id){PORTAL_SCREENS.forEach(function(s){let el=$(s);if(el)el.classList.add("hidden")});let target=$(id);if(target)target.classList.remove("hidden");if($("appShell"))$("appShell").classList.remove("hidden");if($("loginScreen"))$("loginScreen").classList.add("hidden");if(id==="screenPortalDashboard"||id==="screenCategories"||id==="screenActionList"||id==="screenAuditList"||id==="screenFindings"||id==="screenDailyChecklists")updateHomeDashboard();if(id==="screenFindings")showFindingDashboard(false);if(id==="screenDailyChecklists")showDailyDashboard(false);if(id==="screenWorkers")showWorkersDashboard(false);setActiveNav(id);closeMobileMenu();window.scrollTo(0,0)}
+
+
+/* v56 Workers database - local starting point for PPE link */
+const WORKERS_KEY="barricora_workers_v56";
+function getWorkerList(){try{return JSON.parse(localStorage.getItem(WORKERS_KEY)||"[]")}catch(e){return []}}
+function saveWorkerList(list){try{localStorage.setItem(WORKERS_KEY,JSON.stringify(list||[]))}catch(e){}}
+function workerStats(){let list=getWorkerList();let companies={};let active=0,inactive=0;list.forEach(function(w){if((w.status||"Active")==="Inactive")inactive++;else active++;if((w.company||"").trim())companies[(w.company||"").trim().toLowerCase()]=true});return{total:list.length,active:active,inactive:inactive,companies:Object.keys(companies).length}}
+function openWorkers(){show("screenWorkers");showWorkersDashboard(false);renderWorkers()}
+function showWorkersDashboard(showForm){if($("workersDashboardWrap"))$("workersDashboardWrap").classList.toggle("hidden",!!showForm);if($("workerFormCard"))$("workerFormCard").classList.toggle("hidden",!showForm);if(!showForm)renderWorkers()}
+function clearWorkerForm(){["workerEditId","workerName","workerCompany","workerRole","workerSite","workerContact","workerGloves","workerVest","workerPpeNote","workerNotes"].forEach(function(id){if($(id))$(id).value=""});if($("workerStatus"))$("workerStatus").value="Active";if($("workerFormTitle"))$("workerFormTitle").textContent="Add Worker"}
+function addWorkerForm(){clearWorkerForm();showWorkersDashboard(true);window.scrollTo(0,0)}
+function saveWorker(){let name=($("workerName")?$("workerName").value.trim():"");if(!name){alert("Enter worker name.");return;}let id=($("workerEditId")?$("workerEditId").value:"")||("worker_"+Date.now());let list=getWorkerList();let rec={id:id,name:name,company:$("workerCompany")?$("workerCompany").value.trim():"",role:$("workerRole")?$("workerRole").value.trim():"",site:$("workerSite")?$("workerSite").value.trim():"",status:$("workerStatus")?$("workerStatus").value:"Active",contact:$("workerContact")?$("workerContact").value.trim():"",gloves:$("workerGloves")?$("workerGloves").value.trim():"",vest:$("workerVest")?$("workerVest").value.trim():"",ppeNote:$("workerPpeNote")?$("workerPpeNote").value.trim():"",notes:$("workerNotes")?$("workerNotes").value.trim():"",updatedAt:new Date().toISOString()};let idx=list.findIndex(function(w){return w.id===id});if(idx>=0)list[idx]=rec;else list.unshift(rec);saveWorkerList(list);showWorkersDashboard(false)}
+function editWorker(id){let w=getWorkerList().find(function(x){return x.id===id});if(!w)return;clearWorkerForm();if($("workerFormTitle"))$("workerFormTitle").textContent="Edit Worker";if($("workerEditId"))$("workerEditId").value=w.id||"";if($("workerName"))$("workerName").value=w.name||"";if($("workerCompany"))$("workerCompany").value=w.company||"";if($("workerRole"))$("workerRole").value=w.role||"";if($("workerSite"))$("workerSite").value=w.site||"";if($("workerStatus"))$("workerStatus").value=w.status||"Active";if($("workerContact"))$("workerContact").value=w.contact||"";if($("workerGloves"))$("workerGloves").value=w.gloves||"";if($("workerVest"))$("workerVest").value=w.vest||"";if($("workerPpeNote"))$("workerPpeNote").value=w.ppeNote||"";if($("workerNotes"))$("workerNotes").value=w.notes||"";showWorkersDashboard(true);window.scrollTo(0,0)}
+function deleteWorker(id){if(!confirm("Delete this worker from the local worker list?"))return;let list=getWorkerList().filter(function(w){return w.id!==id});saveWorkerList(list);renderWorkers()}
+function renderWorkers(){let s=workerStats();if($("workersTotalStat"))$("workersTotalStat").textContent=s.total;if($("workersActiveStat"))$("workersActiveStat").textContent=s.active;if($("workersInactiveStat"))$("workersInactiveStat").textContent=s.inactive;if($("workersCompanyStat"))$("workersCompanyStat").textContent=s.companies;let box=$("workersList");if(!box)return;let q=($("workersSearch")?$("workersSearch").value.toLowerCase().trim():"");let list=getWorkerList().filter(function(w){let hay=[w.name,w.company,w.role,w.site,w.status,w.contact,w.gloves,w.vest,w.ppeNote,w.notes].join(" ").toLowerCase();return !q||hay.indexOf(q)>=0});if(!list.length){box.innerHTML='<div class="emptyState">No workers found yet. Click <b>Add Worker</b> to create the first worker profile.</div>';return;}let h="";list.forEach(function(w){let inactive=(w.status||"Active")==="Inactive";h+='<div class="workerCard '+(inactive?'inactive':'')+'"><div><h3>'+esc(w.name)+'</h3><div class="workerMeta"><span class="workerPill">🏢 '+esc(w.company||"Company not set")+'</span><span class="workerPill">🛠️ '+esc(w.role||"Role not set")+'</span><span class="workerPill">📍 '+esc(w.site||"Site not set")+'</span><span class="workerPill">'+(inactive?'⚪ Inactive':'🟢 Active')+'</span></div><div class="small">Gloves: <b>'+esc(w.gloves||"-")+'</b> • Hi-vis: <b>'+esc(w.vest||"-")+'</b> • PPE note: '+esc(w.ppeNote||"-")+'</div>'+(w.notes?'<div class="small" style="margin-top:6px">Notes: '+esc(w.notes)+'</div>':'')+'</div><div class="workerActions noPrint"><button class="secondary" type="button" onclick="editWorker(\''+esc(w.id)+'\')">Edit</button><button class="secondary" type="button" onclick="deleteWorker(\''+esc(w.id)+'\')">Delete</button></div></div>'});box.innerHTML=h;}
+function initWorkersModule(){if($("addWorkerBtn"))$("addWorkerBtn").onclick=addWorkerForm;if($("backWorkersListBtn"))$("backWorkersListBtn").onclick=function(){showWorkersDashboard(false)};if($("cancelWorkerBtn"))$("cancelWorkerBtn").onclick=function(){showWorkersDashboard(false)};if($("saveWorkerBtn"))$("saveWorkerBtn").onclick=saveWorker;if($("workersSearch"))$("workersSearch").oninput=renderWorkers;if($("clearWorkersSearchBtn"))$("clearWorkersSearchBtn").onclick=function(){if($("workersSearch"))$("workersSearch").value="";renderWorkers()};}
 
 const PORTAL_SESSION_KEY="barricora_portal_session_v40";
 function hasPortalSession(){try{return !!localStorage.getItem(PORTAL_SESSION_KEY)}catch(e){return false}}
@@ -559,7 +622,7 @@ function initPortalShell(){
   if($("logoutBtn"))$("logoutBtn").onclick=function(){if(confirm("Log out from Barricora on this device?")){clearPortalSession();if($("appShell"))$("appShell").classList.add("hidden");if($("loginScreen"))$("loginScreen").classList.remove("hidden")}};
   if($("mobileMenuBtn"))$("mobileMenuBtn").onclick=function(){if($("portalSidebar"))$("portalSidebar").classList.add("open");if($("mobileMenuOverlay"))$("mobileMenuOverlay").classList.add("open")};
   if($("mobileMenuOverlay"))$("mobileMenuOverlay").onclick=closeMobileMenu;
-  document.querySelectorAll("[data-nav-screen]").forEach(function(btn){btn.onclick=function(){let target=this.getAttribute("data-nav-screen");if(target==="screenFindings"){openFindings();return;}if(target==="screenDailyChecklists"){openDailyChecklists();return;}if(target==="screenToolboxTalks"){openToolboxTalks();return;}if(target==="screenActionList"){openActionList();return;}if(target==="screenSettings")fillSettingsForm();show(target)}});
+  document.querySelectorAll("[data-nav-screen]").forEach(function(btn){btn.onclick=function(){let target=this.getAttribute("data-nav-screen");if(target==="screenFindings"){openFindings();return;}if(target==="screenDailyChecklists"){openDailyChecklists();return;}if(target==="screenToolboxTalks"){openToolboxTalks();return;}if(target==="screenWorkers"){openWorkers();return;}if(target==="screenActionList"){openActionList();return;}if(target==="screenSettings")fillSettingsForm();show(target)}});
 }
 function startPortalAfterInit(){if(hasPortalSession()){show("screenPortalDashboard");}else{if($("loginScreen"))$("loginScreen").classList.remove("hidden");if($("appShell"))$("appShell").classList.add("hidden")}}
 function renderRecentActivity(){let box=$("recentActivityBox");if(!box)return;let list=getAuditList().slice(0,5);if(!list.length){box.innerHTML='<div class="emptyState">No recent activity yet.</div>';return;}let h="";list.forEach(function(a){let label=auditLabel(a);let status=a.status||(a.reportReady?"Finished":"Unfinished");let saved=a.savedAt?new Date(a.savedAt).toLocaleString():"Not saved";h+='<div class="recentItem"><div><b>'+esc(label)+'</b><br><span>'+esc(status)+' • '+esc(saved)+'</span></div><button class="secondary noPrint" type="button" onclick="openSavedAudit('+getAuditList().findIndex(function(x){return x.id===a.id})+')">Open</button></div>'});box.innerHTML=h;}
@@ -568,6 +631,7 @@ function init(){
   loadLocalSettings();
   buildCategories();
   initPortalShell();
+  initWorkersModule();
   if($("backDetails"))$("backDetails").onclick=function(){show("screenCategories")};
   if($("dashboardStartAuditBtn"))$("dashboardStartAuditBtn").onclick=function(){show("screenCategories")};
   if($("openAuditListBtn"))$("openAuditListBtn").onclick=openAuditList;
