@@ -151,3 +151,8 @@ V58 update:
 - Removed Helmet / glasses note from worker profile.
 - Worker profile keeps gloves and hi-vis sizes only.
 - Helmet/glasses issuing will be handled later in PPE module.
+
+
+## v59 PPE Base
+
+No new D1 SQL is required. PPE stock and issue log are local-first in this step. Next step can connect PPE to the Workers database and cloud storage.

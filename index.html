@@ -224,6 +224,26 @@
 @media(max-width:800px){.toolboxFormGrid,.toolboxTopicGrid,.toolboxPdfUploadGrid{grid-template-columns:1fr}.toolboxAttendeeRow{grid-template-columns:1fr}.toolboxSignedBox{padding-bottom:0}}
 
 
+/* v59 PPE database - local starting point before worker link */
+.ppeCreateBar{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:12px 0}
+.ppeFormCard.hidden{display:none!important}
+.ppeList{display:grid;gap:10px;margin-top:12px}
+.ppeCard{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start;background:#fff;border:1px solid #dce6ef;border-left:8px solid #2563eb;border-radius:16px;padding:12px;box-shadow:0 3px 10px rgba(6,39,70,.05)}
+.ppeCard.low{border-left-color:#dc2626;background:#fff7f7}
+.ppeCard.warn{border-left-color:#ff7a00;background:#fffaf3}
+.ppeCard h3{margin:0 0 4px;font-size:16px;color:#0b2948}
+.ppeMeta{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0}
+.ppePill{display:inline-flex;align-items:center;gap:4px;border:1px solid #d7e5f1;background:#f8fbff;border-radius:999px;padding:4px 8px;font-size:12px;color:#35516b;font-weight:800}
+.ppePill.low{border-color:#fecaca;background:#fff1f1;color:#991b1b}.ppePill.warn{border-color:#fed7aa;background:#fff7ed;color:#9a3412}.ppePill.ok{border-color:#bbf7d0;background:#f0fdf4;color:#166534}
+.ppeActions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.ppeIssueCard{border:1px solid #dce6ef;border-radius:16px;background:#fbfcfe;padding:12px;margin:10px 0;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start}
+.ppeIssueCard h3{margin:0 0 4px;font-size:16px;color:#0b2948}
+.ppeIssueSmall{font-size:13px;color:#4a5d70;line-height:1.45}
+.ppeIssueQty{display:flex;align-items:center;justify-content:center;min-width:54px;height:54px;border-radius:16px;background:#eef7ff;color:#0b4f86;font-weight:900;font-size:20px;border:1px solid #c8e3fb}
+.ppeStockControls{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+@media(max-width:700px){.ppeCard,.ppeIssueCard{grid-template-columns:1fr}.ppeActions{justify-content:flex-start}.ppeCreateBar .primary,.ppeCreateBar .secondary{width:100%}.ppeIssueQty{justify-content:flex-start;width:100%;height:auto;padding:10px}}
+
+
 /* v58 Workers cleaned PPE note field */
 .workerCreateBar{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:12px 0}
 .workerFormCard.hidden{display:none!important}
@@ -274,7 +294,7 @@
     <div class="sectionHeader"><div><span class="step">Home</span><h2>Safety Portal Dashboard</h2><p class="small">Overall snapshot of audits, actions, findings, toolbox talks, daily checks and PPE.</p></div><button class="primary noPrint" id="dashboardStartAuditBtn" type="button">Start Audit</button></div>
     <div class="cloudPanel noPrint">
       <span id="cloudStatus">Cloud: checking...</span>
-      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v58</span>
+      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v59</span>
       <button class="secondary" id="syncNowBtn" type="button">Sync now</button>
     </div>
     <div class="kpiGrid" id="homeDashGrid">
@@ -304,7 +324,7 @@
       <div class="moduleCard"><div class="moduleIcon">📋</div><b>Daily Checklists</b><p class="small">General daily walk and focused MEWP, harness/lanyard and telehandler checks.</p><button class="secondary noPrint" type="button" data-nav-screen="screenDailyChecklists">Open Daily Checks</button></div>
       <div class="moduleCard"><div class="moduleIcon">🗣️</div><b>Toolbox Talks</b><p class="small">Talk records, attendance and signatures.</p><span class="comingBadge">Coming soon</span></div>
       <div class="moduleCard"><div class="moduleIcon">📄</div><b>RAMS</b><p class="small">RAMS library, briefings and sign-on status.</p><span class="comingBadge">Coming soon</span></div>
-      <div class="moduleCard"><div class="moduleIcon">🦺</div><b>PPE</b><p class="small">PPE issue log, sizes, stock and low-stock warnings.</p><span class="comingBadge">Coming soon</span></div>
+      <div class="moduleCard"><div class="moduleIcon">🦺</div><b>PPE</b><p class="small">PPE stock list, issue log and low-stock warnings.</p><button class="secondary noPrint" type="button" data-nav-screen="screenPPE">Open PPE</button></div>
     </div>
   </div>
   <div class="card"><h2>Recent Activity</h2><div id="recentActivityBox" class="recentList"><div class="emptyState">No recent activity yet.</div></div></div>
@@ -478,7 +498,54 @@
   </div>
 </section>
 
-<section id="screenPPE" class="hidden"><div class="card"><div class="portalPlaceholderHero"><div class="bigIcon">🦺</div><div><span class="step">PPE</span><h2>PPE Database</h2><p class="small">Future PPE issue log with worker names, sizes, stock levels and low-stock warnings.</p></div></div><div class="miniStats"><div class="miniStat"><b>0</b><span>Issued this month</span></div><div class="miniStat"><b>0</b><span>Low stock</span></div><div class="miniStat"><b>0</b><span>Workers</span></div></div></div></section>
+
+<section id="screenPPE" class="hidden">
+  <div id="ppeDashboardWrap">
+    <div class="card">
+      <div class="sectionHeader"><div><span class="step">PPE</span><h2>PPE Database</h2><p class="small">Starting point for PPE stock and issue records. Next step we will connect issuing directly to the Workers database.</p></div></div>
+      <div class="miniStats"><div class="miniStat"><b id="ppeStockTypesStat">0</b><span>Stock Items</span></div><div class="miniStat"><b id="ppeTotalStockStat">0</b><span>Total Stock</span></div><div class="miniStat"><b id="ppeLowStockStat">0</b><span>Low Stock</span></div><div class="miniStat"><b id="ppeIssuedMonthStat">0</b><span>Issued This Month</span></div></div>
+    </div>
+    <div class="card">
+      <div class="sectionHeader"><div><h2>PPE Stock</h2><p class="small">Add PPE types and stock levels. Use the starter button if you want the basic items: gloves 8/9/10, clear/dark glasses, helmet and hi-vis M/L/XL.</p></div></div>
+      <div class="ppeCreateBar noPrint"><button class="primary" id="addPPEStockBtn" type="button">Add PPE Stock Item</button><button class="secondary" id="loadStarterPPEBtn" type="button">Load Starter PPE Items</button><button class="secondary" id="clearPPESearchBtn" type="button">Clear Search</button></div>
+      <input class="filterSearch" id="ppeSearch" placeholder="Search PPE by type, size, location or notes...">
+      <div id="ppeStockList" class="ppeList"></div>
+    </div>
+    <div class="card">
+      <div class="sectionHeader"><div><h2>PPE Issue Log</h2><p class="small">For now, worker name is typed manually. Next version can pick worker from the Workers database.</p></div><button class="primary noPrint" id="issuePPEBtn" type="button">Issue PPE</button></div>
+      <div id="ppeIssueList"></div>
+    </div>
+  </div>
+
+  <div id="ppeStockFormCard" class="card ppeFormCard hidden">
+    <div class="sectionHeader"><div><span class="step">PPE Stock</span><h2 id="ppeStockFormTitle">Add PPE Stock Item</h2><p class="small">Create or update a PPE stock item.</p></div><button class="secondary noPrint" id="backPPEDashboardBtn" type="button">Back to PPE</button></div>
+    <input id="ppeStockEditId" type="hidden">
+    <div class="grid">
+      <label>PPE type<select id="ppeType"><option>Gloves</option><option>Glasses Clear</option><option>Glasses Dark</option><option>Helmet</option><option>Hi-vis</option><option>Harness</option><option>Other</option></select></label>
+      <label>Size / variant<input id="ppeSize" placeholder="8 / 9 / 10 / M / L / XL / Standard"></label>
+      <label>Current stock<input id="ppeQty" type="number" min="0" step="1" placeholder="0"></label>
+      <label>Minimum stock warning<input id="ppeMinQty" type="number" min="0" step="1" placeholder="0"></label>
+      <label>Storage location<input id="ppeLocation" placeholder="Store / container / cabinet"></label>
+      <label>Unit<input id="ppeUnit" placeholder="pcs / pairs" value="pcs"></label>
+    </div>
+    <label style="margin-top:10px">Notes<textarea id="ppeNotes" rows="3" placeholder="Supplier, model, standard, comments..."></textarea></label>
+    <div class="actions noPrint"><button class="secondary" id="cancelPPEStockBtn" type="button">Cancel</button><button class="primary" id="savePPEStockBtn" type="button">Save Stock Item</button></div>
+  </div>
+
+  <div id="ppeIssueFormCard" class="card ppeFormCard hidden">
+    <div class="sectionHeader"><div><span class="step">PPE Issue</span><h2>Issue PPE</h2><p class="small">Issue PPE from stock. Worker link will come in the next step.</p></div><button class="secondary noPrint" id="backPPEIssueBtn" type="button">Back to PPE</button></div>
+    <div class="grid">
+      <label>Date<input id="ppeIssueDate" type="date"></label>
+      <label>PPE item<select id="ppeIssueItem"></select></label>
+      <label>Worker name<input id="ppeIssueWorker" placeholder="Worker name"></label>
+      <label>Company / contractor<input id="ppeIssueCompany" placeholder="Company"></label>
+      <label>Quantity<input id="ppeIssueQty" type="number" min="1" step="1" value="1"></label>
+      <label>Issued by<input id="ppeIssueBy" placeholder="Your name"></label>
+    </div>
+    <label style="margin-top:10px">Issue note<textarea id="ppeIssueNote" rows="3" placeholder="Reason, replacement, damaged PPE, etc..."></textarea></label>
+    <div class="actions noPrint"><button class="secondary" id="cancelPPEIssueBtn" type="button">Cancel</button><button class="primary" id="savePPEIssueBtn" type="button">Finish Issue</button></div>
+  </div>
+</section>
 
 <section id="screenSettings" class="hidden">
   <div class="card">
@@ -595,7 +662,7 @@ const PORTAL_SCREENS=["screenPortalDashboard","screenCategories","screenDailyChe
 function screenTitle(id){return {screenPortalDashboard:"Dashboard",screenCategories:"Audits",screenDailyChecklists:"Daily Checklists",screenToolboxTalks:"Toolbox Talks",screenRAMS:"RAMS",screenActionList:"Actions",screenFindings:"Findings",screenWorkers:"Workers",screenPPE:"PPE",screenSettings:"Settings",screenAuditList:"Audit List",screenCloseAction:"Update Action",screenDetails:"Audit Details",screenQuestion:"Audit Questions",screenReport:"Audit Report"}[id]||"Barricora"}
 function setActiveNav(id){document.querySelectorAll(".navItem").forEach(function(btn){let target=btn.getAttribute("data-nav-screen");btn.classList.toggle("active",target===id)});if($("portalTitle"))$("portalTitle").textContent=screenTitle(id)}
 function closeMobileMenu(){if($("portalSidebar"))$("portalSidebar").classList.remove("open");if($("mobileMenuOverlay"))$("mobileMenuOverlay").classList.remove("open")}
-function show(id){PORTAL_SCREENS.forEach(function(s){let el=$(s);if(el)el.classList.add("hidden")});let target=$(id);if(target)target.classList.remove("hidden");if($("appShell"))$("appShell").classList.remove("hidden");if($("loginScreen"))$("loginScreen").classList.add("hidden");if(id==="screenPortalDashboard"||id==="screenCategories"||id==="screenActionList"||id==="screenAuditList"||id==="screenFindings"||id==="screenDailyChecklists")updateHomeDashboard();if(id==="screenFindings")showFindingDashboard(false);if(id==="screenDailyChecklists")showDailyDashboard(false);if(id==="screenWorkers")showWorkersDashboard(false);setActiveNav(id);closeMobileMenu();window.scrollTo(0,0)}
+function show(id){PORTAL_SCREENS.forEach(function(s){let el=$(s);if(el)el.classList.add("hidden")});let target=$(id);if(target)target.classList.remove("hidden");if($("appShell"))$("appShell").classList.remove("hidden");if($("loginScreen"))$("loginScreen").classList.add("hidden");if(id==="screenPortalDashboard"||id==="screenCategories"||id==="screenActionList"||id==="screenAuditList"||id==="screenFindings"||id==="screenDailyChecklists"||id==="screenPPE")updateHomeDashboard();if(id==="screenFindings")showFindingDashboard(false);if(id==="screenDailyChecklists")showDailyDashboard(false);if(id==="screenWorkers")showWorkersDashboard(false);if(id==="screenPPE")showPPEDashboard(false);setActiveNav(id);closeMobileMenu();window.scrollTo(0,0)}
 
 
 /* v58 Workers database - local starting point for PPE link */
@@ -613,6 +680,34 @@ function deleteWorker(id){if(!confirm("Delete this worker from the local worker 
 function renderWorkers(){let s=workerStats();if($("workersTotalStat"))$("workersTotalStat").textContent=s.total;if($("workersActiveStat"))$("workersActiveStat").textContent=s.active;if($("workersInactiveStat"))$("workersInactiveStat").textContent=s.inactive;if($("workersCompanyStat"))$("workersCompanyStat").textContent=s.companies;let box=$("workersList");if(!box)return;let q=($("workersSearch")?$("workersSearch").value.toLowerCase().trim():"");let list=getWorkerList().filter(function(w){let hay=[w.name,w.company,w.role,w.site,w.status,w.phone,w.email,w.contact,w.gloves,w.vest,w.notes].join(" ").toLowerCase();return !q||hay.indexOf(q)>=0});if(!list.length){box.innerHTML='<div class="emptyState">No workers found yet. Click <b>Add Worker</b> to create the first worker profile.</div>';return;}let h="";list.forEach(function(w){let inactive=(w.status||"Active")==="Inactive";let phone=w.phone||w.contact||"";let email=w.email||"";h+='<div class="workerCard '+(inactive?'inactive':'')+'"><div><h3>'+esc(w.name)+'</h3><div class="workerMeta"><span class="workerPill">🏢 '+esc(w.company||"Company not set")+'</span><span class="workerPill">🛠️ '+esc(w.role||"Role not set")+'</span><span class="workerPill">📍 '+esc(w.site||"Site not set")+'</span><span class="workerPill">'+(inactive?'⚪ Inactive':'🟢 Active')+'</span></div><div class="small">Phone: <b>'+esc(phone||"-")+'</b> • Email: <b>'+esc(email||"-")+'</b></div><div class="small">Gloves size: <b>'+esc(w.gloves||"-")+'</b> • Hi-vis size: <b>'+esc(w.vest||"-")+'</b></div>'+(w.notes?'<div class="small" style="margin-top:6px">Notes: '+esc(w.notes)+'</div>':'')+'</div><div class="workerActions noPrint"><button class="secondary" type="button" onclick="editWorker(\''+esc(w.id)+'\')">Edit</button><button class="secondary" type="button" onclick="deleteWorker(\''+esc(w.id)+'\')">Delete</button></div></div>'});box.innerHTML=h;}
 function initWorkersModule(){if($("addWorkerBtn"))$("addWorkerBtn").onclick=addWorkerForm;if($("backWorkersListBtn"))$("backWorkersListBtn").onclick=function(){showWorkersDashboard(false)};if($("cancelWorkerBtn"))$("cancelWorkerBtn").onclick=function(){showWorkersDashboard(false)};if($("saveWorkerBtn"))$("saveWorkerBtn").onclick=saveWorker;if($("workersSearch"))$("workersSearch").oninput=renderWorkers;if($("clearWorkersSearchBtn"))$("clearWorkersSearchBtn").onclick=function(){if($("workersSearch"))$("workersSearch").value="";renderWorkers()};}
 
+
+/* v59 PPE database - local starting point before worker link */
+const PPE_STOCK_KEY="barricora_ppe_stock_v59";
+const PPE_ISSUE_KEY="barricora_ppe_issue_log_v59";
+function getPPEStock(){try{return JSON.parse(localStorage.getItem(PPE_STOCK_KEY)||"[]")}catch(e){return []}}
+function savePPEStock(list){try{localStorage.setItem(PPE_STOCK_KEY,JSON.stringify(list||[]))}catch(e){}}
+function getPPEIssues(){try{return JSON.parse(localStorage.getItem(PPE_ISSUE_KEY)||"[]")}catch(e){return []}}
+function savePPEIssues(list){try{localStorage.setItem(PPE_ISSUE_KEY,JSON.stringify(list||[]))}catch(e){}}
+function ppeLabel(item){return (item.type||"PPE")+(item.size?" - "+item.size:"")}
+function ppeStockStatus(item){let qty=Number(item.qty||0),min=Number(item.minQty||0);if(min>0&&qty<=0)return"low";if(min>0&&qty<=min)return"warn";return"ok"}
+function ppeStats(){let stock=getPPEStock(),issues=getPPEIssues();let total=0,low=0;stock.forEach(function(i){total+=Number(i.qty||0);let st=ppeStockStatus(i);if(st==="low"||st==="warn")low++;});let ym=new Date().toISOString().slice(0,7);let issuedMonth=0;issues.forEach(function(i){if((i.date||"").slice(0,7)===ym)issuedMonth+=Number(i.qty||0)});return{items:stock.length,totalStock:total,low:low,issuedMonth:issuedMonth,issues:issues.length}}
+function openPPE(){show("screenPPE")}
+function showPPEDashboard(scrollTop){if($("ppeDashboardWrap"))$("ppeDashboardWrap").classList.remove("hidden");if($("ppeStockFormCard"))$("ppeStockFormCard").classList.add("hidden");if($("ppeIssueFormCard"))$("ppeIssueFormCard").classList.add("hidden");renderPPE();updateHomeDashboard();if(scrollTop)window.scrollTo(0,0)}
+function clearPPEStockForm(){if($("ppeStockFormTitle"))$("ppeStockFormTitle").textContent="Add PPE Stock Item";["ppeStockEditId","ppeSize","ppeQty","ppeMinQty","ppeLocation","ppeNotes"].forEach(function(id){if($(id))$(id).value=""});if($("ppeType"))$("ppeType").value="Gloves";if($("ppeUnit"))$("ppeUnit").value="pcs"}
+function openPPEStockForm(id){clearPPEStockForm();if(id){let item=getPPEStock().find(function(x){return x.id===id});if(item){if($("ppeStockFormTitle"))$("ppeStockFormTitle").textContent="Edit PPE Stock Item";if($("ppeStockEditId"))$("ppeStockEditId").value=item.id||"";if($("ppeType"))$("ppeType").value=item.type||"Gloves";if($("ppeSize"))$("ppeSize").value=item.size||"";if($("ppeQty"))$("ppeQty").value=item.qty||0;if($("ppeMinQty"))$("ppeMinQty").value=item.minQty||0;if($("ppeLocation"))$("ppeLocation").value=item.location||"";if($("ppeUnit"))$("ppeUnit").value=item.unit||"pcs";if($("ppeNotes"))$("ppeNotes").value=item.notes||"";}}if($("ppeDashboardWrap"))$("ppeDashboardWrap").classList.add("hidden");if($("ppeIssueFormCard"))$("ppeIssueFormCard").classList.add("hidden");if($("ppeStockFormCard"))$("ppeStockFormCard").classList.remove("hidden");window.scrollTo(0,0)}
+function savePPEStockItem(){let type=$("ppeType")?$("ppeType").value:"Gloves";let size=$("ppeSize")?$("ppeSize").value.trim():"";let id=($("ppeStockEditId")?$("ppeStockEditId").value:"")||("ppe_"+Date.now());let rec={id:id,type:type,size:size,qty:Math.max(0,Number($("ppeQty")?$("ppeQty").value:0)||0),minQty:Math.max(0,Number($("ppeMinQty")?$("ppeMinQty").value:0)||0),location:$("ppeLocation")?$("ppeLocation").value.trim():"",unit:$("ppeUnit")?$("ppeUnit").value.trim()||"pcs":"pcs",notes:$("ppeNotes")?$("ppeNotes").value.trim():"",updatedAt:new Date().toISOString()};let list=getPPEStock();let idx=list.findIndex(function(x){return x.id===id});if(idx>=0)list[idx]=rec;else list.unshift(rec);savePPEStock(list);showPPEDashboard(true)}
+function deletePPEStock(id){if(!confirm("Delete this PPE stock item? Issue history will stay, but this item will be removed from stock."))return;savePPEStock(getPPEStock().filter(function(i){return i.id!==id}));renderPPE();updateHomeDashboard()}
+function loadStarterPPE(){let list=getPPEStock();if(list.length&&!confirm("Starter items will be added to your existing PPE stock list. Continue?"))return;let existing={};list.forEach(function(i){existing[(i.type||"")+"|"+(i.size||"")]=true});let starter=[['Gloves','8','pairs'],['Gloves','9','pairs'],['Gloves','10','pairs'],['Glasses Clear','Standard','pcs'],['Glasses Dark','Standard','pcs'],['Helmet','Standard','pcs'],['Hi-vis','M','pcs'],['Hi-vis','L','pcs'],['Hi-vis','XL','pcs']];starter.forEach(function(s){let key=s[0]+"|"+s[1];if(existing[key])return;list.push({id:"ppe_"+Date.now()+"_"+Math.random().toString(16).slice(2),type:s[0],size:s[1],qty:0,minQty:0,location:"",unit:s[2],notes:"",updatedAt:new Date().toISOString()})});savePPEStock(list);renderPPE();updateHomeDashboard()}
+function renderPPEStats(){let s=ppeStats();if($("ppeStockTypesStat"))$("ppeStockTypesStat").textContent=s.items;if($("ppeTotalStockStat"))$("ppeTotalStockStat").textContent=s.totalStock;if($("ppeLowStockStat"))$("ppeLowStockStat").textContent=s.low;if($("ppeIssuedMonthStat"))$("ppeIssuedMonthStat").textContent=s.issuedMonth;if($("dashPPELow"))$("dashPPELow").textContent=s.low;}
+function renderPPEStock(){let box=$("ppeStockList");if(!box)return;let q=($("ppeSearch")?$("ppeSearch").value.toLowerCase().trim():"");let list=getPPEStock().filter(function(i){let hay=[i.type,i.size,i.qty,i.minQty,i.location,i.unit,i.notes].join(" ").toLowerCase();return !q||hay.indexOf(q)>=0});if(!list.length){box.innerHTML='<div class="emptyState">No PPE stock items yet. Click <b>Add PPE Stock Item</b> or load starter PPE items.</div>';return;}let h="";list.forEach(function(i){let st=ppeStockStatus(i);let statusText=st==="low"?"Out / critical":(st==="warn"?"Low stock":"Stock OK");h+='<div class="ppeCard '+(st==="low"?'low':(st==="warn"?'warn':''))+'"><div><h3>'+esc(ppeLabel(i))+'</h3><div class="ppeMeta"><span class="ppePill '+st+'">'+esc(statusText)+'</span><span class="ppePill">Stock: '+esc(i.qty||0)+' '+esc(i.unit||"pcs")+'</span><span class="ppePill">Min: '+esc(i.minQty||0)+'</span><span class="ppePill">📍 '+esc(i.location||"Location not set")+'</span></div>'+(i.notes?'<div class="small" style="margin-top:6px">Notes: '+esc(i.notes)+'</div>':'')+'</div><div class="ppeActions noPrint"><button class="secondary" type="button" onclick="openPPEStockForm(\''+esc(i.id)+'\')">Edit</button><button class="secondary" type="button" onclick="deletePPEStock(\''+esc(i.id)+'\')">Delete</button></div></div>'});box.innerHTML=h;}
+function fillPPEIssueItems(){let sel=$("ppeIssueItem");if(!sel)return;let stock=getPPEStock();if(!stock.length){sel.innerHTML='<option value="">No stock items created yet</option>';return;}sel.innerHTML=stock.map(function(i){return '<option value="'+esc(i.id)+'">'+esc(ppeLabel(i))+' — stock '+esc(i.qty||0)+'</option>'}).join("")}
+function openPPEIssueForm(){fillPPEIssueItems();if($("ppeIssueDate"))$("ppeIssueDate").value=today();if($("ppeIssueWorker"))$("ppeIssueWorker").value="";if($("ppeIssueCompany"))$("ppeIssueCompany").value="";if($("ppeIssueQty"))$("ppeIssueQty").value=1;if($("ppeIssueBy"))$("ppeIssueBy").value=(appSettings&&appSettings.auditor)||"";if($("ppeIssueNote"))$("ppeIssueNote").value="";if($("ppeDashboardWrap"))$("ppeDashboardWrap").classList.add("hidden");if($("ppeStockFormCard"))$("ppeStockFormCard").classList.add("hidden");if($("ppeIssueFormCard"))$("ppeIssueFormCard").classList.remove("hidden");window.scrollTo(0,0)}
+function savePPEIssue(){let itemId=$("ppeIssueItem")?$("ppeIssueItem").value:"";let stock=getPPEStock();let item=stock.find(function(i){return i.id===itemId});if(!item){alert("Create/select a PPE stock item first.");return;}let worker=($("ppeIssueWorker")?$("ppeIssueWorker").value.trim():"");if(!worker){alert("Enter worker name.");return;}let qty=Math.max(1,Number($("ppeIssueQty")?$("ppeIssueQty").value:1)||1);let rec={id:"ppe_issue_"+Date.now(),date:$("ppeIssueDate")?$("ppeIssueDate").value||today():today(),itemId:item.id,itemType:item.type||"PPE",size:item.size||"",qty:qty,worker:worker,company:$("ppeIssueCompany")?$("ppeIssueCompany").value.trim():"",issuedBy:$("ppeIssueBy")?$("ppeIssueBy").value.trim():"",note:$("ppeIssueNote")?$("ppeIssueNote").value.trim():"",createdAt:new Date().toISOString()};item.qty=Math.max(0,Number(item.qty||0)-qty);savePPEStock(stock);let issues=getPPEIssues();issues.unshift(rec);savePPEIssues(issues);showPPEDashboard(true)}
+function deletePPEIssue(id){let issues=getPPEIssues();let rec=issues.find(function(i){return i.id===id});if(!rec)return;if(!confirm("Delete this PPE issue record? Stock quantity will be returned if the stock item still exists."))return;let stock=getPPEStock();let item=stock.find(function(i){return i.id===rec.itemId});if(item){item.qty=Number(item.qty||0)+Number(rec.qty||0);savePPEStock(stock)}savePPEIssues(issues.filter(function(i){return i.id!==id}));renderPPE();updateHomeDashboard()}
+function renderPPEIssues(){let box=$("ppeIssueList");if(!box)return;let list=getPPEIssues();if(!list.length){box.innerHTML='<div class="emptyState">No PPE issue records yet.</div>';return;}let h="";list.slice(0,50).forEach(function(i){h+='<div class="ppeIssueCard"><div><h3>'+esc(i.worker||"Worker")+' — '+esc((i.itemType||"PPE")+(i.size?" "+i.size:""))+'</h3><div class="ppeIssueSmall"><b>Date:</b> '+esc(i.date||"-")+' • <b>Company:</b> '+esc(i.company||"-")+' • <b>Issued by:</b> '+esc(i.issuedBy||"-")+'</div>'+(i.note?'<div class="small" style="margin-top:6px">Note: '+esc(i.note)+'</div>':'')+'<div class="actions noPrint" style="margin-top:8px"><button class="secondary" type="button" onclick="deletePPEIssue(\''+esc(i.id)+'\')">Delete / Return Stock</button></div></div><div class="ppeIssueQty">×'+esc(i.qty||1)+'</div></div>'});box.innerHTML=h;}
+function renderPPE(){renderPPEStats();renderPPEStock();renderPPEIssues()}
+function initPPEModule(){if($("addPPEStockBtn"))$("addPPEStockBtn").onclick=function(){openPPEStockForm()};if($("loadStarterPPEBtn"))$("loadStarterPPEBtn").onclick=loadStarterPPE;if($("issuePPEBtn"))$("issuePPEBtn").onclick=openPPEIssueForm;if($("backPPEDashboardBtn"))$("backPPEDashboardBtn").onclick=function(){showPPEDashboard(true)};if($("cancelPPEStockBtn"))$("cancelPPEStockBtn").onclick=function(){showPPEDashboard(true)};if($("savePPEStockBtn"))$("savePPEStockBtn").onclick=savePPEStockItem;if($("backPPEIssueBtn"))$("backPPEIssueBtn").onclick=function(){showPPEDashboard(true)};if($("cancelPPEIssueBtn"))$("cancelPPEIssueBtn").onclick=function(){showPPEDashboard(true)};if($("savePPEIssueBtn"))$("savePPEIssueBtn").onclick=savePPEIssue;if($("ppeSearch"))$("ppeSearch").oninput=renderPPEStock;if($("clearPPESearchBtn"))$("clearPPESearchBtn").onclick=function(){if($("ppeSearch"))$("ppeSearch").value="";renderPPEStock()};}
+
 const PORTAL_SESSION_KEY="barricora_portal_session_v40";
 function hasPortalSession(){try{return !!localStorage.getItem(PORTAL_SESSION_KEY)}catch(e){return false}}
 function setPortalSession(email){try{localStorage.setItem(PORTAL_SESSION_KEY,JSON.stringify({email:email||"user",time:new Date().toISOString()}))}catch(e){}}
@@ -622,7 +717,7 @@ function initPortalShell(){
   if($("logoutBtn"))$("logoutBtn").onclick=function(){if(confirm("Log out from Barricora on this device?")){clearPortalSession();if($("appShell"))$("appShell").classList.add("hidden");if($("loginScreen"))$("loginScreen").classList.remove("hidden")}};
   if($("mobileMenuBtn"))$("mobileMenuBtn").onclick=function(){if($("portalSidebar"))$("portalSidebar").classList.add("open");if($("mobileMenuOverlay"))$("mobileMenuOverlay").classList.add("open")};
   if($("mobileMenuOverlay"))$("mobileMenuOverlay").onclick=closeMobileMenu;
-  document.querySelectorAll("[data-nav-screen]").forEach(function(btn){btn.onclick=function(){let target=this.getAttribute("data-nav-screen");if(target==="screenFindings"){openFindings();return;}if(target==="screenDailyChecklists"){openDailyChecklists();return;}if(target==="screenToolboxTalks"){openToolboxTalks();return;}if(target==="screenWorkers"){openWorkers();return;}if(target==="screenActionList"){openActionList();return;}if(target==="screenSettings")fillSettingsForm();show(target)}});
+  document.querySelectorAll("[data-nav-screen]").forEach(function(btn){btn.onclick=function(){let target=this.getAttribute("data-nav-screen");if(target==="screenFindings"){openFindings();return;}if(target==="screenDailyChecklists"){openDailyChecklists();return;}if(target==="screenToolboxTalks"){openToolboxTalks();return;}if(target==="screenWorkers"){openWorkers();return;}if(target==="screenPPE"){openPPE();return;}if(target==="screenActionList"){openActionList();return;}if(target==="screenSettings")fillSettingsForm();show(target)}});
 }
 function startPortalAfterInit(){if(hasPortalSession()){show("screenPortalDashboard");}else{if($("loginScreen"))$("loginScreen").classList.remove("hidden");if($("appShell"))$("appShell").classList.add("hidden")}}
 function renderRecentActivity(){let box=$("recentActivityBox");if(!box)return;let list=getAuditList().slice(0,5);if(!list.length){box.innerHTML='<div class="emptyState">No recent activity yet.</div>';return;}let h="";list.forEach(function(a){let label=auditLabel(a);let status=a.status||(a.reportReady?"Finished":"Unfinished");let saved=a.savedAt?new Date(a.savedAt).toLocaleString():"Not saved";h+='<div class="recentItem"><div><b>'+esc(label)+'</b><br><span>'+esc(status)+' • '+esc(saved)+'</span></div><button class="secondary noPrint" type="button" onclick="openSavedAudit('+getAuditList().findIndex(function(x){return x.id===a.id})+')">Open</button></div>'});box.innerHTML=h;}
@@ -632,6 +727,7 @@ function init(){
   buildCategories();
   initPortalShell();
   initWorkersModule();
+  initPPEModule();
   if($("backDetails"))$("backDetails").onclick=function(){show("screenCategories")};
   if($("dashboardStartAuditBtn"))$("dashboardStartAuditBtn").onclick=function(){show("screenCategories")};
   if($("openAuditListBtn"))$("openAuditListBtn").onclick=openAuditList;
@@ -1717,7 +1813,7 @@ function updateHomeDashboard(){
   if($("dashFindings"))$("dashFindings").textContent=fs.total;
   if($("dashToolbox"))$("dashToolbox").textContent=ts.total;
   if($("dashToolboxDone"))$("dashToolboxDone").textContent=ts.total;
-  if($("dashPPELow"))$("dashPPELow").textContent="0";
+  if($("dashPPELow"))$("dashPPELow").textContent=ppeStats().low;
   updateFindingStatsUi();
   updateDailyStatsUi();
   updateToolboxStatsUi();
