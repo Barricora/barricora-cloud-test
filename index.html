@@ -224,7 +224,7 @@
 @media(max-width:800px){.toolboxFormGrid,.toolboxTopicGrid,.toolboxPdfUploadGrid{grid-template-columns:1fr}.toolboxAttendeeRow{grid-template-columns:1fr}.toolboxSignedBox{padding-bottom:0}}
 
 
-/* v61 PPE category tiles and custom PPE builder */
+/* v62 PPE category cleanup and New PPE button fix */
 .ppeCreateBar{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:12px 0}
 .ppeFormCard.hidden{display:none!important}
 .ppeList{display:grid;gap:10px;margin-top:12px}
@@ -301,7 +301,7 @@
     <div class="sectionHeader"><div><span class="step">Home</span><h2>Safety Portal Dashboard</h2><p class="small">Overall snapshot of audits, actions, findings, toolbox talks, daily checks and PPE.</p></div><button class="primary noPrint" id="dashboardStartAuditBtn" type="button">Start Audit</button></div>
     <div class="cloudPanel noPrint">
       <span id="cloudStatus">Cloud: checking...</span>
-      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v61</span>
+      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v62</span>
       <button class="secondary" id="syncNowBtn" type="button">Sync now</button>
     </div>
     <div class="kpiGrid" id="homeDashGrid">
@@ -509,11 +509,11 @@
 <section id="screenPPE" class="hidden">
   <div id="ppeDashboardWrap">
     <div class="card">
-      <div class="sectionHeader"><div><span class="step">PPE</span><h2>PPE Database</h2><p class="small">Fixed PPE stock list with option to add extra PPE items. Next step we will connect issuing directly to the Workers database.</p></div></div>
+      <div class="sectionHeader"><div><span class="step">PPE</span><h2>PPE Database</h2><p class="small">PPE stock organised by category. Standard items are pre-loaded and extra PPE can be added when needed.</p></div></div>
       <div class="miniStats"><div class="miniStat"><b id="ppeStockTypesStat">0</b><span>Stock Items</span></div><div class="miniStat"><b id="ppeTotalStockStat">0</b><span>Total Stock</span></div><div class="miniStat"><b id="ppeLowStockStat">0</b><span>Low Stock</span></div><div class="miniStat"><b id="ppeIssuedMonthStat">0</b><span>Issued This Month</span></div></div>
     </div>
     <div class="card" id="ppeCategoryCard">
-      <div class="sectionHeader"><div><h2>PPE Categories</h2><p class="small">Open a PPE category tile to view stock items. Use New PPE to add custom items, brands and sizes.</p></div></div>
+      <div class="sectionHeader"><div><h2>PPE Categories</h2><p class="small">Open a PPE category tile to view stock items. Glasses are grouped under Head / Face. Use New PPE for custom items, brands and sizes.</p></div></div>
       <div class="ppeCreateBar noPrint"><button class="primary" id="addPPEStockBtn" type="button">New PPE</button></div>
       <div id="ppeCategoryGrid" class="ppeCategoryGrid"></div>
     </div>
@@ -534,7 +534,7 @@
     <input id="ppeStockEditId" type="hidden">
     <div class="grid">
       <label>PPE type<input id="ppeType" placeholder="Example: Rain coat, Knee pads, Gloves"></label>
-      <label>Category<select id="ppeCategory"><option value="Gloves">Gloves</option><option value="Hi-viz">Hi-viz</option><option value="Glasses">Glasses</option><option value="Work at Height">Work at Height</option><option value="Head / Face">Head / Face</option><option value="Other">Other</option></select></label>
+      <label>Category<select id="ppeCategory"><option value="Gloves">Gloves</option><option value="Hi-viz">Hi-viz</option><option value="Head / Face">Head / Face</option><option value="Work at Height">Work at Height</option><option value="Other">Other</option></select></label>
       <label>Brand name<input id="ppeBrand" placeholder="Optional brand / model"></label>
       <label>Unit<input id="ppeUnit" placeholder="pcs / pairs" value="pcs"></label>
       <label>Current stock per size<input id="ppeQty" type="number" min="0" step="1" placeholder="0"></label>
@@ -695,16 +695,15 @@ function renderWorkers(){let s=workerStats();if($("workersTotalStat"))$("workers
 function initWorkersModule(){if($("addWorkerBtn"))$("addWorkerBtn").onclick=addWorkerForm;if($("backWorkersListBtn"))$("backWorkersListBtn").onclick=function(){showWorkersDashboard(false)};if($("cancelWorkerBtn"))$("cancelWorkerBtn").onclick=function(){showWorkersDashboard(false)};if($("saveWorkerBtn"))$("saveWorkerBtn").onclick=saveWorker;if($("workersSearch"))$("workersSearch").oninput=renderWorkers;if($("clearWorkersSearchBtn"))$("clearWorkersSearchBtn").onclick=function(){if($("workersSearch"))$("workersSearch").value="";renderWorkers()};}
 
 
-/* v61 PPE category tiles and custom PPE builder */
+/* v62 PPE category cleanup and New PPE button fix */
 const PPE_STOCK_KEY="barricora_ppe_stock_v59";
 const PPE_ISSUE_KEY="barricora_ppe_issue_log_v59";
 let currentPPECategory="";
 const PPE_CATEGORIES=[
   {id:"Gloves",icon:"🧤",hint:"Glove sizes and types."},
   {id:"Hi-viz",icon:"🦺",hint:"Hi-vis and spotter vests."},
-  {id:"Glasses",icon:"🥽",hint:"Clear, dark and eye protection."},
+  {id:"Head / Face",icon:"⛑️",hint:"Helmet, glasses, visor and face mask."},
   {id:"Work at Height",icon:"🏗️",hint:"Harnesses and lanyards."},
-  {id:"Head / Face",icon:"⛑️",hint:"Helmet, visor and face mask."},
   {id:"Other",icon:"➕",hint:"Extra PPE added by the team."}
 ];
 function getPPEStock(){try{return JSON.parse(localStorage.getItem(PPE_STOCK_KEY)||"[]")}catch(e){return []}}
@@ -715,17 +714,17 @@ const FIXED_PPE_LIST=[
   {type:"Gloves",size:"8",unit:"pairs",category:"Gloves"},{type:"Gloves",size:"9",unit:"pairs",category:"Gloves"},{type:"Gloves",size:"10",unit:"pairs",category:"Gloves"},{type:"Gloves",size:"11",unit:"pairs",category:"Gloves"},{type:"Gloves",size:"12",unit:"pairs",category:"Gloves"},
   {type:"Hi-vis vest",size:"S",unit:"pcs",category:"Hi-viz"},{type:"Hi-vis vest",size:"M",unit:"pcs",category:"Hi-viz"},{type:"Hi-vis vest",size:"L",unit:"pcs",category:"Hi-viz"},{type:"Hi-vis vest",size:"XL",unit:"pcs",category:"Hi-viz"},{type:"Hi-vis vest",size:"2XL",unit:"pcs",category:"Hi-viz"},
   {type:"Spotter vest",size:"M",unit:"pcs",category:"Hi-viz"},{type:"Spotter vest",size:"L",unit:"pcs",category:"Hi-viz"},{type:"Spotter vest",size:"XL",unit:"pcs",category:"Hi-viz"},{type:"Spotter vest",size:"2XL",unit:"pcs",category:"Hi-viz"},
-  {type:"Glasses",size:"Standard",unit:"pcs",category:"Glasses"},{type:"Dark glasses",size:"Standard",unit:"pcs",category:"Glasses"},
+  {type:"Glasses",size:"Standard",unit:"pcs",category:"Head / Face"},{type:"Dark glasses",size:"Standard",unit:"pcs",category:"Head / Face"},
   {type:"Helmet",size:"Standard",unit:"pcs",category:"Head / Face"},{type:"Visor",size:"Standard",unit:"pcs",category:"Head / Face"},{type:"Face mask",size:"Standard",unit:"pcs",category:"Head / Face"},
   {type:"Harness",size:"Standard",unit:"pcs",category:"Work at Height"},{type:"Lanyard",size:"Standard",unit:"pcs",category:"Work at Height"},{type:"Double lanyard",size:"Standard",unit:"pcs",category:"Work at Height"}
 ];
 function ppeKey(type,size,brand,category){return (category||"").toLowerCase().trim()+"|"+(type||"").toLowerCase().trim()+"|"+(size||"").toLowerCase().trim()+"|"+(brand||"").toLowerCase().trim()}
 function ppeNormalType(type){let t=(type||"").trim();if(t==="Glasses Clear")return"Glasses";if(t==="Glasses Dark")return"Dark glasses";if(t==="Hi-vis")return"Hi-vis vest";return t;}
-function ppeCategoryFor(item){let t=ppeNormalType(item&&item.type||"");let c=(item&&item.category)||"";if(c)return c;if(t==="Gloves")return"Gloves";if(t==="Hi-vis vest"||t==="Spotter vest")return"Hi-viz";if(t==="Glasses"||t==="Dark glasses")return"Glasses";if(t==="Harness"||t==="Lanyard"||t==="Double lanyard")return"Work at Height";if(t==="Helmet"||t==="Visor"||t==="Face mask")return"Head / Face";return"Other";}
+function ppeCategoryFor(item){let t=ppeNormalType(item&&item.type||"");let c=(item&&item.category)||"";if(c==="Glasses")return"Head / Face";if(c)return c;if(t==="Gloves")return"Gloves";if(t==="Hi-vis vest"||t==="Spotter vest")return"Hi-viz";if(t==="Glasses"||t==="Dark glasses"||t==="Helmet"||t==="Visor"||t==="Face mask")return"Head / Face";if(t==="Harness"||t==="Lanyard"||t==="Double lanyard")return"Work at Height";return"Other";}
 function fixedPPEOrderKey(item){let k=ppeKey(ppeNormalType(item.type),item.size||"Standard",item.brand||"",ppeCategoryFor(item));for(let i=0;i<FIXED_PPE_LIST.length;i++){let f=FIXED_PPE_LIST[i];if(ppeKey(f.type,f.size,"",f.category)===k)return i;}return 9999;}
 function ensureFixedPPEList(){
   let list=getPPEStock(),changed=false,byFixedKey={};
-  list.forEach(function(i){let nt=ppeNormalType(i.type);if(nt!==i.type){i.type=nt;changed=true;}let cat=ppeCategoryFor(i);if(!i.category){i.category=cat;changed=true;}if(!i.brand){i.brand="";}let k=ppeKey(i.type,i.size||"Standard",i.brand||"",i.category);if(!byFixedKey[k])byFixedKey[k]=i;});
+  list.forEach(function(i){let nt=ppeNormalType(i.type);if(nt!==i.type){i.type=nt;changed=true;}let cat=ppeCategoryFor(i);if(i.category!==cat){i.category=cat;changed=true;}if(!i.brand){i.brand="";}let k=ppeKey(i.type,i.size||"Standard",i.brand||"",i.category);if(!byFixedKey[k])byFixedKey[k]=i;});
   FIXED_PPE_LIST.forEach(function(f){let k=ppeKey(f.type,f.size,"",f.category);if(byFixedKey[k]){let it=byFixedKey[k];if(!it.standard){it.standard=true;changed=true;}if(!it.unit){it.unit=f.unit;changed=true;}if(!it.category){it.category=f.category;changed=true;}}else{list.push({id:"ppe_fixed_"+f.type.toLowerCase().replace(/[^a-z0-9]+/g,"_")+"_"+f.size.toLowerCase().replace(/[^a-z0-9]+/g,"_"),type:f.type,size:f.size,category:f.category,brand:"",qty:0,minQty:0,location:"",unit:f.unit,notes:"",standard:true,updatedAt:new Date().toISOString()});changed=true;}});
   list.sort(function(a,b){let da=fixedPPEOrderKey(a),db=fixedPPEOrderKey(b);if(da!==db)return da-db;return ppeLabel(a).localeCompare(ppeLabel(b));});
   if(changed)savePPEStock(list);return list;
@@ -735,7 +734,7 @@ function ppeStockStatus(item){let qty=Number(item.qty||0),min=Number(item.minQty
 function ppeStats(){let stock=ensureFixedPPEList(),issues=getPPEIssues();let total=0,low=0;stock.forEach(function(i){total+=Number(i.qty||0);let st=ppeStockStatus(i);if(st==="low"||st==="warn")low++;});let ym=new Date().toISOString().slice(0,7);let issuedMonth=0;issues.forEach(function(i){if((i.date||"").slice(0,7)===ym)issuedMonth+=Number(i.qty||0)});return{items:stock.length,totalStock:total,low:low,issuedMonth:issuedMonth,issues:issues.length}}
 function openPPE(){ensureFixedPPEList();currentPPECategory="";show("screenPPE");showPPEDashboard(false)}
 function showPPEDashboard(scrollTop){ensureFixedPPEList();currentPPECategory="";if($("ppeDashboardWrap"))$("ppeDashboardWrap").classList.remove("hidden");if($("ppeCategoryCard"))$("ppeCategoryCard").classList.remove("hidden");if($("ppeCategoryStockCard"))$("ppeCategoryStockCard").classList.add("hidden");if($("ppeStockFormCard"))$("ppeStockFormCard").classList.add("hidden");if($("ppeIssueFormCard"))$("ppeIssueFormCard").classList.add("hidden");renderPPE();updateHomeDashboard();if(scrollTop)window.scrollTo(0,0)}
-function clearPPEStockForm(){if($("ppeStockFormTitle"))$("ppeStockFormTitle").textContent="New PPE";["ppeStockEditId","ppeType","ppeBrand","ppeSize","ppeQty","ppeMinQty","ppeLocation","ppeNotes"].forEach(function(id){if($(id))$(id).value=""});if($("ppeCategory"))$("ppeCategory").value=currentPPECategory||"Gloves";if($("ppeUnit"))$("ppeUnit").value="pcs"}
+function clearPPEStockForm(){if($("ppeStockFormTitle"))$("ppeStockFormTitle").textContent="New PPE";["ppeStockEditId","ppeType","ppeBrand","ppeSize","ppeQty","ppeMinQty","ppeLocation","ppeNotes"].forEach(function(id){if($(id))$(id).value=""});if($("ppeCategory")){let cat=currentPPECategory||"Gloves";if(cat==="Glasses")cat="Head / Face";$("ppeCategory").value=cat;}if($("ppeUnit"))$("ppeUnit").value="pcs"}
 function openPPEStockForm(id,category){if(category)currentPPECategory=category;clearPPEStockForm();if(id){let item=getPPEStock().find(function(x){return x.id===id});if(item){if($("ppeStockFormTitle"))$("ppeStockFormTitle").textContent="Edit PPE Stock Item";if($("ppeStockEditId"))$("ppeStockEditId").value=item.id||"";if($("ppeType"))$("ppeType").value=item.type||"";if($("ppeCategory"))$("ppeCategory").value=ppeCategoryFor(item);if($("ppeBrand"))$("ppeBrand").value=item.brand||"";if($("ppeSize"))$("ppeSize").value=item.size||"";if($("ppeQty"))$("ppeQty").value=item.qty||0;if($("ppeMinQty"))$("ppeMinQty").value=item.minQty||0;if($("ppeLocation"))$("ppeLocation").value=item.location||"";if($("ppeUnit"))$("ppeUnit").value=item.unit||"pcs";if($("ppeNotes"))$("ppeNotes").value=item.notes||"";}}else{if($("ppeCategory"))$("ppeCategory").value=currentPPECategory||"Gloves";}if($("ppeDashboardWrap"))$("ppeDashboardWrap").classList.add("hidden");if($("ppeIssueFormCard"))$("ppeIssueFormCard").classList.add("hidden");if($("ppeStockFormCard"))$("ppeStockFormCard").classList.remove("hidden");window.scrollTo(0,0)}
 function parsePPESizes(text){let raw=(text||"").split(/[\n,;]+/).map(function(x){return x.trim()}).filter(Boolean);if(!raw.length)raw=["Standard"];let out=[];raw.forEach(function(x){if(out.indexOf(x)<0)out.push(x)});return out;}
 function savePPEStockItem(){let type=($("ppeType")?$("ppeType").value.trim():"");if(!type){alert("Enter PPE type, for example Rain coat.");return;}let category=($("ppeCategory")?$("ppeCategory").value:"Other")||"Other";let brand=($("ppeBrand")?$("ppeBrand").value.trim():"");let id=($("ppeStockEditId")?$("ppeStockEditId").value:"");let list=ensureFixedPPEList();let base={qty:Math.max(0,Number($("ppeQty")?$("ppeQty").value:0)||0),minQty:Math.max(0,Number($("ppeMinQty")?$("ppeMinQty").value:0)||0),location:$("ppeLocation")?$("ppeLocation").value.trim():"",unit:$("ppeUnit")?$("ppeUnit").value.trim()||"pcs":"pcs",notes:$("ppeNotes")?$("ppeNotes").value.trim():"",updatedAt:new Date().toISOString()};
@@ -756,7 +755,30 @@ function savePPEIssue(){let itemId=$("ppeIssueItem")?$("ppeIssueItem").value:"";
 function deletePPEIssue(id){let issues=getPPEIssues();let rec=issues.find(function(i){return i.id===id});if(!rec)return;if(!confirm("Delete this PPE issue record? Stock quantity will be returned if the stock item still exists."))return;let stock=getPPEStock();let item=stock.find(function(i){return i.id===rec.itemId});if(item){item.qty=Number(item.qty||0)+Number(rec.qty||0);savePPEStock(stock)}savePPEIssues(issues.filter(function(i){return i.id!==id}));renderPPE();updateHomeDashboard()}
 function renderPPEIssues(){let box=$("ppeIssueList");if(!box)return;let list=getPPEIssues();if(!list.length){box.innerHTML='<div class="emptyState">No PPE issue records yet.</div>';return;}let h="";list.slice(0,50).forEach(function(i){h+='<div class="ppeIssueCard"><div><h3>'+esc(i.worker||"Worker")+' — '+esc((i.itemType||"PPE")+(i.size?" "+i.size:""))+'</h3><div class="ppeIssueSmall"><b>Date:</b> '+esc(i.date||"-")+' • <b>Category:</b> '+esc(i.category||"-")+' • <b>Company:</b> '+esc(i.company||"-")+' • <b>Issued by:</b> '+esc(i.issuedBy||"-")+'</div>'+(i.brand?'<div class="small" style="margin-top:4px"><b>Brand/model:</b> '+esc(i.brand)+'</div>':'')+(i.note?'<div class="small" style="margin-top:6px">Note: '+esc(i.note)+'</div>':'')+'<div class="actions noPrint" style="margin-top:8px"><button class="secondary" type="button" onclick="deletePPEIssue(\''+esc(i.id)+'\')">Delete / Return Stock</button></div></div><div class="ppeIssueQty">×'+esc(i.qty||1)+'</div></div>'});box.innerHTML=h;}
 function renderPPE(){ensureFixedPPEList();renderPPEStats();renderPPECategories();if(currentPPECategory)renderPPEStock();renderPPEIssues()}
-function initPPEModule(){if($("addPPEStockBtn"))$("addPPEStockBtn").onclick=function(){openPPEStockForm(null,currentPPECategory||"Gloves")};if($("addPPEStockFromCategoryBtn"))$("addPPEStockFromCategoryBtn").onclick=function(){openPPEStockForm(null,currentPPECategory||"Other")};if($("backPPECategoriesBtn"))$("backPPECategoriesBtn").onclick=function(){showPPEDashboard(true)};if($("loadStarterPPEBtn"))$("loadStarterPPEBtn").onclick=loadStarterPPE;if($("issuePPEBtn"))$("issuePPEBtn").onclick=openPPEIssueForm;if($("backPPEDashboardBtn"))$("backPPEDashboardBtn").onclick=function(){showPPEDashboard(true)};if($("cancelPPEStockBtn"))$("cancelPPEStockBtn").onclick=function(){currentPPECategory?openPPECategory(currentPPECategory,true):showPPEDashboard(true)};if($("savePPEStockBtn"))$("savePPEStockBtn").onclick=savePPEStockItem;if($("backPPEIssueBtn"))$("backPPEIssueBtn").onclick=function(){showPPEDashboard(true)};if($("cancelPPEIssueBtn"))$("cancelPPEIssueBtn").onclick=function(){showPPEDashboard(true)};if($("savePPEIssueBtn"))$("savePPEIssueBtn").onclick=savePPEIssue;if($("ppeSearch"))$("ppeSearch").oninput=renderPPEStock;if($("clearPPESearchBtn"))$("clearPPESearchBtn").onclick=function(){if($("ppeSearch"))$("ppeSearch").value="";renderPPEStock()};}
+function initPPEModule(){
+  function safeCat(cat){return cat==="Glasses"?"Head / Face":(cat||"Gloves")}
+  if($("addPPEStockBtn"))$("addPPEStockBtn").onclick=function(){openPPEStockForm(null,safeCat(currentPPECategory))};
+  if($("addPPEStockFromCategoryBtn"))$("addPPEStockFromCategoryBtn").onclick=function(){openPPEStockForm(null,safeCat(currentPPECategory||"Other"))};
+  if($("backPPECategoriesBtn"))$("backPPECategoriesBtn").onclick=function(){showPPEDashboard(true)};
+  if($("loadStarterPPEBtn"))$("loadStarterPPEBtn").onclick=loadStarterPPE;
+  if($("issuePPEBtn"))$("issuePPEBtn").onclick=openPPEIssueForm;
+  if($("backPPEDashboardBtn"))$("backPPEDashboardBtn").onclick=function(){showPPEDashboard(true)};
+  if($("cancelPPEStockBtn"))$("cancelPPEStockBtn").onclick=function(){currentPPECategory?openPPECategory(safeCat(currentPPECategory),true):showPPEDashboard(true)};
+  if($("savePPEStockBtn"))$("savePPEStockBtn").onclick=function(e){e.preventDefault();savePPEStockItem()};
+  if($("backPPEIssueBtn"))$("backPPEIssueBtn").onclick=function(){showPPEDashboard(true)};
+  if($("cancelPPEIssueBtn"))$("cancelPPEIssueBtn").onclick=function(){showPPEDashboard(true)};
+  if($("savePPEIssueBtn"))$("savePPEIssueBtn").onclick=function(e){e.preventDefault();savePPEIssue()};
+  if($("ppeSearch"))$("ppeSearch").oninput=renderPPEStock;
+  if($("clearPPESearchBtn"))$("clearPPESearchBtn").onclick=function(){if($("ppeSearch"))$("ppeSearch").value="";renderPPEStock()};
+  document.addEventListener("click",function(e){
+    let t=e.target;if(!t||!t.id)return;
+    if(t.id==="savePPEStockBtn"){e.preventDefault();savePPEStockItem();}
+    if(t.id==="cancelPPEStockBtn"){e.preventDefault();currentPPECategory?openPPECategory(safeCat(currentPPECategory),true):showPPEDashboard(true);}
+    if(t.id==="backPPEDashboardBtn"){e.preventDefault();showPPEDashboard(true);}
+    if(t.id==="savePPEIssueBtn"){e.preventDefault();savePPEIssue();}
+    if(t.id==="cancelPPEIssueBtn"||t.id==="backPPEIssueBtn"){e.preventDefault();showPPEDashboard(true);}
+  });
+}
 
 const PORTAL_SESSION_KEY="barricora_portal_session_v40";
 function hasPortalSession(){try{return !!localStorage.getItem(PORTAL_SESSION_KEY)}catch(e){return false}}

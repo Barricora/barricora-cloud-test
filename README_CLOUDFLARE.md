@@ -1,3 +1,7 @@
+Barricora v62 PPE Head/Face Cleanup
+
+No new D1 SQL is required. Upload to GitHub and let Cloudflare Pages redeploy.
+
 # Barricora v61 Fixed PPE List
 
 Barricora v51 MEWP Spotter Question

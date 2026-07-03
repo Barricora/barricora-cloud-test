@@ -1,5 +1,5 @@
-Barricora v61 PPE Category Tiles
-- Built from v60 fixed PPE list.
-- PPE section now uses category tiles.
-- Added custom PPE builder with free PPE type, category, brand/model and multiple sizes.
-- No new SQL required.
+Barricora v62 PPE Head/Face Cleanup
+- Removed separate Glasses PPE tile.
+- Moved Glasses and Dark glasses into Head / Face.
+- Fixed New PPE form buttons / save/cancel flow.
+- No new SQL needed.
