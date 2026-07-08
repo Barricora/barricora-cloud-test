@@ -183,11 +183,11 @@ No new SQL is required. Upload to GitHub and let Cloudflare Pages redeploy. PPE 
 - No new SQL needed.
 
 
-## v67 PPE Return Flow
+## v68 PPE Return Flow
 Run `schema_v66_workers_ppe.sql` in your existing D1 database. This adds workers, ppe_stock and ppe_issues tables to the same D1 database. No second D1 database is needed. New API routes: `/api/workers` and `/api/ppe`.
 
 
-## v67 PPE Return Flow
+## v68 PPE Return Flow
 
 No new SQL needed if `schema_v66_workers_ppe.sql` was already run.
 
@@ -198,3 +198,10 @@ Added a dedicated PPE return workflow:
 - Select worker, tick PPE items being returned, then click Return PPE.
 - Returned items are added back into stock and removed from the issue list.
 - Red trash icon on issue cards deletes the issue record only and does not return stock.
+
+
+## v68 update
+- Worker PPE profile/history added.
+- PPE menu renamed to PPE Stock.
+- Returned PPE records are kept in the same PPE issue history with status Returned.
+- No new SQL required if v66 Workers/PPE schema is already installed.
