@@ -330,7 +330,7 @@
     <div class="sectionHeader"><div><span class="step">Home</span><h2>Safety Portal Dashboard</h2><p class="small">Overall snapshot of audits, actions, findings, toolbox talks, daily checks and PPE.</p></div><button class="primary noPrint" id="dashboardStartAuditBtn" type="button">Start Audit</button></div>
     <div class="cloudPanel noPrint">
       <span id="cloudStatus">Cloud: checking...</span>
-      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v68</span>
+      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v69</span>
       <button class="secondary" id="syncNowBtn" type="button">Sync now</button>
     </div>
     <div class="kpiGrid" id="homeDashGrid">
@@ -1676,12 +1676,29 @@ async function initCloudSync(){
     setCloudStatus("Cloud: local only","cloudOffline");
   }
 }
+function auditDeleteAllRecentlyRequested(){
+  try{
+    let raw=localStorage.getItem(AUDIT_DELETE_ALL_FLAG);
+    let t=raw?parseInt(raw,10):0;
+    return !!(t && (Date.now()-t)<300000);
+  }catch(e){return false}
+}
 async function loadCloudAudits(){
   if(!cloudAvailable)return;
+  if(auditDeleteAllRecentlyRequested()){
+    try{localStorage.setItem(AUDIT_LIST_KEY,JSON.stringify([]));}catch(e){}
+    renderAuditList();updateHomeDashboard();
+    return;
+  }
   try{
     let res=await fetch("/api/audits",{cache:"no-store"});
     if(!res.ok)throw new Error("Could not load cloud audits");
     let payload=await res.json();
+    if(auditDeleteAllRecentlyRequested()){
+      try{localStorage.setItem(AUDIT_LIST_KEY,JSON.stringify([]));}catch(e){}
+      renderAuditList();updateHomeDashboard();
+      return;
+    }
     let cloud=Array.isArray(payload.audits)?payload.audits:[];
     let local=getAuditList();
     let map={};
@@ -1728,12 +1745,21 @@ async function syncAuditToCloud(data,silent){
   }finally{cloudBusy=false;}
 }
 async function cloudDeleteAudit(id){
-  if(!cloudAvailable||!id)return;
-  try{await fetch("/api/audits/"+encodeURIComponent(id),{method:"DELETE"});setCloudStatus("Cloud: synced","cloudOnline");}catch(e){setCloudStatus("Cloud: delete error","cloudError");}
+  if(!id)return false;
+  try{
+    let res=await fetch("/api/audits/"+encodeURIComponent(id),{method:"DELETE",cache:"no-store"});
+    if(!res.ok)throw new Error("Cloud delete failed");
+    setCloudStatus("Cloud: synced","cloudOnline");
+    return true;
+  }catch(e){setCloudStatus("Cloud: delete error","cloudError");return false;}
 }
 async function cloudDeleteAllAudits(){
-  if(!cloudAvailable)return;
-  try{await fetch("/api/audits",{method:"DELETE"});setCloudStatus("Cloud: synced","cloudOnline");}catch(e){setCloudStatus("Cloud: delete error","cloudError");}
+  try{
+    let res=await fetch("/api/audits",{method:"DELETE",cache:"no-store"});
+    if(!res.ok)throw new Error("Cloud delete failed");
+    setCloudStatus("Cloud: synced","cloudOnline");
+    return true;
+  }catch(e){setCloudStatus("Cloud: delete error","cloudError");return false;}
 }
 
 
@@ -1924,6 +1950,7 @@ async function cloudDeleteToolbox(id){if(!cloudAvailable||!id)return;try{await f
 
 
 const AUDIT_LIST_KEY="barricora_audit_list_v18";
+const AUDIT_DELETE_ALL_FLAG="barricora_delete_all_audits_requested_at";
 function getAuditList(){
   try{
     let raw=localStorage.getItem(AUDIT_LIST_KEY);
@@ -2130,10 +2157,22 @@ function deleteSavedAudit(idx){
     renderAuditList();updateHomeDashboard();
   }
 }
-function deleteAllSavedAudits(){
-  if(confirm("Delete all saved completed audits from this device?")){
-    setAuditList([]);cloudDeleteAllAudits();
+async function deleteAllSavedAudits(){
+  if(confirm("Delete all saved audits from this device and cloud?")){
+    try{localStorage.setItem(AUDIT_DELETE_ALL_FLAG,String(Date.now()));}catch(e){}
+    setAuditList([]);
+    clearAutoSave();
     renderAuditList();updateHomeDashboard();
+    setCloudStatus("Cloud: deleting audits...","cloudSyncing");
+    let ok=await cloudDeleteAllAudits();
+    setAuditList([]);
+    renderAuditList();updateHomeDashboard();
+    if(ok){
+      setCloudStatus("Cloud: synced","cloudOnline");
+      setTimeout(function(){try{localStorage.removeItem(AUDIT_DELETE_ALL_FLAG)}catch(e){}},30000);
+    }else{
+      alert("Audits were deleted from this device, but cloud delete failed. Check connection and try again, otherwise old cloud audits may sync back.");
+    }
   }
 }
 

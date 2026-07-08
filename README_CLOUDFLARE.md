@@ -1,3 +1,5 @@
+Barricora v69 Audit Cloud Delete Fix
+
 Barricora v63 PPE Save Return Home
 
 Barricora v63 PPE Head/Face Cleanup
