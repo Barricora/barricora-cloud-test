@@ -172,5 +172,12 @@ No new D1 SQL is required. PPE stock and issue log are local-first in this step.
 - No new SQL required.
 
 
-## v64 PPE Worker Issue Flow
+## v65 PPE Worker Issue Flow
 No new SQL is required. Upload to GitHub and let Cloudflare Pages redeploy. PPE issuing now uses local Workers database records and supports selecting multiple PPE stock items in one issue flow.
+
+
+## v65 PPE Double Save Fix
+- Fixed PPE Issue Save creating duplicate issue records.
+- Removed duplicate PPE button fallback handlers.
+- Added double-click guard to Save Issue.
+- No new SQL needed.
