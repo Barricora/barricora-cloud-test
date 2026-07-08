@@ -1,14 +1,15 @@
-Barricora v64 PPE Worker Issue Flow
-- PPE Issue now selects workers from the Workers database.
-- Worker search added for issuing PPE.
-- Multiple PPE items can be ticked and issued at once.
-- PPE list is grouped by category in the issue flow.
-- Stock is reduced per selected item and issue log remains.
-- Return PPE button opens the issue log, where Delete / Return Stock returns stock.
-- No new SQL needed.
+Barricora v67 PPE Return Flow
 
+Built from v66 Workers + PPE Cloud Sync.
 
-v66 Workers + PPE Cloud Sync
-- Adds D1 tables/API for workers, PPE stock and PPE issue log.
-- Uses same D1 database, no second database.
-- Run schema_v66_workers_ppe.sql after upload.
+Changes:
+- PPE Issue Log now has a red trash icon in the top-right of each issue card.
+- Trash/delete removes the issue record only and does not return stock.
+- Return PPE button now opens a dedicated return workflow.
+- Return workflow lists workers who currently have PPE issued.
+- Search/filter workers in Return PPE.
+- Select worker, tick returned PPE items, then click Return PPE.
+- Returned PPE is removed from the issue log and added back into stock.
+- Workers/PPE still sync to the same D1 database through /api/workers and /api/ppe.
+
+No new SQL required if v66 schema was already run.
