@@ -1,4 +1,4 @@
-Barricora v70 styled delete confirmation modal
-- Replaces native audit delete confirm boxes with a centered Barricora-style modal.
-- Single audit delete and delete all audits use the new modal.
+Barricora v71 Styled Popups
+- Styled Barricora popups for confirmations and alerts across the portal.
+- Adds consistent delete/logout/clear dialogs for Findings, Daily Checklists, Toolbox Talks, Workers and PPE.
 - No new SQL needed.
