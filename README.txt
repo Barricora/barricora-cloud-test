@@ -1,4 +1,4 @@
-Barricora v71 Styled Popups
-- Styled Barricora popups for confirmations and alerts across the portal.
-- Adds consistent delete/logout/clear dialogs for Findings, Daily Checklists, Toolbox Talks, Workers and PPE.
-- No new SQL needed.
+Barricora v72 PPE Reports / Stock Control
+- Built from v71 styled popups.
+- Adds PPE reports panel, low stock warnings, issued-this-month list, who-has-this-PPE view, and printable stock report.
+- No new SQL required if v66 PPE schema is installed.

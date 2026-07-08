@@ -207,3 +207,7 @@ Added a dedicated PPE return workflow:
 - PPE menu renamed to PPE Stock.
 - Returned PPE records are kept in the same PPE issue history with status Returned.
 - No new SQL required if v66 Workers/PPE schema is already installed.
+
+
+## v72 PPE Reports / Stock Control
+No new SQL required. Upload v72 to GitHub and redeploy. PPE reports use the existing `/api/ppe` cloud data from v66.
