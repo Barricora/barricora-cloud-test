@@ -6,3 +6,9 @@ Barricora v64 PPE Worker Issue Flow
 - Stock is reduced per selected item and issue log remains.
 - Return PPE button opens the issue log, where Delete / Return Stock returns stock.
 - No new SQL needed.
+
+
+v66 Workers + PPE Cloud Sync
+- Adds D1 tables/API for workers, PPE stock and PPE issue log.
+- Uses same D1 database, no second database.
+- Run schema_v66_workers_ppe.sql after upload.

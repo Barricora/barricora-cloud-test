@@ -181,3 +181,7 @@ No new SQL is required. Upload to GitHub and let Cloudflare Pages redeploy. PPE 
 - Removed duplicate PPE button fallback handlers.
 - Added double-click guard to Save Issue.
 - No new SQL needed.
+
+
+## v66 Workers + PPE Cloud Sync
+Run `schema_v66_workers_ppe.sql` in your existing D1 database. This adds workers, ppe_stock and ppe_issues tables to the same D1 database. No second D1 database is needed. New API routes: `/api/workers` and `/api/ppe`.
