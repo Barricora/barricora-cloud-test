@@ -244,3 +244,7 @@ The app now stores login sessions in D1 and sets a secure HttpOnly cookie.
 The `functions/_middleware.js` file protects existing `/api/*` data routes and requires a valid Barricora session, except for `/api/health` and `/api/auth/*`.
 
 Keep Cloudflare Access enabled while testing. Later we can add roles, company separation, invitation-only registration, password reset, and payments.
+
+
+## v78
+- No new SQL. Cloud API calls now explicitly include credentials; RAMS sync errors no longer force full local-only mode.
