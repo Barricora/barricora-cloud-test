@@ -1,3 +1,7 @@
+Barricora v77 RAMS Restore + Sync Fix
+
+Fixed missing RAMS front-end functions after auth update. Restores Daily/Toolbox/RAMS navigation and cloud sync. No new SQL needed if v74 auth and v73 RAMS schema already installed.
+
 Barricora v76 Auth navigation and sync fix
 
 Barricora v69 Audit Cloud Delete Fix
