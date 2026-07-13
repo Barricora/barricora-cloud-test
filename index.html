@@ -372,8 +372,8 @@
     <div class="sectionHeader"><div><span class="step">Home</span><h2>Safety Portal Dashboard</h2><p class="small">Overall snapshot of audits, actions, findings, toolbox talks, daily checks and PPE.</p></div><button class="primary noPrint" id="dashboardStartAuditBtn" type="button">Start Audit</button></div>
     <div class="cloudPanel noPrint">
       <span id="cloudStatus">Cloud: checking...</span>
-      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v80</span><span id="authUserBadge">User: signed out</span>
-      <button class="secondary" id="syncNowBtn" type="button">Sync now</button><button class="danger" id="topLogoutBtn" type="button">Log out</button>
+      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v81</span><span id="authUserBadge">User: signed out</span>
+      <button class="secondary" id="syncNowBtn" type="button">Sync now</button>
     </div>
     <div class="kpiGrid" id="homeDashGrid">
       <div class="kpiCard"><b id="dashFinished">0</b><span>Audits Finished</span></div>
@@ -1029,8 +1029,10 @@ function clearPortalSession(){currentAuthUser=null;try{localStorage.removeItem(P
 function setAuthLoading(on,text){let login=$('loginBtn'),reg=$('registerBtn');if(login)login.disabled=!!on;if(reg)reg.disabled=!!on;if(on&&text){if(login&&!login.classList.contains('hidden'))login.textContent=text;if(reg&&!reg.classList.contains('hidden'))reg.textContent=text}else{if(login)login.textContent='Log in';if(reg)reg.textContent='Create profile';}}
 async function afterAuthSuccess(user){
   setPortalSession(user);
-  show("screenPortalDashboard");
-  try{ await initCloudSync(); }catch(e){}
+  try{
+    localStorage.setItem('BARRICORA_RELOAD_AFTER_LOGIN','1');
+  }catch(e){}
+  window.location.reload();
 }
 async function authFetch(url,opts){opts=opts||{};opts.headers=Object.assign({'Content-Type':'application/json'},opts.headers||{});opts.credentials='same-origin';let res=await fetch(url,opts);let data={};try{data=await res.json();}catch(e){}if(!res.ok||data.ok===false){throw new Error(data.error||('Request failed: '+res.status));}return data;}
 function showAuthMode(mode){let isReg=mode==='register';if($('registerFields'))$('registerFields').classList.toggle('hidden',!isReg);if($('confirmPasswordWrap'))$('confirmPasswordWrap').classList.toggle('hidden',!isReg);if($('loginBtn'))$('loginBtn').classList.toggle('hidden',isReg);if($('registerBtn'))$('registerBtn').classList.toggle('hidden',!isReg);if($('showRegisterBtn'))$('showRegisterBtn').classList.toggle('hidden',isReg);if($('showLoginBtn'))$('showLoginBtn').classList.toggle('hidden',!isReg);if($('authTitle'))$('authTitle').textContent=isReg?'Create Barricora profile':'Sign in to Barricora';if($('authIntro'))$('authIntro').textContent=isReg?'Create your company profile and first user account.':'Use your registered email and password to enter the safety portal.';if($('loginPassword'))$('loginPassword').setAttribute('autocomplete',isReg?'new-password':'current-password');}
@@ -1047,12 +1049,11 @@ function initPortalShell(){
   if($('registerPasswordConfirm'))$('registerPasswordConfirm').addEventListener('keydown',function(e){if(e.key==='Enter')registerProfile();});
   function bindLogoutButton(id){if($(id))$(id).onclick=function(){showPortalConfirm({title:'Log out?',message:'Log out from Barricora on this device?',icon:'🚪',confirmText:'Log out',danger:false,onConfirm:logoutPasswordSession})};}
   bindLogoutButton('logoutBtn');
-  bindLogoutButton('topLogoutBtn');
   if($('mobileMenuBtn'))$('mobileMenuBtn').onclick=function(){if($('portalSidebar'))$('portalSidebar').classList.add('open');if($('mobileMenuOverlay'))$('mobileMenuOverlay').classList.add('open')};
   if($('mobileMenuOverlay'))$('mobileMenuOverlay').onclick=closeMobileMenu;
   document.querySelectorAll('[data-nav-screen]').forEach(function(btn){btn.onclick=function(){handlePortalNavTarget(this.getAttribute('data-nav-screen'))}});
 }
-async function startPortalAfterInit(){if($('loginScreen'))$('loginScreen').classList.remove('hidden');if($('appShell'))$('appShell').classList.add('hidden');let user=await loadAuthMe();if(user){show('screenPortalDashboard');try{await initCloudSync();}catch(e){}}else{showAuthMode('login');}}
+async function startPortalAfterInit(){if($('loginScreen'))$('loginScreen').classList.remove('hidden');if($('appShell'))$('appShell').classList.add('hidden');let user=await loadAuthMe();if(user){try{localStorage.removeItem('BARRICORA_RELOAD_AFTER_LOGIN');}catch(e){}show('screenPortalDashboard');try{await initCloudSync();}catch(e){}}else{showAuthMode('login');}}
 
 function handlePortalNavTarget(target){
   if(!target)return;
