@@ -1,4 +1,4 @@
-# Barricora v79 Roles / View-only Access
+# Barricora v80 Roles / View-only Access
 
 This version adds a basic role foundation on top of the real Barricora login.
 
@@ -25,3 +25,9 @@ No new SQL is required if `schema_v74_auth.sql` was already run, because the `au
 4. Log in as the Viewer. You should be able to open records, but save/delete/create buttons should be disabled and backend write API requests should be rejected.
 
 Keep Cloudflare Access enabled as the outer protection layer while testing.
+
+
+V80 update:
+- Added visible Log out button in the dashboard cloud panel next to Sync now.
+- Sidebar/mobile logout remains available.
+- No new SQL required.

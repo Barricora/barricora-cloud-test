@@ -372,8 +372,8 @@
     <div class="sectionHeader"><div><span class="step">Home</span><h2>Safety Portal Dashboard</h2><p class="small">Overall snapshot of audits, actions, findings, toolbox talks, daily checks and PPE.</p></div><button class="primary noPrint" id="dashboardStartAuditBtn" type="button">Start Audit</button></div>
     <div class="cloudPanel noPrint">
       <span id="cloudStatus">Cloud: checking...</span>
-      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v79</span><span id="authUserBadge">User: signed out</span>
-      <button class="secondary" id="syncNowBtn" type="button">Sync now</button>
+      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v80</span><span id="authUserBadge">User: signed out</span>
+      <button class="secondary" id="syncNowBtn" type="button">Sync now</button><button class="danger" id="topLogoutBtn" type="button">Log out</button>
     </div>
     <div class="kpiGrid" id="homeDashGrid">
       <div class="kpiCard"><b id="dashFinished">0</b><span>Audits Finished</span></div>
@@ -1045,7 +1045,9 @@ function initPortalShell(){
   if($('showLoginBtn'))$('showLoginBtn').onclick=function(){showAuthMode('login')};
   if($('loginPassword'))$('loginPassword').addEventListener('keydown',function(e){if(e.key==='Enter'){if($('registerBtn')&&!$('registerBtn').classList.contains('hidden'))registerProfile();else loginWithPassword();}});
   if($('registerPasswordConfirm'))$('registerPasswordConfirm').addEventListener('keydown',function(e){if(e.key==='Enter')registerProfile();});
-  if($('logoutBtn'))$('logoutBtn').onclick=function(){showPortalConfirm({title:'Log out?',message:'Log out from Barricora on this device?',icon:'🚪',confirmText:'Log out',danger:false,onConfirm:logoutPasswordSession})};
+  function bindLogoutButton(id){if($(id))$(id).onclick=function(){showPortalConfirm({title:'Log out?',message:'Log out from Barricora on this device?',icon:'🚪',confirmText:'Log out',danger:false,onConfirm:logoutPasswordSession})};}
+  bindLogoutButton('logoutBtn');
+  bindLogoutButton('topLogoutBtn');
   if($('mobileMenuBtn'))$('mobileMenuBtn').onclick=function(){if($('portalSidebar'))$('portalSidebar').classList.add('open');if($('mobileMenuOverlay'))$('mobileMenuOverlay').classList.add('open')};
   if($('mobileMenuOverlay'))$('mobileMenuOverlay').onclick=closeMobileMenu;
   document.querySelectorAll('[data-nav-screen]').forEach(function(btn){btn.onclick=function(){handlePortalNavTarget(this.getAttribute('data-nav-screen'))}});
