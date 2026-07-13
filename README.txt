@@ -1,4 +1,9 @@
-Barricora v72 PPE Reports / Stock Control
-- Built from v71 styled popups.
-- Adds PPE reports panel, low stock warnings, issued-this-month list, who-has-this-PPE view, and printable stock report.
-- No new SQL required if v66 PPE schema is installed.
+Barricora v73 RAMS Register
+- Adds RAMS register with PDF upload, revision/review tracking and cloud sync.
+- Run schema_v73_rams.sql in your existing D1 database after upload.
+
+Barricora v74 Real Login Auth
+- Adds D1 users, companies and sessions.
+- Adds working register/login/logout API.
+- Protects data API routes with session middleware.
+- Requires schema_v74_auth.sql in existing D1 database.

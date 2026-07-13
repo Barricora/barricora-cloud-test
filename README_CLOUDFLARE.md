@@ -211,3 +211,30 @@ Added a dedicated PPE return workflow:
 
 ## v72 PPE Reports / Stock Control
 No new SQL required. Upload v72 to GitHub and redeploy. PPE reports use the existing `/api/ppe` cloud data from v66.
+
+
+## v73 RAMS Register
+Run `schema_v73_rams.sql` in your existing D1 database, then test `/api/rams`. Expected first result: `{ "ok": true, "rams": [] }`. RAMS PDFs are stored in the existing `AUDIT_PHOTOS` R2 bucket.
+
+
+## v74 Real Login / Authentication
+
+This version adds real Barricora email/password authentication using D1.
+
+After uploading v74 to GitHub and redeploying Cloudflare Pages, run this SQL in your existing D1 database:
+
+```sql
+schema_v74_auth.sql
+```
+
+New API routes:
+
+- `/api/auth/register`
+- `/api/auth/login`
+- `/api/auth/logout`
+- `/api/auth/me`
+
+The app now stores login sessions in D1 and sets a secure HttpOnly cookie.
+The `functions/_middleware.js` file protects existing `/api/*` data routes and requires a valid Barricora session, except for `/api/health` and `/api/auth/*`.
+
+Keep Cloudflare Access enabled while testing. Later we can add roles, company separation, invitation-only registration, password reset, and payments.
