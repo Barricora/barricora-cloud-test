@@ -146,6 +146,12 @@
 @media print{.portalSidebar,.portalTop,.loginScreen,.mobileMenuOverlay{display:none!important}.appShell{display:block}.portalMain{max-width:none;padding:0}}
 
 /* Barricora v40 portal shell - based on v39 app settings */
+
+.roleBadge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 10px;font-weight:900;font-size:12px;border:1px solid #d7e5f1;background:#f8fbff;color:#0b2948}
+.roleBadge.owner{background:#fff7ed;border-color:#fed7aa;color:#9a3412}.roleBadge.admin{background:#eef2ff;border-color:#c7d2fe;color:#3730a3}.roleBadge.editor{background:#ecfeff;border-color:#a5f3fc;color:#155e75}.roleBadge.viewer{background:#f1f5f9;border-color:#cbd5e1;color:#475569}
+.roleAccessPanel{border:1px solid #dce4ec;border-radius:16px;background:#fbfcfe;padding:14px;margin-top:14px}.roleAccessPanel.hidden{display:none!important}
+.userRoleList{display:grid;gap:10px;margin-top:12px}.userRoleCard{border:1px solid #dce4ec;border-radius:15px;background:white;padding:12px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start}.userRoleCard.disabled{opacity:.65;background:#f8fafc}.userRoleActions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.readonlyBanner{background:#f8fafc;border:1px solid #cbd5e1;color:#475569;border-radius:14px;padding:10px 12px;font-weight:800;margin:10px 0}.readonlyLock{opacity:.62!important;cursor:not-allowed!important}
+@media(max-width:700px){.userRoleCard{grid-template-columns:1fr}.userRoleActions{justify-content:flex-start}}
 .settingsNote{background:#f8fafc;border:1px solid #dce4ec;border-radius:12px;padding:10px;color:#667789;font-size:13px;line-height:1.4;margin-top:8px}.homeQuickActions{grid-template-columns:repeat(4,1fr)}@media(max-width:800px){.homeQuickActions{grid-template-columns:1fr}}
 
 /* v41 Findings module */
@@ -366,7 +372,7 @@
     <div class="sectionHeader"><div><span class="step">Home</span><h2>Safety Portal Dashboard</h2><p class="small">Overall snapshot of audits, actions, findings, toolbox talks, daily checks and PPE.</p></div><button class="primary noPrint" id="dashboardStartAuditBtn" type="button">Start Audit</button></div>
     <div class="cloudPanel noPrint">
       <span id="cloudStatus">Cloud: checking...</span>
-      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v78</span><span id="authUserBadge">User: signed out</span>
+      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v79</span><span id="authUserBadge">User: signed out</span>
       <button class="secondary" id="syncNowBtn" type="button">Sync now</button>
     </div>
     <div class="kpiGrid" id="homeDashGrid">
@@ -718,6 +724,23 @@
       <button class="secondary" id="backFromSettingsBtn" type="button">← Back</button>
     </div>
   </div>
+
+  <div class="card" id="userRolesCard" style="margin-top:16px">
+    <div class="sectionHeader"><div><span class="step">Access</span><h2>Users / Roles</h2><p class="small">Control who can use Barricora and whether they can edit or only view records.</p></div><button class="secondary noPrint" id="refreshUsersBtn" type="button">Refresh Users</button></div>
+    <div id="roleCurrentUserBox" class="settingsNote">Loading current role...</div>
+    <div id="userAdminPanel" class="roleAccessPanel hidden">
+      <h3>Add user</h3>
+      <div class="grid">
+        <label>Full name<input id="newUserName" placeholder="Name"></label>
+        <label>Email<input id="newUserEmail" type="email" placeholder="email@company.com"></label>
+        <label>Temporary password<input id="newUserPassword" type="password" placeholder="Minimum 8 characters"></label>
+        <label>Role<select id="newUserRole"><option value="Editor">Editor</option><option value="Viewer">Viewer</option><option value="Admin">Admin</option></select></label>
+      </div>
+      <div class="settingsNote"><b>Roles:</b> Owner/Admin can manage users. Editor can create and edit records. Viewer can open and view records only.</div>
+      <div class="actions noPrint"><button class="primary" id="createUserBtn" type="button">Create User</button></div>
+    </div>
+    <div id="userRolesList" class="userRoleList"></div>
+  </div>
 </section>
 
 <section id="screenAuditList" class="hidden">
@@ -819,7 +842,7 @@ const PORTAL_SCREENS=["screenPortalDashboard","screenCategories","screenDailyChe
 function screenTitle(id){return {screenPortalDashboard:"Dashboard",screenCategories:"Audits",screenDailyChecklists:"Daily Checklists",screenToolboxTalks:"Toolbox Talks",screenRAMS:"RAMS",screenActionList:"Actions",screenFindings:"Findings",screenWorkers:"Workers",screenPPE:"PPE Stock",screenSettings:"Settings",screenAuditList:"Audit List",screenCloseAction:"Update Action",screenDetails:"Audit Details",screenQuestion:"Audit Questions",screenReport:"Audit Report"}[id]||"Barricora"}
 function setActiveNav(id){document.querySelectorAll(".navItem").forEach(function(btn){let target=btn.getAttribute("data-nav-screen");btn.classList.toggle("active",target===id)});if($("portalTitle"))$("portalTitle").textContent=screenTitle(id)}
 function closeMobileMenu(){if($("portalSidebar"))$("portalSidebar").classList.remove("open");if($("mobileMenuOverlay"))$("mobileMenuOverlay").classList.remove("open")}
-function show(id){PORTAL_SCREENS.forEach(function(s){let el=$(s);if(el)el.classList.add("hidden")});let target=$(id);if(target)target.classList.remove("hidden");if($("appShell"))$("appShell").classList.remove("hidden");if($("loginScreen"))$("loginScreen").classList.add("hidden");if(id==="screenPortalDashboard"||id==="screenCategories"||id==="screenActionList"||id==="screenAuditList"||id==="screenFindings"||id==="screenDailyChecklists"||id==="screenToolboxTalks"||id==="screenRAMS"||id==="screenPPE")updateHomeDashboard();if(id==="screenFindings")showFindingDashboard(false);if(id==="screenDailyChecklists")showDailyDashboard(false);if(id==="screenWorkers")showWorkersDashboard(false);if(id==="screenPPE")showPPEDashboard(false);if(id==="screenRAMS")showRAMSDashboard(false);setActiveNav(id);closeMobileMenu();window.scrollTo(0,0)}
+function show(id){PORTAL_SCREENS.forEach(function(s){let el=$(s);if(el)el.classList.add("hidden")});let target=$(id);if(target)target.classList.remove("hidden");if($("appShell"))$("appShell").classList.remove("hidden");if($("loginScreen"))$("loginScreen").classList.add("hidden");if(id==="screenPortalDashboard"||id==="screenCategories"||id==="screenActionList"||id==="screenAuditList"||id==="screenFindings"||id==="screenDailyChecklists"||id==="screenToolboxTalks"||id==="screenRAMS"||id==="screenPPE")updateHomeDashboard();if(id==="screenFindings")showFindingDashboard(false);if(id==="screenDailyChecklists")showDailyDashboard(false);if(id==="screenWorkers")showWorkersDashboard(false);if(id==="screenPPE")showPPEDashboard(false);if(id==="screenRAMS")showRAMSDashboard(false);setActiveNav(id);closeMobileMenu();window.scrollTo(0,0);applyRoleRestrictionsSoon()}
 
 
 /* v67 Workers cloud database */
@@ -996,7 +1019,11 @@ window.alert=function(message){showPortalAlert({message:String(message||""),icon
 const PORTAL_SESSION_KEY="barricora_portal_session_v75";
 let currentAuthUser=null;
 function hasPortalSession(){return !!currentAuthUser}
-function setPortalSession(user){currentAuthUser=user||null;try{if(user)localStorage.setItem(PORTAL_SESSION_KEY,JSON.stringify({email:user.email||"user",name:user.name||"",company:user.companyName||"",time:new Date().toISOString()}));}catch(e){}let b=$('authUserBadge');if(b)b.textContent=user?('User: '+(user.email||user.name||'signed in')):'User: signed out';}
+function roleClass(role){role=String(role||"").toLowerCase();if(role==="owner")return "owner";if(role==="admin")return "admin";if(role==="viewer")return "viewer";return "editor";}
+function currentRole(){return (currentAuthUser&&currentAuthUser.role)||"Viewer";}
+function canEdit(){return currentRole()!=="Viewer";}
+function canManageUsers(){return ["Owner","Admin"].indexOf(currentRole())>=0;}
+function setPortalSession(user){currentAuthUser=user||null;try{if(user)localStorage.setItem(PORTAL_SESSION_KEY,JSON.stringify({email:user.email||"user",name:user.name||"",company:user.companyName||"",role:user.role||"",time:new Date().toISOString()}));}catch(e){}let b=$('authUserBadge');if(b){if(user){b.innerHTML='User: '+esc(user.email||user.name||'signed in')+' <span class="roleBadge '+roleClass(user.role)+'">'+esc(user.role||'User')+'</span>';}else b.textContent='User: signed out';}applyRoleRestrictionsSoon();}
 function cloudFetch(url,opts){opts=opts||{};opts.credentials='include';return fetch(url,opts);}
 function clearPortalSession(){currentAuthUser=null;try{localStorage.removeItem(PORTAL_SESSION_KEY)}catch(e){}let b=$('authUserBadge');if(b)b.textContent='User: signed out';}
 function setAuthLoading(on,text){let login=$('loginBtn'),reg=$('registerBtn');if(login)login.disabled=!!on;if(reg)reg.disabled=!!on;if(on&&text){if(login&&!login.classList.contains('hidden'))login.textContent=text;if(reg&&!reg.classList.contains('hidden'))reg.textContent=text}else{if(login)login.textContent='Log in';if(reg)reg.textContent='Create profile';}}
@@ -1044,11 +1071,79 @@ function setupPortalClickFallback(){
     if(e.target.closest&&e.target.closest('#backFromAuditListBtn')){e.preventDefault();show('screenCategories');return;}
   });
 }
+
+let roleUsers=[];
+function applyRoleRestrictionsSoon(){setTimeout(applyRoleRestrictions,80);}
+function applyRoleRestrictions(){
+  if(!currentAuthUser)return;
+  let viewer=currentRole()==='Viewer';
+  document.body.classList.toggle('viewerMode',viewer);
+  let bannerId='readonlyRoleBanner';
+  let existing=$(bannerId);
+  if(viewer && $('appShell') && !existing){
+    let b=document.createElement('div');b.id=bannerId;b.className='readonlyBanner';b.textContent='View-only access: you can open and read records, but editing and saving is disabled.';
+    let main=document.querySelector('.portalContent'); if(main) main.prepend(b);
+  }
+  if(!viewer && existing) existing.remove();
+  if(!viewer)return;
+  document.querySelectorAll('input, textarea, select').forEach(function(el){
+    let id=(el.id||'').toLowerCase();let cls=(el.className||'').toString().toLowerCase();let type=(el.type||'').toLowerCase();
+    let isSearch=id.indexOf('search')>=0||cls.indexOf('filtersearch')>=0||type==='search';
+    if(isSearch)return;
+    if(el.closest('#loginScreen'))return;
+    el.disabled=true;el.classList.add('readonlyLock');
+  });
+  let editWords=['start','create','new','add','save','delete','finish','issue','return','update','close-out','archive','clear','apply','upload','choose topic'];
+  let safeWords=['open','back','cancel','sync','log out','menu','print','view','refresh','search'];
+  document.querySelectorAll('button').forEach(function(btn){
+    if(btn.closest('#loginScreen'))return;
+    let t=(btn.textContent||'').trim().toLowerCase();
+    if(!t)return;
+    if(safeWords.some(function(w){return t.indexOf(w)>=0;}))return;
+    if(editWords.some(function(w){return t.indexOf(w)>=0;})){btn.disabled=true;btn.classList.add('readonlyLock');btn.title='View-only role';}
+  });
+}
+function renderRoleCurrentBox(){
+  let box=$('roleCurrentUserBox');if(!box)return;
+  let user=currentAuthUser||{};
+  box.innerHTML='Signed in as <b>'+esc(user.email||'')+'</b> • Role: <span class="roleBadge '+roleClass(user.role)+'">'+esc(user.role||'User')+'</span><br><span class="small">Owner/Admin can manage users. Editor can create and update records. Viewer can only open and view records.</span>';
+  let panel=$('userAdminPanel');if(panel)panel.classList.toggle('hidden',!canManageUsers());
+}
+async function loadRoleUsers(){
+  renderRoleCurrentBox();let list=$('userRolesList');if(list)list.innerHTML='<div class="emptyState">Loading users...</div>';
+  if(!canManageUsers()){if(list)list.innerHTML='<div class="emptyState">Only Owner/Admin can manage users and roles.</div>';return;}
+  try{let data=await authFetch('/api/auth/users',{method:'GET'});roleUsers=data.users||[];renderRoleUsers();}
+  catch(e){if(list)list.innerHTML='<div class="emptyState">Could not load users: '+esc(e.message||e)+'</div>';}
+}
+function renderRoleUsers(){
+  let list=$('userRolesList');if(!list)return;
+  if(!roleUsers.length){list.innerHTML='<div class="emptyState">No users found.</div>';return;}
+  let h='';roleUsers.forEach(function(u){let self=currentAuthUser&&u.id===currentAuthUser.id;let disabled=u.status!=='Active';h+='<div class="userRoleCard '+(disabled?'disabled':'')+'"><div><h3 style="margin:0;color:#062746">'+esc(u.name||'User')+(self?' <span class="small">(you)</span>':'')+'</h3><div class="small">'+esc(u.email||'')+' • '+esc(u.companyName||'')+'</div><div style="margin-top:8px"><span class="roleBadge '+roleClass(u.role)+'">'+esc(u.role||'User')+'</span> <span class="workerStatusBadge '+(disabled?'':'current')+'">'+esc(u.status||'Active')+'</span></div></div><div class="userRoleActions noPrint">';
+    if(canManageUsers()&&!self){h+='<select data-user-role="'+esc(u.id)+'"><option value="Admin" '+(u.role==='Admin'?'selected':'')+'>Admin</option><option value="Editor" '+(u.role==='Editor'?'selected':'')+'>Editor</option><option value="Viewer" '+(u.role==='Viewer'?'selected':'')+'>Viewer</option></select><select data-user-status="'+esc(u.id)+'"><option value="Active" '+(u.status==='Active'?'selected':'')+'>Active</option><option value="Disabled" '+(u.status==='Disabled'?'selected':'')+'>Disabled</option></select><button class="secondary" type="button" onclick="saveUserRoleStatus(\''+esc(u.id)+'\')">Save</button>';} else {h+='<span class="small">Role locked</span>';}
+    h+='</div></div>';});list.innerHTML=h;
+}
+async function createRoleUser(){
+  if(!canManageUsers()){alert('Only Owner/Admin can create users.');return;}
+  let name=($('newUserName')?$('newUserName').value.trim():'');let email=($('newUserEmail')?$('newUserEmail').value.trim():'');let password=($('newUserPassword')?$('newUserPassword').value:'');let role=($('newUserRole')?$('newUserRole').value:'Editor');
+  if(!name||!email||!password){alert('Fill name, email and temporary password.');return;}if(password.length<8){alert('Temporary password must be at least 8 characters.');return;}
+  try{await authFetch('/api/auth/users',{method:'POST',body:JSON.stringify({name:name,email:email,password:password,role:role})});['newUserName','newUserEmail','newUserPassword'].forEach(function(id){if($(id))$(id).value=''});alert('User created.');await loadRoleUsers();}
+  catch(e){alert(e.message||'Could not create user.');}
+}
+async function saveUserRoleStatus(id){
+  let roleEl=document.querySelector('[data-user-role="'+CSS.escape(id)+'"]');let statusEl=document.querySelector('[data-user-status="'+CSS.escape(id)+'"]');
+  try{await authFetch('/api/auth/users',{method:'PUT',body:JSON.stringify({id:id,role:roleEl?roleEl.value:null,status:statusEl?statusEl.value:null})});alert('User updated.');await loadRoleUsers();}
+  catch(e){alert(e.message||'Could not update user.');}
+}
+function setupRoleObserver(){
+  try{let mo=new MutationObserver(function(){if(currentAuthUser&&currentRole()==='Viewer')applyRoleRestrictionsSoon();});mo.observe(document.body,{childList:true,subtree:true});}catch(e){}
+}
+
 function renderRecentActivity(){let box=$("recentActivityBox");if(!box)return;let list=getAuditList().slice(0,5);if(!list.length){box.innerHTML='<div class="emptyState">No recent activity yet.</div>';return;}let h="";list.forEach(function(a){let label=auditLabel(a);let status=a.status||(a.reportReady?"Finished":"Unfinished");let saved=a.savedAt?new Date(a.savedAt).toLocaleString():"Not saved";h+='<div class="recentItem"><div><b>'+esc(label)+'</b><br><span>'+esc(status)+' • '+esc(saved)+'</span></div><button class="secondary noPrint" type="button" onclick="openSavedAudit('+getAuditList().findIndex(function(x){return x.id===a.id})+')">Open</button></div>'});box.innerHTML=h;}
 
 function init(){
   setupPortalConfirm();
   setupPortalClickFallback();
+  setupRoleObserver();
   loadLocalSettings();
   buildCategories();
   initPortalShell();
@@ -1104,6 +1199,8 @@ function init(){
   if($("saveSettingsBtn"))$("saveSettingsBtn").onclick=saveSettings;
   if($("applySettingsBtn"))$("applySettingsBtn").onclick=function(){applyDefaultDetails(false);autoSave();alert("Settings applied to current audit details.")};
   if($("clearSettingsBtn"))$("clearSettingsBtn").onclick=clearSettings;
+  if($("refreshUsersBtn"))$("refreshUsersBtn").onclick=loadRoleUsers;
+  if($("createUserBtn"))$("createUserBtn").onclick=createRoleUser;
   if($("deleteAllAuditsBtn"))$("deleteAllAuditsBtn").onclick=deleteAllSavedAudits;
   if($("startQuestions"))$("startQuestions").onclick=startQuestions;
   if($("backToReportDetails"))$("backToReportDetails").onclick=function(){buildReport();autoSave();show("screenReport")};
@@ -1684,7 +1781,7 @@ function collectSettingsFromForm(){
   };
   return appSettings;
 }
-function openSettings(){fillSettingsForm();show("screenSettings")}
+function openSettings(){fillSettingsForm();renderRoleCurrentBox();loadRoleUsers();show("screenSettings")}
 function saveSettings(){
   collectSettingsFromForm();saveLocalSettings();syncSettingsToCloud(appSettings);alert("Settings saved.");
 }
