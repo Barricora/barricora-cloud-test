@@ -217,11 +217,11 @@ No new SQL required. Upload v72 to GitHub and redeploy. PPE reports use the exis
 Run `schema_v73_rams.sql` in your existing D1 database, then test `/api/rams`. Expected first result: `{ "ok": true, "rams": [] }`. RAMS PDFs are stored in the existing `AUDIT_PHOTOS` R2 bucket.
 
 
-## v74 Real Login / Authentication
+## v75 Auth PBKDF2 Fix
 
 This version adds real Barricora email/password authentication using D1.
 
-After uploading v74 to GitHub and redeploying Cloudflare Pages, run this SQL in your existing D1 database:
+After uploading v75 to GitHub and redeploying Cloudflare Pages, run this SQL in your existing D1 database:
 
 ```sql
 schema_v74_auth.sql

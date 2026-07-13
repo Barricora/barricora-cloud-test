@@ -1,7 +1,7 @@
 
 const COOKIE_NAME = "barricora_session";
 const SESSION_DAYS = 30;
-const PBKDF2_ITERATIONS = 210000;
+const PBKDF2_ITERATIONS = 100000;
 function json(data, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json", ...extraHeaders } });
 }

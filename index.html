@@ -366,7 +366,7 @@
     <div class="sectionHeader"><div><span class="step">Home</span><h2>Safety Portal Dashboard</h2><p class="small">Overall snapshot of audits, actions, findings, toolbox talks, daily checks and PPE.</p></div><button class="primary noPrint" id="dashboardStartAuditBtn" type="button">Start Audit</button></div>
     <div class="cloudPanel noPrint">
       <span id="cloudStatus">Cloud: checking...</span>
-      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v74</span><span id="authUserBadge">User: signed out</span>
+      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v75</span><span id="authUserBadge">User: signed out</span>
       <button class="secondary" id="syncNowBtn" type="button">Sync now</button>
     </div>
     <div class="kpiGrid" id="homeDashGrid">
@@ -993,7 +993,7 @@ function showPortalAlert(opts){
 }
 window.alert=function(message){showPortalAlert({message:String(message||""),icon:"ℹ️"});};
 
-const PORTAL_SESSION_KEY="barricora_portal_session_v74";
+const PORTAL_SESSION_KEY="barricora_portal_session_v75";
 let currentAuthUser=null;
 function hasPortalSession(){return !!currentAuthUser}
 function setPortalSession(user){currentAuthUser=user||null;try{if(user)localStorage.setItem(PORTAL_SESSION_KEY,JSON.stringify({email:user.email||"user",name:user.name||"",company:user.companyName||"",time:new Date().toISOString()}));}catch(e){}let b=$('authUserBadge');if(b)b.textContent=user?('User: '+(user.email||user.name||'signed in')):'User: signed out';}
