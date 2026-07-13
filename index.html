@@ -366,7 +366,7 @@
     <div class="sectionHeader"><div><span class="step">Home</span><h2>Safety Portal Dashboard</h2><p class="small">Overall snapshot of audits, actions, findings, toolbox talks, daily checks and PPE.</p></div><button class="primary noPrint" id="dashboardStartAuditBtn" type="button">Start Audit</button></div>
     <div class="cloudPanel noPrint">
       <span id="cloudStatus">Cloud: checking...</span>
-      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v75</span><span id="authUserBadge">User: signed out</span>
+      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v76</span><span id="authUserBadge">User: signed out</span>
       <button class="secondary" id="syncNowBtn" type="button">Sync now</button>
     </div>
     <div class="kpiGrid" id="homeDashGrid">
@@ -999,11 +999,16 @@ function hasPortalSession(){return !!currentAuthUser}
 function setPortalSession(user){currentAuthUser=user||null;try{if(user)localStorage.setItem(PORTAL_SESSION_KEY,JSON.stringify({email:user.email||"user",name:user.name||"",company:user.companyName||"",time:new Date().toISOString()}));}catch(e){}let b=$('authUserBadge');if(b)b.textContent=user?('User: '+(user.email||user.name||'signed in')):'User: signed out';}
 function clearPortalSession(){currentAuthUser=null;try{localStorage.removeItem(PORTAL_SESSION_KEY)}catch(e){}let b=$('authUserBadge');if(b)b.textContent='User: signed out';}
 function setAuthLoading(on,text){let login=$('loginBtn'),reg=$('registerBtn');if(login)login.disabled=!!on;if(reg)reg.disabled=!!on;if(on&&text){if(login&&!login.classList.contains('hidden'))login.textContent=text;if(reg&&!reg.classList.contains('hidden'))reg.textContent=text}else{if(login)login.textContent='Log in';if(reg)reg.textContent='Create profile';}}
+async function afterAuthSuccess(user){
+  setPortalSession(user);
+  show("screenPortalDashboard");
+  try{ await initCloudSync(); }catch(e){}
+}
 async function authFetch(url,opts){opts=opts||{};opts.headers=Object.assign({'Content-Type':'application/json'},opts.headers||{});opts.credentials='same-origin';let res=await fetch(url,opts);let data={};try{data=await res.json();}catch(e){}if(!res.ok||data.ok===false){throw new Error(data.error||('Request failed: '+res.status));}return data;}
 function showAuthMode(mode){let isReg=mode==='register';if($('registerFields'))$('registerFields').classList.toggle('hidden',!isReg);if($('confirmPasswordWrap'))$('confirmPasswordWrap').classList.toggle('hidden',!isReg);if($('loginBtn'))$('loginBtn').classList.toggle('hidden',isReg);if($('registerBtn'))$('registerBtn').classList.toggle('hidden',!isReg);if($('showRegisterBtn'))$('showRegisterBtn').classList.toggle('hidden',isReg);if($('showLoginBtn'))$('showLoginBtn').classList.toggle('hidden',!isReg);if($('authTitle'))$('authTitle').textContent=isReg?'Create Barricora profile':'Sign in to Barricora';if($('authIntro'))$('authIntro').textContent=isReg?'Create your company profile and first user account.':'Use your registered email and password to enter the safety portal.';if($('loginPassword'))$('loginPassword').setAttribute('autocomplete',isReg?'new-password':'current-password');}
-async function loginWithPassword(){let email=($('loginEmail')?$('loginEmail').value.trim():'');let pass=($('loginPassword')?$('loginPassword').value:'');if(!email||!pass){alert('Enter email and password to continue.');return;}try{setAuthLoading(true,'Signing in...');let data=await authFetch('/api/auth/login',{method:'POST',body:JSON.stringify({email:email,password:pass})});setPortalSession(data.user);show('screenPortalDashboard');}catch(e){alert(e.message||'Login failed.');}finally{setAuthLoading(false);}}
-async function registerProfile(){let name=($('registerName')?$('registerName').value.trim():'');let company=($('registerCompany')?$('registerCompany').value.trim():'');let email=($('loginEmail')?$('loginEmail').value.trim():'');let pass=($('loginPassword')?$('loginPassword').value:'');let confirm=($('registerPasswordConfirm')?$('registerPasswordConfirm').value:'');if(!name||!company||!email||!pass){alert('Fill name, company, email and password.');return;}if(pass.length<8){alert('Password should be at least 8 characters.');return;}if(pass!==confirm){alert('Passwords do not match.');return;}try{setAuthLoading(true,'Creating...');let data=await authFetch('/api/auth/register',{method:'POST',body:JSON.stringify({name:name,company:company,email:email,password:pass})});setPortalSession(data.user);show('screenPortalDashboard');alert('Profile created. You are logged in.');}catch(e){alert(e.message||'Could not create profile.');}finally{setAuthLoading(false);}}
-async function logoutPasswordSession(){try{await fetch('/api/auth/logout',{method:'POST',credentials:'same-origin'});}catch(e){}clearPortalSession();if($('appShell'))$('appShell').classList.add('hidden');if($('loginScreen'))$('loginScreen').classList.remove('hidden');showAuthMode('login');}
+async function loginWithPassword(){let email=($('loginEmail')?$('loginEmail').value.trim():'');let pass=($('loginPassword')?$('loginPassword').value:'');if(!email||!pass){alert('Enter email and password to continue.');return;}try{setAuthLoading(true,'Signing in...');let data=await authFetch('/api/auth/login',{method:'POST',body:JSON.stringify({email:email,password:pass})});await afterAuthSuccess(data.user);}catch(e){alert(e.message||'Login failed.');}finally{setAuthLoading(false);}}
+async function registerProfile(){let name=($('registerName')?$('registerName').value.trim():'');let company=($('registerCompany')?$('registerCompany').value.trim():'');let email=($('loginEmail')?$('loginEmail').value.trim():'');let pass=($('loginPassword')?$('loginPassword').value:'');let confirm=($('registerPasswordConfirm')?$('registerPasswordConfirm').value:'');if(!name||!company||!email||!pass){alert('Fill name, company, email and password.');return;}if(pass.length<8){alert('Password should be at least 8 characters.');return;}if(pass!==confirm){alert('Passwords do not match.');return;}try{setAuthLoading(true,'Creating...');let data=await authFetch('/api/auth/register',{method:'POST',body:JSON.stringify({name:name,company:company,email:email,password:pass})});await afterAuthSuccess(data.user);alert('Profile created. You are logged in.');}catch(e){alert(e.message||'Could not create profile.');}finally{setAuthLoading(false);}}
+async function logoutPasswordSession(){try{await fetch('/api/auth/logout',{method:'POST',credentials:'same-origin'});}catch(e){}clearPortalSession();cloudAvailable=false;setCloudStatus('Cloud: signed out','cloudOffline');if($('appShell'))$('appShell').classList.add('hidden');if($('loginScreen'))$('loginScreen').classList.remove('hidden');showAuthMode('login');}
 async function loadAuthMe(){try{let res=await fetch('/api/auth/me',{credentials:'same-origin'});let data=await res.json();if(res.ok&&data.ok&&data.user){setPortalSession(data.user);return data.user;}}catch(e){}clearPortalSession();return null;}
 function initPortalShell(){
   if($('loginBtn'))$('loginBtn').onclick=loginWithPassword;
@@ -1015,13 +1020,34 @@ function initPortalShell(){
   if($('logoutBtn'))$('logoutBtn').onclick=function(){showPortalConfirm({title:'Log out?',message:'Log out from Barricora on this device?',icon:'🚪',confirmText:'Log out',danger:false,onConfirm:logoutPasswordSession})};
   if($('mobileMenuBtn'))$('mobileMenuBtn').onclick=function(){if($('portalSidebar'))$('portalSidebar').classList.add('open');if($('mobileMenuOverlay'))$('mobileMenuOverlay').classList.add('open')};
   if($('mobileMenuOverlay'))$('mobileMenuOverlay').onclick=closeMobileMenu;
-  document.querySelectorAll('[data-nav-screen]').forEach(function(btn){btn.onclick=function(){let target=this.getAttribute('data-nav-screen');if(target==='screenFindings'){openFindings();return;}if(target==='screenDailyChecklists'){openDailyChecklists();return;}if(target==='screenToolboxTalks'){openToolboxTalks();return;}if(target==='screenRAMS'){openRAMS();return;}if(target==='screenWorkers'){openWorkers();return;}if(target==='screenPPE'){openPPE();return;}if(target==='screenActionList'){openActionList();return;}if(target==='screenSettings')fillSettingsForm();show(target)}});
+  document.querySelectorAll('[data-nav-screen]').forEach(function(btn){btn.onclick=function(){handlePortalNavTarget(this.getAttribute('data-nav-screen'))}});
 }
-async function startPortalAfterInit(){if($('loginScreen'))$('loginScreen').classList.remove('hidden');if($('appShell'))$('appShell').classList.add('hidden');let user=await loadAuthMe();if(user){show('screenPortalDashboard');}else{showAuthMode('login');}}
+async function startPortalAfterInit(){if($('loginScreen'))$('loginScreen').classList.remove('hidden');if($('appShell'))$('appShell').classList.add('hidden');let user=await loadAuthMe();if(user){show('screenPortalDashboard');try{await initCloudSync();}catch(e){}}else{showAuthMode('login');}}
+
+function handlePortalNavTarget(target){
+  if(!target)return;
+  if(target==='screenFindings'){openFindings();return;}
+  if(target==='screenDailyChecklists'){openDailyChecklists();return;}
+  if(target==='screenToolboxTalks'){openToolboxTalks();return;}
+  if(target==='screenRAMS'){openRAMS();return;}
+  if(target==='screenWorkers'){openWorkers();return;}
+  if(target==='screenPPE'){openPPE();return;}
+  if(target==='screenActionList'){openActionList();return;}
+  if(target==='screenSettings')fillSettingsForm();
+  show(target);
+}
+function setupPortalClickFallback(){
+  document.addEventListener('click',function(e){
+    let nav=e.target.closest&&e.target.closest('[data-nav-screen]');
+    if(nav){e.preventDefault();handlePortalNavTarget(nav.getAttribute('data-nav-screen'));return;}
+    if(e.target.closest&&e.target.closest('#backFromAuditListBtn')){e.preventDefault();show('screenCategories');return;}
+  });
+}
 function renderRecentActivity(){let box=$("recentActivityBox");if(!box)return;let list=getAuditList().slice(0,5);if(!list.length){box.innerHTML='<div class="emptyState">No recent activity yet.</div>';return;}let h="";list.forEach(function(a){let label=auditLabel(a);let status=a.status||(a.reportReady?"Finished":"Unfinished");let saved=a.savedAt?new Date(a.savedAt).toLocaleString():"Not saved";h+='<div class="recentItem"><div><b>'+esc(label)+'</b><br><span>'+esc(status)+' • '+esc(saved)+'</span></div><button class="secondary noPrint" type="button" onclick="openSavedAudit('+getAuditList().findIndex(function(x){return x.id===a.id})+')">Open</button></div>'});box.innerHTML=h;}
 
 function init(){
   setupPortalConfirm();
+  setupPortalClickFallback();
   loadLocalSettings();
   buildCategories();
   initPortalShell();
@@ -2582,5 +2608,5 @@ function checkResumeDraft(){return;}
 function collect(){let data={id:currentAuditId,category:currentCategory,status:(reportReady?"Finished":"Unfinished"),details:{},overallComment:$("overallComment")?$("overallComment").value:"",answers:answers,comments:comments,photos:photos,actions:cleanActionsObject(actions),score:calc(),questionIndex:questionIndex,reportReady:reportReady,screen:currentScreenId(),commentVariant:commentVariant,signatures:getSignatureData()};detailIds.forEach(function(id){data.details[id]=$(id).value});return data}
 function saveAudit(){try{localStorage.setItem(AUTOSAVE_KEY,JSON.stringify(collect()));upsertAuditToList(reportReady?"Finished":"Unfinished");setAutosaveStatus("Saved on this device/browser");alert("Saved on this device/browser and Audit List.")}catch(e){alert("Could not save. Photos may be too large. Use Export or Report.")}}
 function exportAudit(){let safe=currentCategory.split(" ").join("-").replace("/","-").toLowerCase(),blob=new Blob([JSON.stringify(collect(),null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="barricora-"+safe+"-"+($("date").value||today())+".json";a.click()}
-document.addEventListener("DOMContentLoaded",function(){init();detailIds.forEach(function(id){let el=$(id);if(el)el.addEventListener("input",autoSave)});initCloudSync();startPortalAfterInit();});
+document.addEventListener("DOMContentLoaded",function(){init();detailIds.forEach(function(id){let el=$(id);if(el)el.addEventListener("input",autoSave)});startPortalAfterInit();});
 </script></body></html>

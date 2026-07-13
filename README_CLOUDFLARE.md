@@ -1,3 +1,5 @@
+Barricora v76 Auth navigation and sync fix
+
 Barricora v69 Audit Cloud Delete Fix
 
 Barricora v63 PPE Save Return Home
