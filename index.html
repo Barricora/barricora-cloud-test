@@ -327,6 +327,19 @@
 .workerActions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 @media(max-width:700px){.workerCard{grid-template-columns:1fr}.workerActions{justify-content:flex-start}.workerCreateBar .primary,.workerCreateBar .secondary{width:100%}}
 
+
+
+/* v82 settings tiles, safer logout placement and small Top button */
+.portalSidebar{display:flex;flex-direction:column;overflow-y:auto;}
+.portalSidebar .navGroup{flex:1; padding-bottom:12px;}
+.sidebarFooter{position:static!important;left:auto!important;right:auto!important;bottom:auto!important;margin-top:auto;padding-top:12px;border-top:1px solid rgba(255,255,255,.12)}
+.logoutBtn{font-size:13px;padding:10px 12px;border-radius:12px;background:#0b3359;color:#fff;border:1px solid rgba(255,255,255,.18)}
+.logoutBtn:hover{background:#164b7a}
+.bottom{left:auto!important;right:16px!important;bottom:16px!important;display:block!important;background:transparent!important;border:0!important;padding:0!important;box-shadow:none!important;z-index:130!important}
+.bottom button{flex:0!important;width:auto!important;min-width:0!important;border-radius:999px!important;padding:8px 10px!important;font-size:12px!important;box-shadow:0 6px 20px rgba(6,39,70,.18);background:#062746!important;color:white!important}
+.settingsTileGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px}.settingsTile{background:#fbfcfe;border:1px solid #dce4ec;border-radius:18px;padding:16px;text-align:left;cursor:pointer;box-shadow:0 4px 14px rgba(22,42,65,.06)}.settingsTile:hover{transform:translateY(-1px);box-shadow:0 9px 24px rgba(22,42,65,.10)}.settingsTileIcon{width:54px;height:54px;border-radius:16px;background:#eef6ff;display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:10px}.settingsTile b{display:block;color:#062746;font-size:17px;margin-bottom:5px}.settingsTile span{display:block;color:#667789;font-size:13px;line-height:1.35}.settingsBackRow{display:flex;justify-content:flex-start;margin-bottom:10px}.settingsSectionCard.hidden{display:none!important}
+@media(max-width:700px){.settingsTileGrid{grid-template-columns:1fr}.bottom{right:10px!important;bottom:10px!important}.bottom button{font-size:11px!important;padding:7px 9px!important}.portalSidebar{padding-bottom:18px}}
+
 </style></head><body>
 <section id="loginScreen" class="loginScreen noPrint">
   <div class="loginCard">
@@ -361,7 +374,7 @@
       <button class="navItem" type="button" data-nav-screen="screenPPE"><span>🦺</span>PPE Stock</button>
       <button class="navItem" type="button" data-nav-screen="screenSettings"><span>⚙️</span>Settings</button>
     </nav>
-    <div class="sidebarFooter"><button class="logoutBtn" id="logoutBtn" type="button">Log out</button></div>
+    <div class="sidebarFooter"><button class="logoutBtn" id="logoutBtn" type="button">🚪 Log out</button></div>
   </aside>
   <div id="mobileMenuOverlay" class="mobileMenuOverlay noPrint"></div>
   <div class="portalContent">
@@ -372,7 +385,7 @@
     <div class="sectionHeader"><div><span class="step">Home</span><h2>Safety Portal Dashboard</h2><p class="small">Overall snapshot of audits, actions, findings, toolbox talks, daily checks and PPE.</p></div><button class="primary noPrint" id="dashboardStartAuditBtn" type="button">Start Audit</button></div>
     <div class="cloudPanel noPrint">
       <span id="cloudStatus">Cloud: checking...</span>
-      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v81</span><span id="authUserBadge">User: signed out</span>
+      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v82</span><span id="authUserBadge">User: signed out</span>
       <button class="secondary" id="syncNowBtn" type="button">Sync now</button>
     </div>
     <div class="kpiGrid" id="homeDashGrid">
@@ -702,8 +715,20 @@
 </section>
 
 <section id="screenSettings" class="hidden">
-  <div class="card">
+  <div class="card" id="settingsHomeCard">
     <span class="step">Settings</span>
+    <h2>Settings</h2>
+    <p class="small">Choose what you want to manage.</p>
+    <div class="settingsTileGrid noPrint">
+      <button class="settingsTile" id="settingsGeneralTileBtn" type="button"><div class="settingsTileIcon">⚙️</div><b>General Settings</b><span>Default auditor, contractor, project, site details and company profile name.</span></button>
+      <button class="settingsTile" id="settingsUsersTileBtn" type="button"><div class="settingsTileIcon">👥</div><b>Users / Roles</b><span>Create users, set roles and control who can edit or view only.</span></button>
+    </div>
+    <div class="actions noPrint"><button class="secondary" id="backFromSettingsHomeBtn" type="button">← Back to Dashboard</button></div>
+  </div>
+
+  <div class="card settingsSectionCard hidden" id="settingsGeneralCard">
+    <div class="settingsBackRow noPrint"><button class="secondary" id="backToSettingsHomeFromGeneralBtn" type="button">← Settings</button></div>
+    <span class="step">General Settings</span>
     <h2>App Settings / Defaults</h2>
     <p class="small">Save common details once, then new audits can be pre-filled automatically.</p>
     <div class="grid">
@@ -721,11 +746,11 @@
       <button class="primary" id="saveSettingsBtn" type="button">Save Settings</button>
       <button class="secondary" id="applySettingsBtn" type="button">Apply to Current Audit</button>
       <button class="secondary" id="clearSettingsBtn" type="button">Clear Settings</button>
-      <button class="secondary" id="backFromSettingsBtn" type="button">← Back</button>
     </div>
   </div>
 
-  <div class="card" id="userRolesCard" style="margin-top:16px">
+  <div class="card settingsSectionCard hidden" id="userRolesCard" style="margin-top:16px">
+    <div class="settingsBackRow noPrint"><button class="secondary" id="backToSettingsHomeFromUsersBtn" type="button">← Settings</button></div>
     <div class="sectionHeader"><div><span class="step">Access</span><h2>Users / Roles</h2><p class="small">Control who can use Barricora and whether they can edit or only view records.</p></div><button class="secondary noPrint" id="refreshUsersBtn" type="button">Refresh Users</button></div>
     <div id="roleCurrentUserBox" class="settingsNote">Loading current role...</div>
     <div id="userAdminPanel" class="roleAccessPanel hidden">
@@ -1064,7 +1089,7 @@ function handlePortalNavTarget(target){
   if(target==='screenWorkers'){openWorkers();return;}
   if(target==='screenPPE'){openPPE();return;}
   if(target==='screenActionList'){openActionList();return;}
-  if(target==='screenSettings')fillSettingsForm();
+  if(target==='screenSettings'){fillSettingsForm();showSettingsHome();}
   show(target);
 }
 function setupPortalClickFallback(){
@@ -1198,7 +1223,11 @@ function init(){
   if($("confirmCloseActionBtn"))$("confirmCloseActionBtn").onclick=confirmCloseAction;
   if($("saveActionUpdateBtn"))$("saveActionUpdateBtn").onclick=saveActionUpdate;
   if($("backFromAuditListBtn"))$("backFromAuditListBtn").onclick=function(){show("screenCategories")};
-  if($("backFromSettingsBtn"))$("backFromSettingsBtn").onclick=function(){show("screenPortalDashboard")};
+  if($("backFromSettingsHomeBtn"))$("backFromSettingsHomeBtn").onclick=function(){show("screenPortalDashboard")};
+  if($("settingsGeneralTileBtn"))$("settingsGeneralTileBtn").onclick=showSettingsGeneral;
+  if($("settingsUsersTileBtn"))$("settingsUsersTileBtn").onclick=showSettingsUsers;
+  if($("backToSettingsHomeFromGeneralBtn"))$("backToSettingsHomeFromGeneralBtn").onclick=showSettingsHome;
+  if($("backToSettingsHomeFromUsersBtn"))$("backToSettingsHomeFromUsersBtn").onclick=showSettingsHome;
   if($("saveSettingsBtn"))$("saveSettingsBtn").onclick=saveSettings;
   if($("applySettingsBtn"))$("applySettingsBtn").onclick=function(){applyDefaultDetails(false);autoSave();alert("Settings applied to current audit details.")};
   if($("clearSettingsBtn"))$("clearSettingsBtn").onclick=clearSettings;
@@ -1784,7 +1813,26 @@ function collectSettingsFromForm(){
   };
   return appSettings;
 }
-function openSettings(){fillSettingsForm();renderRoleCurrentBox();loadRoleUsers();show("screenSettings")}
+function showSettingsHome(){
+  if($("settingsHomeCard"))$("settingsHomeCard").classList.remove("hidden");
+  if($("settingsGeneralCard"))$("settingsGeneralCard").classList.add("hidden");
+  if($("userRolesCard"))$("userRolesCard").classList.add("hidden");
+}
+function showSettingsGeneral(){
+  fillSettingsForm();
+  if($("settingsHomeCard"))$("settingsHomeCard").classList.add("hidden");
+  if($("settingsGeneralCard"))$("settingsGeneralCard").classList.remove("hidden");
+  if($("userRolesCard"))$("userRolesCard").classList.add("hidden");
+  window.scrollTo(0,0);
+}
+function showSettingsUsers(){
+  if($("settingsHomeCard"))$("settingsHomeCard").classList.add("hidden");
+  if($("settingsGeneralCard"))$("settingsGeneralCard").classList.add("hidden");
+  if($("userRolesCard"))$("userRolesCard").classList.remove("hidden");
+  renderRoleCurrentBox();loadRoleUsers();
+  window.scrollTo(0,0);
+}
+function openSettings(){fillSettingsForm();showSettingsHome();show("screenSettings")}
 function saveSettings(){
   collectSettingsFromForm();saveLocalSettings();syncSettingsToCloud(appSettings);alert("Settings saved.");
 }

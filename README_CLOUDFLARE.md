@@ -37,3 +37,7 @@ Version v81 Login Refresh + Safer Logout Placement
 - After login/register, the app performs a clean page refresh so roles/settings/user state load correctly when switching users.
 - Removed the dashboard Log out button to avoid accidental clicks. Log out remains in the sidebar/mobile menu.
 - No SQL changes required.
+
+
+## v82
+No new SQL needed. Settings are now separated into tiles, logout is at sidebar bottom, and Top is a small bottom-right floating button.
