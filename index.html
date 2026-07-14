@@ -341,15 +341,16 @@
 @media(max-width:700px){.settingsTileGrid{grid-template-columns:1fr}.bottom{right:10px!important;bottom:10px!important}.bottom button{font-size:11px!important;padding:7px 9px!important}.portalSidebar{padding-bottom:18px}}
 
 
-/* v83 sticky back buttons + company branding */
+/* v84 sticky back buttons + company branding */
 .stickyBackBtn{position:fixed!important;top:82px;left:276px;z-index:145!important;border-radius:999px!important;padding:8px 11px!important;font-size:12px!important;box-shadow:0 8px 24px rgba(6,39,70,.20)!important;background:#fff!important;color:#062746!important;border:1px solid #cfd8e3!important}
 .stickyBackBtn:hover{background:#f3f7fb!important}
-.portalCompanyLogo{width:auto;max-width:118px;max-height:54px;object-fit:contain;background:#fff;border:1px solid #dce4ec;border-radius:14px;padding:6px;box-shadow:0 3px 10px rgba(22,42,65,.08)}
+.portalTop .headerInner.portalHeaderInner{width:100%;max-width:1180px;display:flex;align-items:center;gap:18px}.portalHeaderInner .headerText{flex:0 0 auto;min-width:260px}.portalCompanyLogoSlot{flex:1;display:flex;align-items:center;justify-content:center;min-height:70px}.portalCompanyLogo{width:auto;max-width:min(430px,100%);max-height:78px;object-fit:contain;background:#fff;border:1px solid #dce4ec;border-radius:16px;padding:8px 16px;box-shadow:0 3px 10px rgba(22,42,65,.08)}
 .companyLogoSettings{display:grid;grid-template-columns:210px 1fr;gap:14px;align-items:center;background:#fbfcfe;border:1px dashed #c8d6e3;border-radius:16px;padding:13px;margin-top:12px}
 .companyLogoPreview{min-height:92px;border:1px solid #dce4ec;border-radius:14px;background:white;display:flex;align-items:center;justify-content:center;color:#667789;font-weight:900;text-align:center;padding:10px}
 .companyLogoPreview img{max-width:100%;max-height:86px;object-fit:contain;display:block}
 .reportBrandStack{display:grid;gap:6px;align-items:center}.reportCompanyName{font-size:12px;font-weight:900;color:#062746;line-height:1.25}.reportBrand .printLogo.companyPrintLogo{max-height:82px;object-fit:contain}
-@media(max-width:900px){.stickyBackBtn{left:12px;top:72px}.portalCompanyLogo{max-width:88px;max-height:44px}.portalTop .headerInner{align-items:center}.companyLogoSettings{grid-template-columns:1fr}}
+@media(max-width:900px){.stickyBackBtn{left:12px;top:72px}.portalTop .headerInner.portalHeaderInner{align-items:center;gap:10px}.portalHeaderInner .headerText{min-width:0;flex:1}.portalCompanyLogoSlot{flex:0 0 auto;justify-content:flex-end;min-height:auto}.portalCompanyLogo{max-width:130px;max-height:52px;padding:6px 8px}.companyLogoSettings{grid-template-columns:1fr}}
+@media(max-width:560px){.portalTop .headerInner.portalHeaderInner{flex-wrap:wrap}.portalCompanyLogoSlot{width:100%;flex:1 1 100%;justify-content:center}.portalCompanyLogo{max-width:210px;max-height:58px}}
 @media print{.stickyBackBtn{display:none!important}}
 
 </style></head><body>
@@ -390,14 +391,14 @@
   </aside>
   <div id="mobileMenuOverlay" class="mobileMenuOverlay noPrint"></div>
   <div class="portalContent">
-    <header class="portalTop noPrint"><div class="headerInner"><button class="mobileMenuBtn" id="mobileMenuBtn" type="button">☰ Menu</button><img id="portalCompanyLogo" class="portalCompanyLogo hidden" alt="Company logo"><div class="headerText"><h1 id="portalTitle">Dashboard</h1><p id="sub">Focused. Practical. Safer sites.</p><p id="autosaveStatus" style="margin:4px 0 0;color:#667789;font-size:12px">Auto-save ready</p></div></div></header>
+    <header class="portalTop noPrint"><div class="headerInner portalHeaderInner"><button class="mobileMenuBtn" id="mobileMenuBtn" type="button">☰ Menu</button><div class="headerText"><h1 id="portalTitle">Dashboard</h1><p id="sub">Focused. Practical. Safer sites.</p><p id="autosaveStatus" style="margin:4px 0 0;color:#667789;font-size:12px">Auto-save ready</p></div><div class="portalCompanyLogoSlot"><img id="portalCompanyLogo" class="portalCompanyLogo hidden" alt="Company logo"></div></div></header>
     <main class="portalMain">
 <section id="screenPortalDashboard">
   <div class="card">
     <div class="sectionHeader"><div><span class="step">Home</span><h2>Safety Portal Dashboard</h2><p class="small">Overall snapshot of audits, actions, findings, toolbox talks, daily checks and PPE.</p></div><button class="primary noPrint" id="dashboardStartAuditBtn" type="button">Start Audit</button></div>
     <div class="cloudPanel noPrint">
       <span id="cloudStatus">Cloud: checking...</span>
-      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v83</span><span id="authUserBadge">User: signed out</span>
+      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v84</span><span id="authUserBadge">User: signed out</span>
       <button class="secondary" id="syncNowBtn" type="button">Sync now</button>
     </div>
     <div class="kpiGrid" id="homeDashGrid">
