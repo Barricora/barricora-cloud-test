@@ -103,13 +103,23 @@ export async function onRequestPut({ request, env }) {
     const body = await request.json();
     const id = String(body.id || "").trim();
     if (!id) return json({ ok: false, error: "User ID required." }, 400);
-    const target = await env.DB.prepare("SELECT id,company_id,role,status,email FROM auth_users WHERE id=?1").bind(id).first();
+    const target = await env.DB.prepare("SELECT id,company_id,role,status,email,name FROM auth_users WHERE id=?1").bind(id).first();
     if (!target || target.company_id !== actor.company_id) return json({ ok: false, error: "User not found." }, 404);
-    if (target.id === actor.id) return json({ ok: false, error: "You cannot change your own role/status here." }, 400);
+    if (target.id === actor.id) return json({ ok: false, error: "You cannot change your own role/status or reset your own password here." }, 400);
     if (target.role === "Owner") return json({ ok: false, error: "Owner account cannot be changed from this screen." }, 400);
+    const now = new Date().toISOString();
+    if (body.resetPassword) {
+      const password = String(body.password || "");
+      if (password.length < 8) return json({ ok: false, error: "New password must be at least 8 characters." }, 400);
+      const hp = await hashPassword(password);
+      await env.DB.prepare("UPDATE auth_users SET password_hash=?1,password_salt=?2,updated_at=?3 WHERE id=?4 AND company_id=?5")
+        .bind(hp.hash, hp.salt, now, id, actor.company_id).run();
+      await env.DB.prepare("DELETE FROM auth_sessions WHERE user_id=?1").bind(id).run();
+      await logActivity(env, request, actor, "user_password_reset", "auth_user", id, { targetEmail: target.email, targetName: target.name });
+      return json({ ok: true });
+    }
     const role = normalRole(body.role || target.role, actor.role);
     const status = String(body.status || target.status) === "Disabled" ? "Disabled" : "Active";
-    const now = new Date().toISOString();
     await env.DB.prepare("UPDATE auth_users SET role=?1,status=?2,updated_at=?3 WHERE id=?4 AND company_id=?5")
       .bind(role, status, now, id, actor.company_id).run();
     if (status !== "Active") await env.DB.prepare("DELETE FROM auth_sessions WHERE user_id=?1").bind(id).run();

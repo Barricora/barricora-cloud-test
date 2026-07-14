@@ -354,9 +354,13 @@
 @media print{.stickyBackBtn{display:none!important}}
 
 
-/* Barricora v90 App Log search and filters */
+/* Barricora v91 Owner/Admin password reset */
 .activityLogFilterBar{display:grid;grid-template-columns:1.4fr .8fr .8fr auto;gap:10px;align-items:end;background:#f8fafc;border:1px solid #e3ebf3;border-radius:16px;padding:12px;margin:12px 0}.activityLogFilterBar label{font-size:12px;font-weight:800;color:#4a5d70;margin:0}.activityLogFilterBar input,.activityLogFilterBar select{margin-top:5px}.activityLogList{display:grid;gap:10px;margin-top:12px}.activityLogItem{border:1px solid #dce4ec;background:white;border-radius:14px;padding:12px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start}.activityLogItem b{color:#062746}.activityDetails{font-size:12px;color:#4a5d70;background:#f8fafc;border:1px solid #e3ebf3;border-radius:10px;padding:8px;margin-top:7px;line-height:1.35}.activityPill{background:#eef2f6;color:#334155;border:1px solid #dce4ec;border-radius:999px;padding:5px 8px;font-size:11px;font-weight:900;text-transform:uppercase}.supportAccessStatus{border:1px solid #dce4ec;background:#f8fafc;border-radius:14px;padding:12px;margin:12px 0;line-height:1.45}.supportAccessStatus.supportOn{background:#e7f8ed;border-color:#a8ddb6;color:#14532d}.supportAccessStatus.supportOff{background:#f8fafc;border-color:#dce4ec;color:#475569}@media(max-width:900px){.activityLogFilterBar{grid-template-columns:1fr 1fr}.activityLogFilterBar .filterClearWrap{grid-column:1/-1}}@media(max-width:700px){.activityLogFilterBar{grid-template-columns:1fr}.activityLogItem{grid-template-columns:1fr}.activityPill{width:max-content}}
 
+
+.userPasswordReset{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px;width:100%;justify-content:flex-end}
+.userPasswordReset input{max-width:210px;min-width:180px;padding:9px 10px;border:1px solid #d7e1ea;border-radius:12px;background:white}
+@media(max-width:760px){.userPasswordReset{justify-content:stretch}.userPasswordReset input{max-width:none;width:100%}.userPasswordReset button{width:100%}}
 </style></head><body>
 <section id="loginScreen" class="loginScreen noPrint">
   <div class="loginCard">
@@ -402,7 +406,7 @@
     <div class="sectionHeader"><div><span class="step">Home</span><h2>Safety Portal Dashboard</h2><p class="small">Overall snapshot of audits, actions, findings, toolbox talks, daily checks and PPE.</p></div><button class="primary noPrint" id="dashboardStartAuditBtn" type="button">Start Audit</button></div>
     <div class="cloudPanel noPrint">
       <span id="cloudStatus">Cloud: checking...</span>
-      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v90</span><span id="authUserBadge">User: signed out</span>
+      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v91</span><span id="authUserBadge">User: signed out</span>
       <button class="secondary" id="syncNowBtn" type="button">Sync now</button>
     </div>
     <div class="kpiGrid" id="homeDashGrid">
@@ -1225,7 +1229,7 @@ function renderRoleUsers(){
   let list=$('userRolesList');if(!list)return;
   if(!roleUsers.length){list.innerHTML='<div class="emptyState">No users found.</div>';return;}
   let h='';roleUsers.forEach(function(u){let self=currentAuthUser&&u.id===currentAuthUser.id;let disabled=u.status!=='Active';h+='<div class="userRoleCard '+(disabled?'disabled':'')+'"><div><h3 style="margin:0;color:#062746">'+esc(u.name||'User')+(self?' <span class="small">(you)</span>':'')+'</h3><div class="small">'+esc(u.email||'')+' • '+esc(u.companyName||'')+'</div><div style="margin-top:8px"><span class="roleBadge '+roleClass(u.role)+'">'+esc(u.role||'User')+'</span> <span class="workerStatusBadge '+(disabled?'':'current')+'">'+esc(u.status||'Active')+'</span></div></div><div class="userRoleActions noPrint">';
-    if(canManageUsers()&&!self){h+='<select data-user-role="'+esc(u.id)+'"><option value="Admin" '+(u.role==='Admin'?'selected':'')+'>Admin</option><option value="Editor" '+(u.role==='Editor'?'selected':'')+'>Editor</option><option value="Viewer" '+(u.role==='Viewer'?'selected':'')+'>Viewer</option></select><select data-user-status="'+esc(u.id)+'"><option value="Active" '+(u.status==='Active'?'selected':'')+'>Active</option><option value="Disabled" '+(u.status==='Disabled'?'selected':'')+'>Disabled</option></select><button class="secondary" type="button" onclick="saveUserRoleStatus(\''+esc(u.id)+'\')">Save</button>';} else {h+='<span class="small">Role locked</span>';}
+    if(canManageUsers()&&!self){h+='<select data-user-role="'+esc(u.id)+'"><option value="Admin" '+(u.role==='Admin'?'selected':'')+'>Admin</option><option value="Editor" '+(u.role==='Editor'?'selected':'')+'>Editor</option><option value="Viewer" '+(u.role==='Viewer'?'selected':'')+'>Viewer</option></select><select data-user-status="'+esc(u.id)+'"><option value="Active" '+(u.status==='Active'?'selected':'')+'>Active</option><option value="Disabled" '+(u.status==='Disabled'?'selected':'')+'>Disabled</option></select><button class="secondary" type="button" onclick="saveUserRoleStatus(\''+esc(u.id)+'\')">Save</button><div class="userPasswordReset"><input data-user-password="'+esc(u.id)+'" type="password" placeholder="New password (min 8)"><button class="secondary" type="button" onclick="resetUserPassword(\''+esc(u.id)+'\')">Reset password</button></div>';} else {h+='<span class="small">Role locked</span>';}
     h+='</div></div>';});list.innerHTML=h;
 }
 async function createRoleUser(){
@@ -1239,6 +1243,17 @@ async function saveUserRoleStatus(id){
   let roleEl=document.querySelector('[data-user-role="'+CSS.escape(id)+'"]');let statusEl=document.querySelector('[data-user-status="'+CSS.escape(id)+'"]');
   try{await authFetch('/api/auth/users',{method:'PUT',body:JSON.stringify({id:id,role:roleEl?roleEl.value:null,status:statusEl?statusEl.value:null})});alert('User updated.');await loadRoleUsers();}
   catch(e){alert(e.message||'Could not update user.');}
+}
+
+async function resetUserPassword(id){
+  if(!canManageUsers()){alert('Only Owner/Admin can reset passwords.');return;}
+  let input=document.querySelector('[data-user-password="'+CSS.escape(id)+'"]');
+  let password=input?input.value:'';
+  if(!password){alert('Enter the new password first.');return;}
+  if(password.length<8){alert('New password must be at least 8 characters.');return;}
+  let action=function(){authFetch('/api/auth/users',{method:'PUT',body:JSON.stringify({id:id,resetPassword:true,password:password})}).then(async function(){if(input)input.value='';alert('Password reset. The user must log in again with the new password.');await loadRoleUsers();if(typeof loadActivityLog==='function')loadActivityLog();}).catch(function(e){alert(e.message||'Could not reset password.');});};
+  if(typeof showPortalConfirm==='function')showPortalConfirm({title:'Reset user password?',message:'This will change the password and log this user out from Barricora on other devices.',icon:'🔑',confirmText:'Reset password',danger:false,onConfirm:action});
+  else if(confirm('Reset this user password?'))action();
 }
 
 let appActivityLogs=[];
@@ -1259,7 +1274,7 @@ function activityActionLabel(log){
     return saveMap[target]||"Record saved / updated";
   }
   if(action==="write_failed")return "Change failed";
-  let map={login_success:"Logged in",logout:"Logged out",company_profile_registered:"Company profile created",user_created:"New user created",user_updated:"User role/status changed",blocked_viewer_write:"Viewer blocked from changing data",support_access_enabled:"Support access enabled",support_access_disabled:"Support access disabled"};
+  let map={login_success:"Logged in",logout:"Logged out",company_profile_registered:"Company profile created",user_created:"New user created",user_updated:"User role/status changed",user_password_reset:"User password reset",blocked_viewer_write:"Viewer blocked from changing data",support_access_enabled:"Support access enabled",support_access_disabled:"Support access disabled"};
   return map[action]||String(action||"Activity").replace(/_/g," ");
 }
 function activityFriendlyDetails(log){
@@ -1278,6 +1293,7 @@ function activityFriendlyDetails(log){
   if(log.action==="logout")return "User signed out.";
   if(log.action==="user_created")return "New user was added to this company.";
   if(log.action==="user_updated")return "User role or account status was changed.";
+  if(log.action==="user_password_reset")return "User password was reset and old sessions were signed out.";
   if(log.action==="support_access_enabled")return "Temporary Barricora support access was enabled.";
   if(log.action==="support_access_disabled")return "Barricora support access was disabled.";
   if(log.action==="company_profile_registered")return "First company profile / owner account was created.";
@@ -1300,7 +1316,7 @@ function activityMatchesType(log,type){
   if(type==="login")return action==="login_success"||action==="logout";
   if(type==="saved")return action==="record_changed"&&method!=="DELETE";
   if(type==="deleted")return action==="record_changed"&&method==="DELETE";
-  if(type==="users")return action==="user_created"||action==="user_updated"||action==="company_profile_registered";
+  if(type==="users")return action==="user_created"||action==="user_updated"||action==="user_password_reset"||action==="company_profile_registered";
   if(type==="support")return action==="support_access_enabled"||action==="support_access_disabled";
   if(type==="blocked")return action==="blocked_viewer_write";
   if(type==="failed")return action==="write_failed";
