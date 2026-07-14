@@ -341,7 +341,7 @@
 @media(max-width:700px){.settingsTileGrid{grid-template-columns:1fr}.bottom{right:10px!important;bottom:10px!important}.bottom button{font-size:11px!important;padding:7px 9px!important}.portalSidebar{padding-bottom:18px}}
 
 
-/* v85 centered company logo header */
+/* v86 general settings cleanup */
 .stickyBackBtn{position:fixed!important;top:82px;left:276px;z-index:145!important;border-radius:999px!important;padding:8px 11px!important;font-size:12px!important;box-shadow:0 8px 24px rgba(6,39,70,.20)!important;background:#fff!important;color:#062746!important;border:1px solid #cfd8e3!important}
 .stickyBackBtn:hover{background:#f3f7fb!important}
 .portalTop .headerInner.portalHeaderInner{width:100%;max-width:1180px;display:grid;grid-template-columns:minmax(240px,320px) 1fr minmax(240px,320px);align-items:center;gap:18px}.portalHeaderInner .headerText{min-width:0;grid-column:1}.portalCompanyLogoSlot{grid-column:2;display:flex;align-items:center;justify-content:center;min-height:70px;width:100%}.portalCompanyLogo{width:auto;max-width:min(460px,100%);max-height:78px;object-fit:contain;background:#fff;border:1px solid #dce4ec;border-radius:16px;padding:8px 16px;box-shadow:0 3px 10px rgba(22,42,65,.08)}
@@ -352,6 +352,10 @@
 @media(max-width:900px){.stickyBackBtn{left:12px;top:72px}.portalTop .headerInner.portalHeaderInner{display:flex;align-items:center;gap:10px}.portalHeaderInner .headerText{min-width:0;flex:1}.portalCompanyLogoSlot{flex:0 0 auto;justify-content:flex-end;min-height:auto;width:auto}.portalCompanyLogo{max-width:130px;max-height:52px;padding:6px 8px}.companyLogoSettings{grid-template-columns:1fr}}
 @media(max-width:560px){.portalTop .headerInner.portalHeaderInner{flex-wrap:wrap}.portalCompanyLogoSlot{width:100%;flex:1 1 100%;justify-content:center}.portalCompanyLogo{max-width:210px;max-height:58px}}
 @media print{.stickyBackBtn{display:none!important}}
+
+
+/* Barricora v87 App Log + Support Access */
+.activityLogList{display:grid;gap:10px;margin-top:12px}.activityLogItem{border:1px solid #dce4ec;background:white;border-radius:14px;padding:12px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start}.activityLogItem b{color:#062746}.activityDetails{font-size:12px;color:#4a5d70;background:#f8fafc;border:1px solid #e3ebf3;border-radius:10px;padding:8px;margin-top:7px;line-height:1.35}.activityPill{background:#eef2f6;color:#334155;border:1px solid #dce4ec;border-radius:999px;padding:5px 8px;font-size:11px;font-weight:900;text-transform:uppercase}.supportAccessStatus{border:1px solid #dce4ec;background:#f8fafc;border-radius:14px;padding:12px;margin:12px 0;line-height:1.45}.supportAccessStatus.supportOn{background:#e7f8ed;border-color:#a8ddb6;color:#14532d}.supportAccessStatus.supportOff{background:#f8fafc;border-color:#dce4ec;color:#475569}@media(max-width:700px){.activityLogItem{grid-template-columns:1fr}.activityPill{width:max-content}}
 
 </style></head><body>
 <section id="loginScreen" class="loginScreen noPrint">
@@ -398,7 +402,7 @@
     <div class="sectionHeader"><div><span class="step">Home</span><h2>Safety Portal Dashboard</h2><p class="small">Overall snapshot of audits, actions, findings, toolbox talks, daily checks and PPE.</p></div><button class="primary noPrint" id="dashboardStartAuditBtn" type="button">Start Audit</button></div>
     <div class="cloudPanel noPrint">
       <span id="cloudStatus">Cloud: checking...</span>
-      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v85</span><span id="authUserBadge">User: signed out</span>
+      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v87</span><span id="authUserBadge">User: signed out</span>
       <button class="secondary" id="syncNowBtn" type="button">Sync now</button>
     </div>
     <div class="kpiGrid" id="homeDashGrid">
@@ -735,6 +739,8 @@
     <div class="settingsTileGrid noPrint">
       <button class="settingsTile" id="settingsGeneralTileBtn" type="button"><div class="settingsTileIcon">⚙️</div><b>General Settings</b><span>Company details, project contacts and report logo.</span></button>
       <button class="settingsTile" id="settingsUsersTileBtn" type="button"><div class="settingsTileIcon">👥</div><b>Users / Roles</b><span>Create users, set roles and control who can edit or view only.</span></button>
+      <button class="settingsTile" id="settingsActivityTileBtn" type="button"><div class="settingsTileIcon">🧾</div><b>App Log</b><span>See who logged in, changed users, enabled support access or was blocked.</span></button>
+      <button class="settingsTile" id="settingsSupportTileBtn" type="button"><div class="settingsTileIcon">🛟</div><b>Support Access</b><span>Temporarily allow Barricora support access for troubleshooting later.</span></button>
     </div>
     <div class="actions noPrint"><button class="secondary" id="backFromSettingsHomeBtn" type="button">← Back to Dashboard</button></div>
   </div>
@@ -765,7 +771,6 @@
     <div class="settingsNote">Logo is resized before saving so it stays light enough for cloud sync and PDF reports. Settings are saved locally and synced to cloud when available.</div>
     <div class="actions noPrint">
       <button class="primary" id="saveSettingsBtn" type="button">Save Settings</button>
-      <button class="secondary" id="applySettingsBtn" type="button">Apply to Current Audit</button>
       <button class="secondary" id="clearSettingsBtn" type="button">Clear Settings</button>
     </div>
   </div>
@@ -786,6 +791,30 @@
       <div class="actions noPrint"><button class="primary" id="createUserBtn" type="button">Create User</button></div>
     </div>
     <div id="userRolesList" class="userRoleList"></div>
+  </div>
+
+  <div class="card settingsSectionCard hidden" id="activityLogCard" style="margin-top:16px">
+    <div class="settingsBackRow noPrint"><button class="secondary" id="backToSettingsHomeFromActivityBtn" type="button">← Settings</button></div>
+    <div class="sectionHeader"><div><span class="step">Security</span><h2>App Log</h2><p class="small">Background history of important app activity: logins, user changes, support access and blocked actions.</p></div><button class="secondary noPrint" id="refreshActivityLogBtn" type="button">Refresh Log</button></div>
+    <div id="activityLogInfo" class="settingsNote">Only Owner/Admin can view the App Log.</div>
+    <div id="activityLogList" class="activityLogList"></div>
+  </div>
+
+  <div class="card settingsSectionCard hidden" id="supportAccessCard" style="margin-top:16px">
+    <div class="settingsBackRow noPrint"><button class="secondary" id="backToSettingsHomeFromSupportBtn" type="button">← Settings</button></div>
+    <span class="step">Security</span>
+    <h2>Barricora Support Access</h2>
+    <p class="small">Use this only when you need help. For now this creates a controlled, logged permission record. Later it will connect to a real Barricora Support account protected by Cloudflare Access/MFA.</p>
+    <div id="supportAccessStatus" class="supportAccessStatus">Loading support access...</div>
+    <label style="margin-top:10px">Support note<textarea id="supportAccessNote" rows="3" placeholder="Example: Need help checking RAMS upload issue"></textarea></label>
+    <div class="actions noPrint">
+      <button class="secondary" id="supportEnable1hBtn" type="button">Enable 1 hour</button>
+      <button class="secondary" id="supportEnable24hBtn" type="button">Enable 24 hours</button>
+      <button class="secondary" id="supportEnable7dBtn" type="button">Enable 7 days</button>
+      <button class="dangerBtn" id="supportDisableBtn" type="button">Disable Support Access</button>
+      <button class="secondary" id="refreshSupportAccessBtn" type="button">Refresh</button>
+    </div>
+    <div class="settingsNote"><b>Safe setup:</b> customer Owner/Admin must enable support access, it expires automatically, and every change goes into the App Log.</div>
   </div>
 </section>
 
@@ -1183,6 +1212,56 @@ async function saveUserRoleStatus(id){
   try{await authFetch('/api/auth/users',{method:'PUT',body:JSON.stringify({id:id,role:roleEl?roleEl.value:null,status:statusEl?statusEl.value:null})});alert('User updated.');await loadRoleUsers();}
   catch(e){alert(e.message||'Could not update user.');}
 }
+
+let appActivityLogs=[];
+function activityActionLabel(action){
+  let map={login_success:"Login",logout:"Logout",company_profile_registered:"Company profile created",user_created:"User created",user_updated:"User updated",blocked_viewer_write:"Blocked viewer action",support_access_enabled:"Support access enabled",support_access_disabled:"Support access disabled"};
+  return map[action]||String(action||"Activity").replace(/_/g," ");
+}
+function renderActivityLog(){
+  let box=$("activityLogList"),info=$("activityLogInfo");if(!box)return;
+  if(!canManageUsers()){if(info)info.innerHTML="Only Owner/Admin can view the App Log.";box.innerHTML='<div class="emptyState">Only Owner/Admin can view the App Log.</div>';return;}
+  if(info)info.innerHTML="Showing latest security and admin events for this company.";
+  if(!appActivityLogs.length){box.innerHTML='<div class="emptyState">No App Log entries yet. Login/logout, user changes and support access changes will appear here.</div>';return;}
+  let h="";
+  appActivityLogs.forEach(function(log){
+    let when=log.created_at?new Date(log.created_at).toLocaleString():"";
+    let details="";
+    try{details=log.details&&Object.keys(log.details).length?Object.keys(log.details).map(function(k){return esc(k)+": "+esc(String(log.details[k]));}).join(" • "):"";}catch(e){}
+    h+='<div class="activityLogItem"><div><b>'+esc(activityActionLabel(log.action))+'</b><div class="small">'+esc(when)+' • '+esc(log.user_email||"System")+' • '+esc(log.user_role||"")+'</div>'+(details?'<div class="activityDetails">'+details+'</div>':'')+'</div><span class="activityPill">'+esc(log.target_type||"app")+'</span></div>';
+  });
+  box.innerHTML=h;
+}
+async function loadActivityLog(){
+  let box=$("activityLogList");if(box)box.innerHTML='<div class="emptyState">Loading App Log...</div>';
+  if(!canManageUsers()){renderActivityLog();return;}
+  try{let data=await authFetch('/api/activity?limit=150',{method:'GET'});appActivityLogs=data.logs||[];renderActivityLog();}
+  catch(e){if(box)box.innerHTML='<div class="emptyState">Could not load App Log. Run schema_v87_activity_support.sql first if this is the first v87 deploy.<br>'+esc(e.message||e)+'</div>';}
+}
+function renderSupportAccess(sa){
+  let box=$("supportAccessStatus");if(!box)return;
+  if(!canManageUsers()){box.innerHTML='<div class="emptyState">Only Owner/Admin can control support access.</div>';return;}
+  sa=sa||{};
+  let active=!!sa.enabled;
+  let expires=sa.expiresAt?new Date(sa.expiresAt).toLocaleString():"Not set";
+  box.className='supportAccessStatus '+(active?'supportOn':'supportOff');
+  box.innerHTML='<b>'+(active?'🟢 Support access enabled':'⚪ Support access disabled')+'</b><br><span>Expires: '+esc(expires)+'</span>'+(sa.updatedBy?'<br><span>Updated by: '+esc(sa.updatedBy)+'</span>':'');
+  if($("supportAccessNote"))$("supportAccessNote").value=sa.note||"";
+}
+async function loadSupportAccess(){
+  renderSupportAccess({});
+  if(!canManageUsers())return;
+  try{let data=await authFetch('/api/support-access',{method:'GET'});renderSupportAccess(data.supportAccess||{});}
+  catch(e){let box=$("supportAccessStatus");if(box)box.innerHTML='<div class="emptyState">Could not load support access. Run schema_v87_activity_support.sql first if this is the first v87 deploy.<br>'+esc(e.message||e)+'</div>';}
+}
+async function setSupportAccess(enabled,hours){
+  if(!canManageUsers()){alert('Only Owner/Admin can change support access.');return;}
+  let note=$("supportAccessNote")?$("supportAccessNote").value.trim():"";
+  let action=function(){authFetch('/api/support-access',{method:'POST',body:JSON.stringify({enabled:enabled,hours:hours,note:note})}).then(function(data){renderSupportAccess(data.supportAccess||{});loadActivityLog();alert(enabled?'Support access enabled.':'Support access disabled.');}).catch(function(e){alert(e.message||'Could not change support access.');});};
+  if(enabled){showPortalConfirm({title:'Enable support access?',message:'Allow Barricora support access for '+(hours===168?'7 days':hours+' hour'+(hours===1?'':'s'))+'? This will be recorded in the App Log.',icon:'🛟',confirmText:'Enable',danger:false,onConfirm:action});}
+  else{showPortalConfirm({title:'Disable support access?',message:'Turn off Barricora support access now?',icon:'🔒',confirmText:'Disable',danger:true,onConfirm:action});}
+}
+
 function setupRoleObserver(){
   try{let mo=new MutationObserver(function(){if(currentAuthUser&&currentRole()==='Viewer')applyRoleRestrictionsSoon();});mo.observe(document.body,{childList:true,subtree:true});}catch(e){}
 }
@@ -1258,10 +1337,19 @@ function init(){
   if($("backFromSettingsHomeBtn"))$("backFromSettingsHomeBtn").onclick=function(){show("screenPortalDashboard")};
   if($("settingsGeneralTileBtn"))$("settingsGeneralTileBtn").onclick=showSettingsGeneral;
   if($("settingsUsersTileBtn"))$("settingsUsersTileBtn").onclick=showSettingsUsers;
+  if($("settingsActivityTileBtn"))$("settingsActivityTileBtn").onclick=showSettingsActivity;
+  if($("settingsSupportTileBtn"))$("settingsSupportTileBtn").onclick=showSettingsSupport;
   if($("backToSettingsHomeFromGeneralBtn"))$("backToSettingsHomeFromGeneralBtn").onclick=showSettingsHome;
   if($("backToSettingsHomeFromUsersBtn"))$("backToSettingsHomeFromUsersBtn").onclick=showSettingsHome;
+  if($("backToSettingsHomeFromActivityBtn"))$("backToSettingsHomeFromActivityBtn").onclick=showSettingsHome;
+  if($("backToSettingsHomeFromSupportBtn"))$("backToSettingsHomeFromSupportBtn").onclick=showSettingsHome;
+  if($("refreshActivityLogBtn"))$("refreshActivityLogBtn").onclick=loadActivityLog;
+  if($("refreshSupportAccessBtn"))$("refreshSupportAccessBtn").onclick=loadSupportAccess;
+  if($("supportEnable1hBtn"))$("supportEnable1hBtn").onclick=function(){setSupportAccess(true,1)};
+  if($("supportEnable24hBtn"))$("supportEnable24hBtn").onclick=function(){setSupportAccess(true,24)};
+  if($("supportEnable7dBtn"))$("supportEnable7dBtn").onclick=function(){setSupportAccess(true,168)};
+  if($("supportDisableBtn"))$("supportDisableBtn").onclick=function(){setSupportAccess(false,0)};
   if($("saveSettingsBtn"))$("saveSettingsBtn").onclick=saveSettings;
-  if($("applySettingsBtn"))$("applySettingsBtn").onclick=function(){applyDefaultDetails(false);autoSave();alert("Settings applied to current audit details.")};
   if($("clearSettingsBtn"))$("clearSettingsBtn").onclick=clearSettings;
   if($("setCompanyLogoInput"))$("setCompanyLogoInput").onchange=handleCompanyLogoInput;
   if($("clearCompanyLogoBtn"))$("clearCompanyLogoBtn").onclick=clearCompanyLogo;
@@ -1918,19 +2006,43 @@ function showSettingsHome(){
   if($("settingsHomeCard"))$("settingsHomeCard").classList.remove("hidden");
   if($("settingsGeneralCard"))$("settingsGeneralCard").classList.add("hidden");
   if($("userRolesCard"))$("userRolesCard").classList.add("hidden");
+  if($("activityLogCard"))$("activityLogCard").classList.add("hidden");
+  if($("supportAccessCard"))$("supportAccessCard").classList.add("hidden");
 }
 function showSettingsGeneral(){
   fillSettingsForm();
   if($("settingsHomeCard"))$("settingsHomeCard").classList.add("hidden");
   if($("settingsGeneralCard"))$("settingsGeneralCard").classList.remove("hidden");
   if($("userRolesCard"))$("userRolesCard").classList.add("hidden");
+  if($("activityLogCard"))$("activityLogCard").classList.add("hidden");
+  if($("supportAccessCard"))$("supportAccessCard").classList.add("hidden");
   window.scrollTo(0,0);
 }
 function showSettingsUsers(){
   if($("settingsHomeCard"))$("settingsHomeCard").classList.add("hidden");
   if($("settingsGeneralCard"))$("settingsGeneralCard").classList.add("hidden");
   if($("userRolesCard"))$("userRolesCard").classList.remove("hidden");
+  if($("activityLogCard"))$("activityLogCard").classList.add("hidden");
+  if($("supportAccessCard"))$("supportAccessCard").classList.add("hidden");
   renderRoleCurrentBox();loadRoleUsers();
+  window.scrollTo(0,0);
+}
+function showSettingsActivity(){
+  if($("settingsHomeCard"))$("settingsHomeCard").classList.add("hidden");
+  if($("settingsGeneralCard"))$("settingsGeneralCard").classList.add("hidden");
+  if($("userRolesCard"))$("userRolesCard").classList.add("hidden");
+  if($("activityLogCard"))$("activityLogCard").classList.remove("hidden");
+  if($("supportAccessCard"))$("supportAccessCard").classList.add("hidden");
+  loadActivityLog();
+  window.scrollTo(0,0);
+}
+function showSettingsSupport(){
+  if($("settingsHomeCard"))$("settingsHomeCard").classList.add("hidden");
+  if($("settingsGeneralCard"))$("settingsGeneralCard").classList.add("hidden");
+  if($("userRolesCard"))$("userRolesCard").classList.add("hidden");
+  if($("activityLogCard"))$("activityLogCard").classList.add("hidden");
+  if($("supportAccessCard"))$("supportAccessCard").classList.remove("hidden");
+  loadSupportAccess();
   window.scrollTo(0,0);
 }
 function openSettings(){fillSettingsForm();showSettingsHome();show("screenSettings")}

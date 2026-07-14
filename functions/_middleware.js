@@ -22,6 +22,22 @@ async function getAuthenticatedUser(env, request) {
     .bind(sid, new Date().toISOString()).first();
   return row || null;
 }
+
+function randomId(prefix = "") {
+  const arr = new Uint8Array(16);
+  crypto.getRandomValues(arr);
+  return prefix + Array.from(arr).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+async function logActivity(env, request, user, action, targetType, targetId, details) {
+  try {
+    if (!env.DB || !user) return;
+    await env.DB.prepare(`INSERT INTO app_activity_log
+      (id,company_id,user_id,user_email,user_role,action,target_type,target_id,details,ip,user_agent,created_at)
+      VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12)`)
+      .bind(randomId("log_"), user.company_id || "", user.id || "", user.email || "", user.role || "", action, targetType || "", targetId || "", JSON.stringify(details || {}), request.headers.get("CF-Connecting-IP") || "", request.headers.get("user-agent") || "", new Date().toISOString()).run();
+  } catch (e) {}
+}
+
 function isPublicApi(path) {
   return path === "/api/health" ||
     path === "/api/auth/login" ||
@@ -39,6 +55,7 @@ export async function onRequest(context) {
     const user = await getAuthenticatedUser(context.env, context.request);
     if (!user) return json({ ok: false, error: "Not authenticated" }, 401);
     if (user.role === "Viewer" && method !== "GET" && method !== "HEAD") {
+      await logActivity(context.env, context.request, user, "blocked_viewer_write", "api", path, { method });
       return json({ ok: false, error: "View-only users cannot create, edit, upload or delete records." }, 403);
     }
     return context.next();

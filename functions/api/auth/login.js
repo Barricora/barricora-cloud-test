@@ -58,6 +58,17 @@ async function createSession(env, userId, request) {
     .bind(id, userId, now.toISOString(), expires.toISOString(), request.headers.get("user-agent") || "").run();
   return id;
 }
+
+async function logActivity(env, request, user, action, targetType, targetId, details) {
+  try {
+    if (!env.DB) return;
+    await env.DB.prepare(`INSERT INTO app_activity_log
+      (id,company_id,user_id,user_email,user_role,action,target_type,target_id,details,ip,user_agent,created_at)
+      VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12)`)
+      .bind(randomId("log_"), (user && (user.company_id || user.companyId)) || "", (user && user.id) || "", (user && user.email) || "", (user && user.role) || "", action, targetType || "", targetId || "", JSON.stringify(details || {}), request.headers.get("CF-Connecting-IP") || "", request.headers.get("user-agent") || "", new Date().toISOString()).run();
+  } catch (e) {}
+}
+
 async function getSessionUser(env, request) {
   const cookies = parseCookies(request.headers.get("Cookie") || "");
   const sid = cookies[COOKIE_NAME];
@@ -85,6 +96,7 @@ export async function onRequestPost({ request, env }) {
     const hp = await hashPassword(password, row.password_salt);
     if (!timingSafeEqual(hp.hash, row.password_hash)) return json({ ok: false, error: "Invalid email or password." }, 401);
     const sid = await createSession(env, row.id, request);
+    await logActivity(env, request, row, "login_success", "auth_user", row.id, { email: row.email });
     return json({ ok: true, user: { id: row.id, email: row.email, name: row.name, role: row.role, status: row.status, companyId: row.company_id, companyName: row.company_name } }, 200, { "Set-Cookie": sessionCookie(sid) });
   } catch (err) {
     return json({ ok: false, error: String(err && err.message ? err.message : err) }, 500);

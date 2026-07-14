@@ -82,6 +82,7 @@ export async function onRequestPost({ request, env }) {
     await env.DB.prepare(`INSERT INTO auth_users (id,company_id,name,email,password_hash,password_salt,role,status,created_at,updated_at)
       VALUES (?1,?2,?3,?4,?5,?6,?7,'Active',?8,?9)`)
       .bind(id, actor.company_id, name, email, hp.hash, hp.salt, role, now, now).run();
+    await logActivity(env, request, actor, "user_created", "auth_user", id, { targetEmail: email, targetName: name, role });
     return json({ ok: true, user: { id, name, email, role, status: "Active" } });
   } catch (err) { return json({ ok: false, error: String(err && err.message ? err.message : err) }, 500); }
 }
@@ -102,6 +103,7 @@ export async function onRequestPut({ request, env }) {
     await env.DB.prepare("UPDATE auth_users SET role=?1,status=?2,updated_at=?3 WHERE id=?4 AND company_id=?5")
       .bind(role, status, now, id, actor.company_id).run();
     if (status !== "Active") await env.DB.prepare("DELETE FROM auth_sessions WHERE user_id=?1").bind(id).run();
+    await logActivity(env, request, actor, "user_updated", "auth_user", id, { targetEmail: target.email, role, status });
     return json({ ok: true });
   } catch (err) { return json({ ok: false, error: String(err && err.message ? err.message : err) }, 500); }
 }

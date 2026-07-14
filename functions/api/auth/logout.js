@@ -58,6 +58,17 @@ async function createSession(env, userId, request) {
     .bind(id, userId, now.toISOString(), expires.toISOString(), request.headers.get("user-agent") || "").run();
   return id;
 }
+
+async function logActivity(env, request, user, action, targetType, targetId, details) {
+  try {
+    if (!env.DB) return;
+    await env.DB.prepare(`INSERT INTO app_activity_log
+      (id,company_id,user_id,user_email,user_role,action,target_type,target_id,details,ip,user_agent,created_at)
+      VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12)`)
+      .bind(randomId("log_"), (user && (user.company_id || user.companyId)) || "", (user && user.id) || "", (user && user.email) || "", (user && user.role) || "", action, targetType || "", targetId || "", JSON.stringify(details || {}), request.headers.get("CF-Connecting-IP") || "", request.headers.get("user-agent") || "", new Date().toISOString()).run();
+  } catch (e) {}
+}
+
 async function getSessionUser(env, request) {
   const cookies = parseCookies(request.headers.get("Cookie") || "");
   const sid = cookies[COOKIE_NAME];
@@ -76,8 +87,10 @@ async function getSessionUser(env, request) {
 export async function onRequestPost({ request, env }) {
   try {
     if (env.DB) {
+      const user = await getSessionUser(env, request);
       const cookies = parseCookies(request.headers.get("Cookie") || "");
       const sid = cookies[COOKIE_NAME];
+      if (user) await logActivity(env, request, user, "logout", "auth_user", user.id, {});
       if (sid) await env.DB.prepare("DELETE FROM auth_sessions WHERE id=?1").bind(sid).run();
     }
     return json({ ok: true }, 200, { "Set-Cookie": clearCookie() });
