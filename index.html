@@ -354,8 +354,8 @@
 @media print{.stickyBackBtn{display:none!important}}
 
 
-/* Barricora v89 Friendly App Log */
-.activityLogList{display:grid;gap:10px;margin-top:12px}.activityLogItem{border:1px solid #dce4ec;background:white;border-radius:14px;padding:12px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start}.activityLogItem b{color:#062746}.activityDetails{font-size:12px;color:#4a5d70;background:#f8fafc;border:1px solid #e3ebf3;border-radius:10px;padding:8px;margin-top:7px;line-height:1.35}.activityPill{background:#eef2f6;color:#334155;border:1px solid #dce4ec;border-radius:999px;padding:5px 8px;font-size:11px;font-weight:900;text-transform:uppercase}.supportAccessStatus{border:1px solid #dce4ec;background:#f8fafc;border-radius:14px;padding:12px;margin:12px 0;line-height:1.45}.supportAccessStatus.supportOn{background:#e7f8ed;border-color:#a8ddb6;color:#14532d}.supportAccessStatus.supportOff{background:#f8fafc;border-color:#dce4ec;color:#475569}@media(max-width:700px){.activityLogItem{grid-template-columns:1fr}.activityPill{width:max-content}}
+/* Barricora v90 App Log search and filters */
+.activityLogFilterBar{display:grid;grid-template-columns:1.4fr .8fr .8fr auto;gap:10px;align-items:end;background:#f8fafc;border:1px solid #e3ebf3;border-radius:16px;padding:12px;margin:12px 0}.activityLogFilterBar label{font-size:12px;font-weight:800;color:#4a5d70;margin:0}.activityLogFilterBar input,.activityLogFilterBar select{margin-top:5px}.activityLogList{display:grid;gap:10px;margin-top:12px}.activityLogItem{border:1px solid #dce4ec;background:white;border-radius:14px;padding:12px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start}.activityLogItem b{color:#062746}.activityDetails{font-size:12px;color:#4a5d70;background:#f8fafc;border:1px solid #e3ebf3;border-radius:10px;padding:8px;margin-top:7px;line-height:1.35}.activityPill{background:#eef2f6;color:#334155;border:1px solid #dce4ec;border-radius:999px;padding:5px 8px;font-size:11px;font-weight:900;text-transform:uppercase}.supportAccessStatus{border:1px solid #dce4ec;background:#f8fafc;border-radius:14px;padding:12px;margin:12px 0;line-height:1.45}.supportAccessStatus.supportOn{background:#e7f8ed;border-color:#a8ddb6;color:#14532d}.supportAccessStatus.supportOff{background:#f8fafc;border-color:#dce4ec;color:#475569}@media(max-width:900px){.activityLogFilterBar{grid-template-columns:1fr 1fr}.activityLogFilterBar .filterClearWrap{grid-column:1/-1}}@media(max-width:700px){.activityLogFilterBar{grid-template-columns:1fr}.activityLogItem{grid-template-columns:1fr}.activityPill{width:max-content}}
 
 </style></head><body>
 <section id="loginScreen" class="loginScreen noPrint">
@@ -402,7 +402,7 @@
     <div class="sectionHeader"><div><span class="step">Home</span><h2>Safety Portal Dashboard</h2><p class="small">Overall snapshot of audits, actions, findings, toolbox talks, daily checks and PPE.</p></div><button class="primary noPrint" id="dashboardStartAuditBtn" type="button">Start Audit</button></div>
     <div class="cloudPanel noPrint">
       <span id="cloudStatus">Cloud: checking...</span>
-      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v89</span><span id="authUserBadge">User: signed out</span>
+      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v90</span><span id="authUserBadge">User: signed out</span>
       <button class="secondary" id="syncNowBtn" type="button">Sync now</button>
     </div>
     <div class="kpiGrid" id="homeDashGrid">
@@ -797,6 +797,34 @@
     <div class="settingsBackRow noPrint"><button class="secondary" id="backToSettingsHomeFromActivityBtn" type="button">← Settings</button></div>
     <div class="sectionHeader"><div><span class="step">Security</span><h2>App Log</h2><p class="small">Background history of important app activity: logins, user changes, support access and blocked actions.</p></div><button class="secondary noPrint" id="refreshActivityLogBtn" type="button">Refresh Log</button></div>
     <div id="activityLogInfo" class="settingsNote">Only Owner/Admin can view the App Log.</div>
+    <div class="activityLogFilterBar noPrint" id="activityLogFilterBar">
+      <label>Search App Log<input id="activitySearch" placeholder="Search user, section, action, worker, PPE..."></label>
+      <label>Section<select id="activitySectionFilter">
+        <option value="all">All sections</option>
+        <option value="auth">Login / users</option>
+        <option value="support_access">Support Access</option>
+        <option value="audits">Audits</option>
+        <option value="findings">Findings</option>
+        <option value="daily_checklists">Daily Checks</option>
+        <option value="toolbox_talks">Toolbox</option>
+        <option value="workers">Workers</option>
+        <option value="ppe">PPE</option>
+        <option value="rams">RAMS</option>
+        <option value="settings">Settings</option>
+        <option value="photos">Photos</option>
+      </select></label>
+      <label>Activity type<select id="activityTypeFilter">
+        <option value="all">All activity</option>
+        <option value="login">Login / logout</option>
+        <option value="saved">Saved / updated</option>
+        <option value="deleted">Deleted</option>
+        <option value="users">User changes</option>
+        <option value="support">Support access</option>
+        <option value="blocked">Blocked actions</option>
+        <option value="failed">Failed changes</option>
+      </select></label>
+      <div class="filterClearWrap"><button class="secondary" id="clearActivityFiltersBtn" type="button">Clear filters</button></div>
+    </div>
     <div id="activityLogList" class="activityLogList"></div>
   </div>
 
@@ -1255,13 +1283,50 @@ function activityFriendlyDetails(log){
   if(log.action==="company_profile_registered")return "First company profile / owner account was created.";
   return "";
 }
+function activityFilterText(log){
+  let d=log.details||{};
+  return [activityActionLabel(log),activityFriendlyDetails(log),activityTargetLabel(log.target_type),log.action,log.target_type,log.target_id,log.user_email,log.user_role,d.targetEmail,d.targetName,d.role,d.status,d.note,d.companyName,d.userName].filter(Boolean).join(" ").toLowerCase();
+}
+function activityMatchesSection(log,section){
+  if(!section||section==="all")return true;
+  let t=String(log.target_type||"");
+  if(section==="auth")return t==="auth_user"||t==="company"||String(log.action||"").indexOf("user_")===0||log.action==="login_success"||log.action==="logout"||log.action==="company_profile_registered";
+  return t===section;
+}
+function activityMatchesType(log,type){
+  if(!type||type==="all")return true;
+  let action=String(log.action||"");
+  let method=String((log.details&&log.details.method)||"").toUpperCase();
+  if(type==="login")return action==="login_success"||action==="logout";
+  if(type==="saved")return action==="record_changed"&&method!=="DELETE";
+  if(type==="deleted")return action==="record_changed"&&method==="DELETE";
+  if(type==="users")return action==="user_created"||action==="user_updated"||action==="company_profile_registered";
+  if(type==="support")return action==="support_access_enabled"||action==="support_access_disabled";
+  if(type==="blocked")return action==="blocked_viewer_write";
+  if(type==="failed")return action==="write_failed";
+  return true;
+}
+function filteredActivityLogs(){
+  let q=(($("activitySearch")&&$("activitySearch").value)||"").toLowerCase().trim();
+  let section=($("activitySectionFilter")&&$("activitySectionFilter").value)||"all";
+  let type=($("activityTypeFilter")&&$("activityTypeFilter").value)||"all";
+  return appActivityLogs.filter(function(log){
+    if(!activityMatchesSection(log,section))return false;
+    if(!activityMatchesType(log,type))return false;
+    if(q&&activityFilterText(log).indexOf(q)===-1)return false;
+    return true;
+  });
+}
 function renderActivityLog(){
-  let box=$("activityLogList"),info=$("activityLogInfo");if(!box)return;
-  if(!canManageUsers()){if(info)info.innerHTML="Only Owner/Admin can view the App Log.";box.innerHTML='<div class="emptyState">Only Owner/Admin can view the App Log.</div>';return;}
-  if(info)info.innerHTML="Showing the latest important app activity in normal language.";
-  if(!appActivityLogs.length){box.innerHTML='<div class="emptyState">No App Log entries yet. Login/logout, user changes, support access changes and app record changes will appear here.</div>';return;}
+  let box=$("activityLogList"),info=$("activityLogInfo"),filters=$("activityLogFilterBar");if(!box)return;
+  if(!canManageUsers()){if(info)info.innerHTML="Only Owner/Admin can view the App Log.";if(filters)filters.classList.add("hidden");box.innerHTML='<div class="emptyState">Only Owner/Admin can view the App Log.</div>';return;}
+  if(filters)filters.classList.remove("hidden");
+  if(!appActivityLogs.length){if(info)info.innerHTML="Showing the latest important app activity in normal language.";box.innerHTML='<div class="emptyState">No App Log entries yet. Login/logout, user changes, support access changes and app record changes will appear here.</div>';return;}
+  let logs=filteredActivityLogs();
+  if(info)info.innerHTML="Showing "+logs.length+" of "+appActivityLogs.length+" App Log entries.";
+  if(!logs.length){box.innerHTML='<div class="emptyState">No App Log entries match your search/filter.</div>';return;}
   let h="";
-  appActivityLogs.forEach(function(log){
+  logs.forEach(function(log){
     let when=log.created_at?new Date(log.created_at).toLocaleString():"";
     let details=activityFriendlyDetails(log);
     h+='<div class="activityLogItem"><div><b>'+esc(activityActionLabel(log))+'</b><div class="small">'+esc(when)+' • '+esc(log.user_email||"System")+' • '+esc(log.user_role||"")+'</div>'+(details?'<div class="activityDetails">'+esc(details)+'</div>':'')+'</div><span class="activityPill">'+esc(activityTargetLabel(log.target_type||"app"))+'</span></div>';
@@ -1380,6 +1445,10 @@ function init(){
   if($("backToSettingsHomeFromActivityBtn"))$("backToSettingsHomeFromActivityBtn").onclick=showSettingsHome;
   if($("backToSettingsHomeFromSupportBtn"))$("backToSettingsHomeFromSupportBtn").onclick=showSettingsHome;
   if($("refreshActivityLogBtn"))$("refreshActivityLogBtn").onclick=loadActivityLog;
+  if($("activitySearch"))$("activitySearch").oninput=renderActivityLog;
+  if($("activitySectionFilter"))$("activitySectionFilter").onchange=renderActivityLog;
+  if($("activityTypeFilter"))$("activityTypeFilter").onchange=renderActivityLog;
+  if($("clearActivityFiltersBtn"))$("clearActivityFiltersBtn").onclick=function(){if($("activitySearch"))$("activitySearch").value="";if($("activitySectionFilter"))$("activitySectionFilter").value="all";if($("activityTypeFilter"))$("activityTypeFilter").value="all";renderActivityLog();};
   if($("refreshSupportAccessBtn"))$("refreshSupportAccessBtn").onclick=loadSupportAccess;
   if($("supportEnable1hBtn"))$("supportEnable1hBtn").onclick=function(){setSupportAccess(true,1)};
   if($("supportEnable24hBtn"))$("supportEnable24hBtn").onclick=function(){setSupportAccess(true,24)};
