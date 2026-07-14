@@ -38,6 +38,19 @@ async function logActivity(env, request, user, action, targetType, targetId, det
   } catch (e) {}
 }
 
+function describeTarget(path) {
+  if (path.startsWith("/api/audits")) return "audits";
+  if (path.startsWith("/api/findings")) return "findings";
+  if (path.startsWith("/api/daily")) return "daily_checklists";
+  if (path.startsWith("/api/toolbox")) return "toolbox_talks";
+  if (path.startsWith("/api/workers")) return "workers";
+  if (path.startsWith("/api/ppe")) return "ppe";
+  if (path.startsWith("/api/rams")) return "rams";
+  if (path.startsWith("/api/settings")) return "settings";
+  if (path.startsWith("/api/photos")) return "photos";
+  return "api";
+}
+
 function isPublicApi(path) {
   return path === "/api/health" ||
     path === "/api/auth/login" ||
@@ -58,7 +71,17 @@ export async function onRequest(context) {
       await logActivity(context.env, context.request, user, "blocked_viewer_write", "api", path, { method });
       return json({ ok: false, error: "View-only users cannot create, edit, upload or delete records." }, 403);
     }
-    return context.next();
+
+    const response = await context.next();
+
+    // App Log v88: capture successful/failed write requests for normal app data changes.
+    // Specific auth/support actions are logged inside their own API handlers to avoid duplicates.
+    if (method !== "GET" && method !== "HEAD" && !path.startsWith("/api/auth/") && path !== "/api/support-access") {
+      const ok = response && response.status < 400;
+      await logActivity(context.env, context.request, user, ok ? "record_changed" : "write_failed", describeTarget(path), path, { method, status: response ? response.status : "unknown" });
+    }
+
+    return response;
   } catch (err) {
     return json({ ok: false, error: "Authentication check failed" }, 401);
   }

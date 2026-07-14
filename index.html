@@ -354,7 +354,7 @@
 @media print{.stickyBackBtn{display:none!important}}
 
 
-/* Barricora v87 App Log + Support Access */
+/* Barricora v88 App Log Capture Fix */
 .activityLogList{display:grid;gap:10px;margin-top:12px}.activityLogItem{border:1px solid #dce4ec;background:white;border-radius:14px;padding:12px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start}.activityLogItem b{color:#062746}.activityDetails{font-size:12px;color:#4a5d70;background:#f8fafc;border:1px solid #e3ebf3;border-radius:10px;padding:8px;margin-top:7px;line-height:1.35}.activityPill{background:#eef2f6;color:#334155;border:1px solid #dce4ec;border-radius:999px;padding:5px 8px;font-size:11px;font-weight:900;text-transform:uppercase}.supportAccessStatus{border:1px solid #dce4ec;background:#f8fafc;border-radius:14px;padding:12px;margin:12px 0;line-height:1.45}.supportAccessStatus.supportOn{background:#e7f8ed;border-color:#a8ddb6;color:#14532d}.supportAccessStatus.supportOff{background:#f8fafc;border-color:#dce4ec;color:#475569}@media(max-width:700px){.activityLogItem{grid-template-columns:1fr}.activityPill{width:max-content}}
 
 </style></head><body>
@@ -402,7 +402,7 @@
     <div class="sectionHeader"><div><span class="step">Home</span><h2>Safety Portal Dashboard</h2><p class="small">Overall snapshot of audits, actions, findings, toolbox talks, daily checks and PPE.</p></div><button class="primary noPrint" id="dashboardStartAuditBtn" type="button">Start Audit</button></div>
     <div class="cloudPanel noPrint">
       <span id="cloudStatus">Cloud: checking...</span>
-      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v87</span><span id="authUserBadge">User: signed out</span>
+      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v88</span><span id="authUserBadge">User: signed out</span>
       <button class="secondary" id="syncNowBtn" type="button">Sync now</button>
     </div>
     <div class="kpiGrid" id="homeDashGrid">
@@ -1215,14 +1215,14 @@ async function saveUserRoleStatus(id){
 
 let appActivityLogs=[];
 function activityActionLabel(action){
-  let map={login_success:"Login",logout:"Logout",company_profile_registered:"Company profile created",user_created:"User created",user_updated:"User updated",blocked_viewer_write:"Blocked viewer action",support_access_enabled:"Support access enabled",support_access_disabled:"Support access disabled"};
+  let map={login_success:"Login",logout:"Logout",company_profile_registered:"Company profile created",user_created:"User created",user_updated:"User updated",blocked_viewer_write:"Blocked viewer action",support_access_enabled:"Support access enabled",support_access_disabled:"Support access disabled",record_changed:"Record changed",write_failed:"Write failed"};
   return map[action]||String(action||"Activity").replace(/_/g," ");
 }
 function renderActivityLog(){
   let box=$("activityLogList"),info=$("activityLogInfo");if(!box)return;
   if(!canManageUsers()){if(info)info.innerHTML="Only Owner/Admin can view the App Log.";box.innerHTML='<div class="emptyState">Only Owner/Admin can view the App Log.</div>';return;}
   if(info)info.innerHTML="Showing latest security and admin events for this company.";
-  if(!appActivityLogs.length){box.innerHTML='<div class="emptyState">No App Log entries yet. Login/logout, user changes and support access changes will appear here.</div>';return;}
+  if(!appActivityLogs.length){box.innerHTML='<div class="emptyState">No App Log entries yet. Login/logout, user changes, support access changes and app record changes will appear here.</div>';return;}
   let h="";
   appActivityLogs.forEach(function(log){
     let when=log.created_at?new Date(log.created_at).toLocaleString():"";

@@ -52,6 +52,16 @@ function normalRole(role, actorRole) {
   if (actorRole !== "Owner" && role === "Admin") role = "Editor";
   return role;
 }
+
+async function logActivity(env, request, user, action, targetType, targetId, details) {
+  try {
+    if (!env.DB || !user) return;
+    await env.DB.prepare(`INSERT INTO app_activity_log
+      (id,company_id,user_id,user_email,user_role,action,target_type,target_id,details,ip,user_agent,created_at)
+      VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12)`)
+      .bind(randomId("log_"), user.company_id || "", user.id || "", user.email || "", user.role || "", action, targetType || "", targetId || "", JSON.stringify(details || {}), request.headers.get("CF-Connecting-IP") || "", request.headers.get("user-agent") || "", new Date().toISOString()).run();
+  } catch (e) {}
+}
 export async function onRequestGet({ request, env }) {
   try {
     const actor = await currentUser(env, request);
