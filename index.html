@@ -354,7 +354,7 @@
 @media print{.stickyBackBtn{display:none!important}}
 
 
-/* Barricora v88 App Log Capture Fix */
+/* Barricora v89 Friendly App Log */
 .activityLogList{display:grid;gap:10px;margin-top:12px}.activityLogItem{border:1px solid #dce4ec;background:white;border-radius:14px;padding:12px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start}.activityLogItem b{color:#062746}.activityDetails{font-size:12px;color:#4a5d70;background:#f8fafc;border:1px solid #e3ebf3;border-radius:10px;padding:8px;margin-top:7px;line-height:1.35}.activityPill{background:#eef2f6;color:#334155;border:1px solid #dce4ec;border-radius:999px;padding:5px 8px;font-size:11px;font-weight:900;text-transform:uppercase}.supportAccessStatus{border:1px solid #dce4ec;background:#f8fafc;border-radius:14px;padding:12px;margin:12px 0;line-height:1.45}.supportAccessStatus.supportOn{background:#e7f8ed;border-color:#a8ddb6;color:#14532d}.supportAccessStatus.supportOff{background:#f8fafc;border-color:#dce4ec;color:#475569}@media(max-width:700px){.activityLogItem{grid-template-columns:1fr}.activityPill{width:max-content}}
 
 </style></head><body>
@@ -402,7 +402,7 @@
     <div class="sectionHeader"><div><span class="step">Home</span><h2>Safety Portal Dashboard</h2><p class="small">Overall snapshot of audits, actions, findings, toolbox talks, daily checks and PPE.</p></div><button class="primary noPrint" id="dashboardStartAuditBtn" type="button">Start Audit</button></div>
     <div class="cloudPanel noPrint">
       <span id="cloudStatus">Cloud: checking...</span>
-      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v88</span><span id="authUserBadge">User: signed out</span>
+      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v89</span><span id="authUserBadge">User: signed out</span>
       <button class="secondary" id="syncNowBtn" type="button">Sync now</button>
     </div>
     <div class="kpiGrid" id="homeDashGrid">
@@ -1214,21 +1214,57 @@ async function saveUserRoleStatus(id){
 }
 
 let appActivityLogs=[];
-function activityActionLabel(action){
-  let map={login_success:"Login",logout:"Logout",company_profile_registered:"Company profile created",user_created:"User created",user_updated:"User updated",blocked_viewer_write:"Blocked viewer action",support_access_enabled:"Support access enabled",support_access_disabled:"Support access disabled",record_changed:"Record changed",write_failed:"Write failed"};
+function activityTargetLabel(target){
+  let map={audits:"Audits",findings:"Findings",daily_checklists:"Daily Checks",toolbox_talks:"Toolbox",workers:"Workers",ppe:"PPE",rams:"RAMS",settings:"Settings",photos:"Photos",api:"App",app:"App"};
+  return map[target]||String(target||"App").replace(/_/g," ").replace(/\w/g,function(c){return c.toUpperCase();});
+}
+function activityActionLabel(log){
+  let action=(log&&log.action)||"";
+  let target=(log&&log.target_type)||"";
+  let method=(log&&log.details&&log.details.method)||"";
+  if(action==="record_changed"){
+    if(method==="DELETE"){
+      let delMap={audits:"Audit deleted",findings:"Finding deleted",daily_checklists:"Daily check deleted",toolbox_talks:"Toolbox talk deleted",workers:"Worker deleted",ppe:"PPE record deleted",rams:"RAMS file deleted",settings:"Settings cleared",photos:"Photo deleted"};
+      return delMap[target]||"Record deleted";
+    }
+    let saveMap={audits:"Audit saved / updated",findings:"Finding saved / updated",daily_checklists:"Daily check saved / updated",toolbox_talks:"Toolbox talk saved / updated",workers:"Worker saved / updated",ppe:"PPE stock / issue log updated",rams:"RAMS file saved / updated",settings:"Settings saved",photos:"Photo uploaded"};
+    return saveMap[target]||"Record saved / updated";
+  }
+  if(action==="write_failed")return "Change failed";
+  let map={login_success:"Logged in",logout:"Logged out",company_profile_registered:"Company profile created",user_created:"New user created",user_updated:"User role/status changed",blocked_viewer_write:"Viewer blocked from changing data",support_access_enabled:"Support access enabled",support_access_disabled:"Support access disabled"};
   return map[action]||String(action||"Activity").replace(/_/g," ");
+}
+function activityFriendlyDetails(log){
+  if(!log)return "";
+  let d=log.details||{};
+  let status=Number(d.status||0);
+  let method=String(d.method||"").toUpperCase();
+  if(log.action==="blocked_viewer_write")return "Action blocked because this user has View-only access.";
+  if(log.action==="write_failed")return "Change was not saved. Please check the page and try again."+(status?" Server status: "+status+".":"");
+  if(log.action==="record_changed"){
+    if(method==="DELETE")return "Deleted successfully.";
+    if(method==="POST"||method==="PUT"||method==="PATCH")return "Change saved successfully.";
+    return "Change completed successfully.";
+  }
+  if(log.action==="login_success")return "User signed in successfully.";
+  if(log.action==="logout")return "User signed out.";
+  if(log.action==="user_created")return "New user was added to this company.";
+  if(log.action==="user_updated")return "User role or account status was changed.";
+  if(log.action==="support_access_enabled")return "Temporary Barricora support access was enabled.";
+  if(log.action==="support_access_disabled")return "Barricora support access was disabled.";
+  if(log.action==="company_profile_registered")return "First company profile / owner account was created.";
+  return "";
 }
 function renderActivityLog(){
   let box=$("activityLogList"),info=$("activityLogInfo");if(!box)return;
   if(!canManageUsers()){if(info)info.innerHTML="Only Owner/Admin can view the App Log.";box.innerHTML='<div class="emptyState">Only Owner/Admin can view the App Log.</div>';return;}
-  if(info)info.innerHTML="Showing latest security and admin events for this company.";
+  if(info)info.innerHTML="Showing the latest important app activity in normal language.";
   if(!appActivityLogs.length){box.innerHTML='<div class="emptyState">No App Log entries yet. Login/logout, user changes, support access changes and app record changes will appear here.</div>';return;}
   let h="";
   appActivityLogs.forEach(function(log){
     let when=log.created_at?new Date(log.created_at).toLocaleString():"";
-    let details="";
-    try{details=log.details&&Object.keys(log.details).length?Object.keys(log.details).map(function(k){return esc(k)+": "+esc(String(log.details[k]));}).join(" • "):"";}catch(e){}
-    h+='<div class="activityLogItem"><div><b>'+esc(activityActionLabel(log.action))+'</b><div class="small">'+esc(when)+' • '+esc(log.user_email||"System")+' • '+esc(log.user_role||"")+'</div>'+(details?'<div class="activityDetails">'+details+'</div>':'')+'</div><span class="activityPill">'+esc(log.target_type||"app")+'</span></div>';
+    let details=activityFriendlyDetails(log);
+    h+='<div class="activityLogItem"><div><b>'+esc(activityActionLabel(log))+'</b><div class="small">'+esc(when)+' • '+esc(log.user_email||"System")+' • '+esc(log.user_role||"")+'</div>'+(details?'<div class="activityDetails">'+esc(details)+'</div>':'')+'</div><span class="activityPill">'+esc(activityTargetLabel(log.target_type||"app"))+'</span></div>';
   });
   box.innerHTML=h;
 }
