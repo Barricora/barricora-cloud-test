@@ -340,6 +340,18 @@
 .settingsTileGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px}.settingsTile{background:#fbfcfe;border:1px solid #dce4ec;border-radius:18px;padding:16px;text-align:left;cursor:pointer;box-shadow:0 4px 14px rgba(22,42,65,.06)}.settingsTile:hover{transform:translateY(-1px);box-shadow:0 9px 24px rgba(22,42,65,.10)}.settingsTileIcon{width:54px;height:54px;border-radius:16px;background:#eef6ff;display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:10px}.settingsTile b{display:block;color:#062746;font-size:17px;margin-bottom:5px}.settingsTile span{display:block;color:#667789;font-size:13px;line-height:1.35}.settingsBackRow{display:flex;justify-content:flex-start;margin-bottom:10px}.settingsSectionCard.hidden{display:none!important}
 @media(max-width:700px){.settingsTileGrid{grid-template-columns:1fr}.bottom{right:10px!important;bottom:10px!important}.bottom button{font-size:11px!important;padding:7px 9px!important}.portalSidebar{padding-bottom:18px}}
 
+
+/* v83 sticky back buttons + company branding */
+.stickyBackBtn{position:fixed!important;top:82px;left:276px;z-index:145!important;border-radius:999px!important;padding:8px 11px!important;font-size:12px!important;box-shadow:0 8px 24px rgba(6,39,70,.20)!important;background:#fff!important;color:#062746!important;border:1px solid #cfd8e3!important}
+.stickyBackBtn:hover{background:#f3f7fb!important}
+.portalCompanyLogo{width:auto;max-width:118px;max-height:54px;object-fit:contain;background:#fff;border:1px solid #dce4ec;border-radius:14px;padding:6px;box-shadow:0 3px 10px rgba(22,42,65,.08)}
+.companyLogoSettings{display:grid;grid-template-columns:210px 1fr;gap:14px;align-items:center;background:#fbfcfe;border:1px dashed #c8d6e3;border-radius:16px;padding:13px;margin-top:12px}
+.companyLogoPreview{min-height:92px;border:1px solid #dce4ec;border-radius:14px;background:white;display:flex;align-items:center;justify-content:center;color:#667789;font-weight:900;text-align:center;padding:10px}
+.companyLogoPreview img{max-width:100%;max-height:86px;object-fit:contain;display:block}
+.reportBrandStack{display:grid;gap:6px;align-items:center}.reportCompanyName{font-size:12px;font-weight:900;color:#062746;line-height:1.25}.reportBrand .printLogo.companyPrintLogo{max-height:82px;object-fit:contain}
+@media(max-width:900px){.stickyBackBtn{left:12px;top:72px}.portalCompanyLogo{max-width:88px;max-height:44px}.portalTop .headerInner{align-items:center}.companyLogoSettings{grid-template-columns:1fr}}
+@media print{.stickyBackBtn{display:none!important}}
+
 </style></head><body>
 <section id="loginScreen" class="loginScreen noPrint">
   <div class="loginCard">
@@ -378,14 +390,14 @@
   </aside>
   <div id="mobileMenuOverlay" class="mobileMenuOverlay noPrint"></div>
   <div class="portalContent">
-    <header class="portalTop noPrint"><div class="headerInner"><button class="mobileMenuBtn" id="mobileMenuBtn" type="button">☰ Menu</button><div class="headerText"><h1 id="portalTitle">Dashboard</h1><p id="sub">Focused. Practical. Safer sites.</p><p id="autosaveStatus" style="margin:4px 0 0;color:#667789;font-size:12px">Auto-save ready</p></div></div></header>
+    <header class="portalTop noPrint"><div class="headerInner"><button class="mobileMenuBtn" id="mobileMenuBtn" type="button">☰ Menu</button><img id="portalCompanyLogo" class="portalCompanyLogo hidden" alt="Company logo"><div class="headerText"><h1 id="portalTitle">Dashboard</h1><p id="sub">Focused. Practical. Safer sites.</p><p id="autosaveStatus" style="margin:4px 0 0;color:#667789;font-size:12px">Auto-save ready</p></div></div></header>
     <main class="portalMain">
 <section id="screenPortalDashboard">
   <div class="card">
     <div class="sectionHeader"><div><span class="step">Home</span><h2>Safety Portal Dashboard</h2><p class="small">Overall snapshot of audits, actions, findings, toolbox talks, daily checks and PPE.</p></div><button class="primary noPrint" id="dashboardStartAuditBtn" type="button">Start Audit</button></div>
     <div class="cloudPanel noPrint">
       <span id="cloudStatus">Cloud: checking...</span>
-      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v82</span><span id="authUserBadge">User: signed out</span>
+      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v83</span><span id="authUserBadge">User: signed out</span>
       <button class="secondary" id="syncNowBtn" type="button">Sync now</button>
     </div>
     <div class="kpiGrid" id="homeDashGrid">
@@ -720,7 +732,7 @@
     <h2>Settings</h2>
     <p class="small">Choose what you want to manage.</p>
     <div class="settingsTileGrid noPrint">
-      <button class="settingsTile" id="settingsGeneralTileBtn" type="button"><div class="settingsTileIcon">⚙️</div><b>General Settings</b><span>Default auditor, contractor, project, site details and company profile name.</span></button>
+      <button class="settingsTile" id="settingsGeneralTileBtn" type="button"><div class="settingsTileIcon">⚙️</div><b>General Settings</b><span>Company details, project contacts and report logo.</span></button>
       <button class="settingsTile" id="settingsUsersTileBtn" type="button"><div class="settingsTileIcon">👥</div><b>Users / Roles</b><span>Create users, set roles and control who can edit or view only.</span></button>
     </div>
     <div class="actions noPrint"><button class="secondary" id="backFromSettingsHomeBtn" type="button">← Back to Dashboard</button></div>
@@ -729,19 +741,27 @@
   <div class="card settingsSectionCard hidden" id="settingsGeneralCard">
     <div class="settingsBackRow noPrint"><button class="secondary" id="backToSettingsHomeFromGeneralBtn" type="button">← Settings</button></div>
     <span class="step">General Settings</span>
-    <h2>App Settings / Defaults</h2>
-    <p class="small">Save common details once, then new audits can be pre-filled automatically.</p>
+    <h2>Company / Project Defaults</h2>
+    <p class="small">Save the main company details and project contacts. These details can pre-fill records and the logo will show in page headers and audit reports.</p>
     <div class="grid">
-      <label>Default auditor<input id="setAuditor" placeholder="Auditor name"></label>
-      <label>Default contractor<input id="setContractor" placeholder="Contractor / company"></label>
+      <label>Company name<input id="setCompanyName" placeholder="Company / contractor name"></label>
       <label>Default project / site<input id="setSite" placeholder="Site or project name"></label>
-      <label>Default area<input id="setArea" placeholder="Area / building / level"></label>
-      <label>Default PM<input id="setPM" placeholder="Project Manager"></label>
-      <label>Default SM / Supervisor<input id="setSM" placeholder="Site Manager / Supervisor"></label>
-      <label>Default workers observed<input id="setWorkers" placeholder="e.g. 10"></label>
-      <label>Company profile name<input id="setCompanyName" placeholder="For future portal use"></label>
+      <label>Default area / location<input id="setArea" placeholder="Area / building / level"></label>
+      <label>Project Manager<input id="setPM" placeholder="Project Manager"></label>
+      <label>Site Manager<input id="setSM" placeholder="Site Manager"></label>
+      <label>Administrator<input id="setAdministrator" placeholder="Administrator"></label>
+      <label>HSE<input id="setHSE" placeholder="HSE / safety responsible"></label>
+      <label>QAQC<input id="setQAQC" placeholder="QAQC responsible"></label>
     </div>
-    <div class="settingsNote">Settings are saved locally and also synced to cloud when the Cloudflare backend is available.</div>
+    <div class="companyLogoSettings">
+      <div>
+        <label class="photoBtn" for="setCompanyLogoInput">📷 Upload Company Logo</label>
+        <input id="setCompanyLogoInput" type="file" accept="image/*">
+        <div class="actions noPrint"><button class="secondary" id="clearCompanyLogoBtn" type="button">Remove logo</button></div>
+      </div>
+      <div id="companyLogoPreview" class="companyLogoPreview">No company logo uploaded</div>
+    </div>
+    <div class="settingsNote">Logo is resized before saving so it stays light enough for cloud sync and PDF reports. Settings are saved locally and synced to cloud when available.</div>
     <div class="actions noPrint">
       <button class="primary" id="saveSettingsBtn" type="button">Save Settings</button>
       <button class="secondary" id="applySettingsBtn" type="button">Apply to Current Audit</button>
@@ -867,7 +887,7 @@ const PORTAL_SCREENS=["screenPortalDashboard","screenCategories","screenDailyChe
 function screenTitle(id){return {screenPortalDashboard:"Dashboard",screenCategories:"Audits",screenDailyChecklists:"Daily Checklists",screenToolboxTalks:"Toolbox Talks",screenRAMS:"RAMS",screenActionList:"Actions",screenFindings:"Findings",screenWorkers:"Workers",screenPPE:"PPE Stock",screenSettings:"Settings",screenAuditList:"Audit List",screenCloseAction:"Update Action",screenDetails:"Audit Details",screenQuestion:"Audit Questions",screenReport:"Audit Report"}[id]||"Barricora"}
 function setActiveNav(id){document.querySelectorAll(".navItem").forEach(function(btn){let target=btn.getAttribute("data-nav-screen");btn.classList.toggle("active",target===id)});if($("portalTitle"))$("portalTitle").textContent=screenTitle(id)}
 function closeMobileMenu(){if($("portalSidebar"))$("portalSidebar").classList.remove("open");if($("mobileMenuOverlay"))$("mobileMenuOverlay").classList.remove("open")}
-function show(id){PORTAL_SCREENS.forEach(function(s){let el=$(s);if(el)el.classList.add("hidden")});let target=$(id);if(target)target.classList.remove("hidden");if($("appShell"))$("appShell").classList.remove("hidden");if($("loginScreen"))$("loginScreen").classList.add("hidden");if(id==="screenPortalDashboard"||id==="screenCategories"||id==="screenActionList"||id==="screenAuditList"||id==="screenFindings"||id==="screenDailyChecklists"||id==="screenToolboxTalks"||id==="screenRAMS"||id==="screenPPE")updateHomeDashboard();if(id==="screenFindings")showFindingDashboard(false);if(id==="screenDailyChecklists")showDailyDashboard(false);if(id==="screenWorkers")showWorkersDashboard(false);if(id==="screenPPE")showPPEDashboard(false);if(id==="screenRAMS")showRAMSDashboard(false);setActiveNav(id);closeMobileMenu();window.scrollTo(0,0);applyRoleRestrictionsSoon()}
+function show(id){PORTAL_SCREENS.forEach(function(s){let el=$(s);if(el)el.classList.add("hidden")});let target=$(id);if(target)target.classList.remove("hidden");if($("appShell"))$("appShell").classList.remove("hidden");if($("loginScreen"))$("loginScreen").classList.add("hidden");updateCompanyBranding();if(id==="screenPortalDashboard"||id==="screenCategories"||id==="screenActionList"||id==="screenAuditList"||id==="screenFindings"||id==="screenDailyChecklists"||id==="screenToolboxTalks"||id==="screenRAMS"||id==="screenPPE")updateHomeDashboard();if(id==="screenFindings")showFindingDashboard(false);if(id==="screenDailyChecklists")showDailyDashboard(false);if(id==="screenWorkers")showWorkersDashboard(false);if(id==="screenPPE")showPPEDashboard(false);if(id==="screenRAMS")showRAMSDashboard(false);setActiveNav(id);closeMobileMenu();window.scrollTo(0,0);applyRoleRestrictionsSoon()}
 
 
 /* v67 Workers cloud database */
@@ -1078,7 +1098,7 @@ function initPortalShell(){
   if($('mobileMenuOverlay'))$('mobileMenuOverlay').onclick=closeMobileMenu;
   document.querySelectorAll('[data-nav-screen]').forEach(function(btn){btn.onclick=function(){handlePortalNavTarget(this.getAttribute('data-nav-screen'))}});
 }
-async function startPortalAfterInit(){if($('loginScreen'))$('loginScreen').classList.remove('hidden');if($('appShell'))$('appShell').classList.add('hidden');let user=await loadAuthMe();if(user){try{localStorage.removeItem('BARRICORA_RELOAD_AFTER_LOGIN');}catch(e){}show('screenPortalDashboard');try{await initCloudSync();}catch(e){}}else{showAuthMode('login');}}
+async function startPortalAfterInit(){if($('loginScreen'))$('loginScreen').classList.remove('hidden');if($('appShell'))$('appShell').classList.add('hidden');let user=await loadAuthMe();if(user){try{localStorage.removeItem('BARRICORA_RELOAD_AFTER_LOGIN');}catch(e){}show('screenPortalDashboard');try{await initCloudSync();updateCompanyBranding();}catch(e){}}else{showAuthMode('login');}}
 
 function handlePortalNavTarget(target){
   if(!target)return;
@@ -1166,13 +1186,24 @@ function setupRoleObserver(){
   try{let mo=new MutationObserver(function(){if(currentAuthUser&&currentRole()==='Viewer')applyRoleRestrictionsSoon();});mo.observe(document.body,{childList:true,subtree:true});}catch(e){}
 }
 
+function setupStickyBackButtons(){
+  document.querySelectorAll('button').forEach(function(btn){
+    let id=(btn.id||'').toLowerCase();
+    let text=(btn.textContent||'').trim().toLowerCase();
+    if(btn.closest('#loginScreen'))return;
+    if(id.indexOf('back')===0 || text.indexOf('← back')===0 || text.indexOf('back to')>=0 || text==='← settings')btn.classList.add('stickyBackBtn');
+  });
+}
+
 function renderRecentActivity(){let box=$("recentActivityBox");if(!box)return;let list=getAuditList().slice(0,5);if(!list.length){box.innerHTML='<div class="emptyState">No recent activity yet.</div>';return;}let h="";list.forEach(function(a){let label=auditLabel(a);let status=a.status||(a.reportReady?"Finished":"Unfinished");let saved=a.savedAt?new Date(a.savedAt).toLocaleString():"Not saved";h+='<div class="recentItem"><div><b>'+esc(label)+'</b><br><span>'+esc(status)+' • '+esc(saved)+'</span></div><button class="secondary noPrint" type="button" onclick="openSavedAudit('+getAuditList().findIndex(function(x){return x.id===a.id})+')">Open</button></div>'});box.innerHTML=h;}
 
 function init(){
   setupPortalConfirm();
   setupPortalClickFallback();
   setupRoleObserver();
+  setupStickyBackButtons();
   loadLocalSettings();
+  updateCompanyBranding();
   buildCategories();
   initPortalShell();
   initWorkersModule();
@@ -1231,6 +1262,8 @@ function init(){
   if($("saveSettingsBtn"))$("saveSettingsBtn").onclick=saveSettings;
   if($("applySettingsBtn"))$("applySettingsBtn").onclick=function(){applyDefaultDetails(false);autoSave();alert("Settings applied to current audit details.")};
   if($("clearSettingsBtn"))$("clearSettingsBtn").onclick=clearSettings;
+  if($("setCompanyLogoInput"))$("setCompanyLogoInput").onchange=handleCompanyLogoInput;
+  if($("clearCompanyLogoBtn"))$("clearCompanyLogoBtn").onclick=clearCompanyLogo;
   if($("refreshUsersBtn"))$("refreshUsersBtn").onclick=loadRoleUsers;
   if($("createUserBtn"))$("createUserBtn").onclick=createRoleUser;
   if($("deleteAllAuditsBtn"))$("deleteAllAuditsBtn").onclick=deleteAllSavedAudits;
@@ -1685,6 +1718,10 @@ function reportHTML(){
   let dateVal=$("date").value||today();
   let auditor=$("auditor").value||sig.auditorName||"Not entered";
   let supervisor=sig.supervisorName||$("sm")&&$("sm").value||"Not entered";
+  loadLocalSettings();
+  let companyLogo=getCompanyLogoSrc();
+  let companyName=appSettings.companyName||($('contractor')&&$('contractor').value)||'Company logo';
+  let reportBrandLogo=companyLogo||'assets/barricora-logo.png';
   let reportId='BAR-AUD-'+dateVal.replace(/-/g,'').slice(2)+'-'+(currentAuditId?currentAuditId.slice(-4):'0001');
   function ratingBadgeClass(ans){
     if(ans==="Poorly managed")return"ratingPoor";
@@ -1701,7 +1738,7 @@ function reportHTML(){
   }
   let h='';
   h+='<div class="reportPage"><div class="reportPageInner">';
-  h+='<div class="reportHeaderNew"><div class="reportBrand"><img class="printLogo" src="assets/barricora-logo.png" alt="Barricora"></div><div class="reportTitleNew"><h2>'+categorySafe+' Report</h2><p>Site safety audit summary</p></div><div class="reportDocMeta"><div><b>Report ID:</b> '+esc(reportId)+'</div><div><b>Version:</b> 1.0</div><div><b>Page:</b> 1 of 1</div></div></div>';
+  h+='<div class="reportHeaderNew"><div class="reportBrand reportBrandStack"><img class="printLogo companyPrintLogo" src="'+esc(reportBrandLogo)+'" alt="Company logo"><div class="reportCompanyName">'+esc(companyName)+'</div></div><div class="reportTitleNew"><h2>'+categorySafe+' Report</h2><p>Site safety audit summary</p></div><div class="reportDocMeta"><div><b>Report ID:</b> '+esc(reportId)+'</div><div><b>Version:</b> 1.0</div><div><b>Page:</b> 1 of 1</div></div></div>';
   h+='<div class="reportDetailsBand">';
   h+='<div class="detailItemNew"><div class="detailIcon">▦</div><div><span>Project / Site</span><b>'+esc(site)+'</b></div></div>';
   h+='<div class="detailItemNew"><div class="detailIcon">📅</div><div><span>Audit Date</span><b>'+esc(dateVal)+'</b></div></div>';
@@ -1782,34 +1819,97 @@ function openPrintableReport(){
 
 
 const SETTINGS_KEY="barricora_app_settings_v39";
-function defaultSettings(){return{auditor:"",contractor:"",site:"",area:"",pm:"",sm:"",workers:"",companyName:""}}
+function defaultSettings(){return{auditor:"",contractor:"",site:"",area:"",pm:"",sm:"",workers:"",companyName:"",projectManager:"",siteManager:"",administrator:"",hse:"",qaqc:"",companyLogoData:""}}
 function loadLocalSettings(){
   try{let raw=localStorage.getItem(SETTINGS_KEY);appSettings=raw?Object.assign(defaultSettings(),JSON.parse(raw)):defaultSettings();}
   catch(e){appSettings=defaultSettings();}
   return appSettings;
 }
 function saveLocalSettings(){try{localStorage.setItem(SETTINGS_KEY,JSON.stringify(appSettings));}catch(e){}}
+function getCompanyLogoSrc(){return (appSettings&&appSettings.companyLogoData)||"";}
+function updateCompanyBranding(){
+  let src=getCompanyLogoSrc();
+  let top=$("portalCompanyLogo");
+  if(top){
+    if(src){top.src=src;top.alt=(appSettings.companyName||"Company")+" logo";top.classList.remove("hidden");}
+    else{top.removeAttribute("src");top.classList.add("hidden");}
+  }
+}
+function updateCompanyLogoPreview(){
+  let box=$("companyLogoPreview");if(!box)return;
+  let src=getCompanyLogoSrc();
+  if(src)box.innerHTML='<img src="'+esc(src)+'" alt="Company logo preview">';
+  else box.textContent="No company logo uploaded";
+  updateCompanyBranding();
+}
+function resizeCompanyLogoFile(file,done){
+  if(!file||!String(file.type||"").match(/^image\//)){alert("Please choose an image file for the logo.");return;}
+  let reader=new FileReader();
+  reader.onload=function(){
+    let img=new Image();
+    img.onload=function(){
+      let maxW=520,maxH=180,w=img.width||maxW,h=img.height||maxH;
+      let r=Math.min(maxW/w,maxH/h,1);w=Math.max(1,Math.round(w*r));h=Math.max(1,Math.round(h*r));
+      let canvas=document.createElement("canvas");canvas.width=w;canvas.height=h;
+      let ctx=canvas.getContext("2d");ctx.clearRect(0,0,w,h);ctx.drawImage(img,0,0,w,h);
+      let data=canvas.toDataURL("image/png");done(data);
+    };
+    img.onerror=function(){alert("Could not read this logo image.");};
+    img.src=reader.result;
+  };
+  reader.onerror=function(){alert("Could not read this logo file.");};
+  reader.readAsDataURL(file);
+}
+function handleCompanyLogoInput(e){
+  let file=e&&e.target&&e.target.files&&e.target.files[0];if(!file)return;
+  resizeCompanyLogoFile(file,function(data){
+    collectSettingsFromForm();
+    appSettings.companyLogoData=data;
+    saveLocalSettings();
+    syncSettingsToCloud(appSettings);
+    updateCompanyLogoPreview();
+  });
+}
+function clearCompanyLogo(){
+  collectSettingsFromForm();appSettings.companyLogoData="";saveLocalSettings();syncSettingsToCloud(appSettings);updateCompanyLogoPreview();
+}
 function fillSettingsForm(){
   loadLocalSettings();
-  if($("setAuditor"))$("setAuditor").value=appSettings.auditor||"";
-  if($("setContractor"))$("setContractor").value=appSettings.contractor||"";
+  if($("setCompanyName"))$("setCompanyName").value=appSettings.companyName||appSettings.contractor||"";
   if($("setSite"))$("setSite").value=appSettings.site||"";
   if($("setArea"))$("setArea").value=appSettings.area||"";
-  if($("setPM"))$("setPM").value=appSettings.pm||"";
-  if($("setSM"))$("setSM").value=appSettings.sm||"";
-  if($("setWorkers"))$("setWorkers").value=appSettings.workers||"";
-  if($("setCompanyName"))$("setCompanyName").value=appSettings.companyName||"";
+  if($("setPM"))$("setPM").value=appSettings.projectManager||appSettings.pm||"";
+  if($("setSM"))$("setSM").value=appSettings.siteManager||appSettings.sm||"";
+  if($("setAdministrator"))$("setAdministrator").value=appSettings.administrator||"";
+  if($("setHSE"))$("setHSE").value=appSettings.hse||appSettings.auditor||"";
+  if($("setQAQC"))$("setQAQC").value=appSettings.qaqc||"";
+  updateCompanyLogoPreview();
 }
 function collectSettingsFromForm(){
+  let logo=(appSettings&&appSettings.companyLogoData)||"";
+  let companyName=$("setCompanyName")?$("setCompanyName").value.trim():"";
+  let site=$("setSite")?$("setSite").value.trim():"";
+  let area=$("setArea")?$("setArea").value.trim():"";
+  let pm=$("setPM")?$("setPM").value.trim():"";
+  let sm=$("setSM")?$("setSM").value.trim():"";
+  let administrator=$("setAdministrator")?$("setAdministrator").value.trim():"";
+  let hse=$("setHSE")?$("setHSE").value.trim():"";
+  let qaqc=$("setQAQC")?$("setQAQC").value.trim():"";
   appSettings={
-    auditor:$("setAuditor")?$("setAuditor").value.trim():"",
-    contractor:$("setContractor")?$("setContractor").value.trim():"",
-    site:$("setSite")?$("setSite").value.trim():"",
-    area:$("setArea")?$("setArea").value.trim():"",
-    pm:$("setPM")?$("setPM").value.trim():"",
-    sm:$("setSM")?$("setSM").value.trim():"",
-    workers:$("setWorkers")?$("setWorkers").value.trim():"",
-    companyName:$("setCompanyName")?$("setCompanyName").value.trim():""
+    companyName:companyName,
+    site:site,
+    area:area,
+    projectManager:pm,
+    siteManager:sm,
+    administrator:administrator,
+    hse:hse,
+    qaqc:qaqc,
+    companyLogoData:logo,
+    auditor:hse,
+    contractor:companyName,
+    pm:pm,
+    sm:sm,
+    workers:""
   };
   return appSettings;
 }
@@ -1834,10 +1934,10 @@ function showSettingsUsers(){
 }
 function openSettings(){fillSettingsForm();showSettingsHome();show("screenSettings")}
 function saveSettings(){
-  collectSettingsFromForm();saveLocalSettings();syncSettingsToCloud(appSettings);alert("Settings saved.");
+  collectSettingsFromForm();saveLocalSettings();syncSettingsToCloud(appSettings);updateCompanyLogoPreview();alert("Settings saved.");
 }
 function clearSettings(){
-  showPortalConfirm({title:"Clear settings?",message:"Clear saved settings?",icon:"⚠️",confirmText:"Clear",onConfirm:function(){appSettings=defaultSettings();saveLocalSettings();fillSettingsForm();syncSettingsToCloud(appSettings);alert("Settings cleared.");}});
+  showPortalConfirm({title:"Clear settings?",message:"Clear saved settings?",icon:"⚠️",confirmText:"Clear",onConfirm:function(){appSettings=defaultSettings();saveLocalSettings();fillSettingsForm();syncSettingsToCloud(appSettings);updateCompanyLogoPreview();alert("Settings cleared.");}});
 }
 function applyDefaultDetails(onlyBlank){
   loadLocalSettings();
@@ -1930,7 +2030,7 @@ async function loadCloudSettings(){
     let res=await cloudFetch("/api/settings",{cache:"no-store"});
     if(!res.ok)return;
     let payload=await res.json();
-    if(payload.settings){appSettings=Object.assign(defaultSettings(),payload.settings);saveLocalSettings();}
+    if(payload.settings){appSettings=Object.assign(defaultSettings(),payload.settings);saveLocalSettings();updateCompanyBranding();}
   }catch(e){}
 }
 async function syncSettingsToCloud(settings){
