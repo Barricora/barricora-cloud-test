@@ -422,7 +422,7 @@
     <div class="sectionHeader"><div><span class="step">Home</span><h2>Safety Portal Dashboard</h2><p class="small">Overall snapshot of audits, actions, findings, toolbox talks, daily checks and PPE.</p></div><button class="primary noPrint" id="dashboardStartAuditBtn" type="button">Start Audit</button></div>
     <div class="cloudPanel noPrint">
       <span id="cloudStatus">Cloud: checking...</span>
-      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v94</span><span id="authUserBadge">User: signed out</span>
+      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v95</span><span id="authUserBadge">User: signed out</span>
       <button class="secondary" id="syncNowBtn" type="button">Sync now</button>
     </div>
     <div class="kpiGrid" id="homeDashGrid">
@@ -2348,6 +2348,111 @@ async function syncSettingsToCloud(settings){
   catch(e){}
 }
 
+
+const AUDIT_OFFLINE_DB="barricora_offline_v95";
+const AUDIT_OFFLINE_STORE="largeAudits";
+let cloudReconnectRunning=false, cloudReconnectTimer=null;
+function openOfflineAuditDb(){
+  return new Promise(function(resolve,reject){
+    if(!window.indexedDB){reject(new Error("IndexedDB not supported"));return;}
+    let req=indexedDB.open(AUDIT_OFFLINE_DB,1);
+    req.onupgradeneeded=function(){let db=req.result;if(!db.objectStoreNames.contains(AUDIT_OFFLINE_STORE))db.createObjectStore(AUDIT_OFFLINE_STORE,{keyPath:"id"});};
+    req.onsuccess=function(){resolve(req.result)};
+    req.onerror=function(){reject(req.error||new Error("Could not open offline audit cache"))};
+  });
+}
+function offlineAuditPut(audit){
+  return openOfflineAuditDb().then(function(db){return new Promise(function(resolve,reject){
+    let tx=db.transaction(AUDIT_OFFLINE_STORE,"readwrite");
+    tx.objectStore(AUDIT_OFFLINE_STORE).put(audit);
+    tx.oncomplete=function(){db.close();resolve(true)};
+    tx.onerror=function(){db.close();reject(tx.error||new Error("Could not save offline audit"))};
+  })});
+}
+function offlineAuditGet(id){
+  return openOfflineAuditDb().then(function(db){return new Promise(function(resolve,reject){
+    let tx=db.transaction(AUDIT_OFFLINE_STORE,"readonly");
+    let req=tx.objectStore(AUDIT_OFFLINE_STORE).get(id);
+    req.onsuccess=function(){resolve(req.result||null)};
+    req.onerror=function(){reject(req.error||new Error("Could not read offline audit"))};
+    tx.oncomplete=function(){db.close()};
+  })});
+}
+function offlineAuditGetAll(){
+  return openOfflineAuditDb().then(function(db){return new Promise(function(resolve,reject){
+    let tx=db.transaction(AUDIT_OFFLINE_STORE,"readonly");
+    let req=tx.objectStore(AUDIT_OFFLINE_STORE).getAll();
+    req.onsuccess=function(){resolve(Array.isArray(req.result)?req.result:[])};
+    req.onerror=function(){reject(req.error||new Error("Could not read offline audits"))};
+    tx.oncomplete=function(){db.close()};
+  })});
+}
+function makeAuditListSummary(data){
+  data=data||{};
+  return {
+    id:data.id,
+    category:data.category||"Audit",
+    status:data.status||(data.reportReady?"Finished":"Unfinished"),
+    details:data.details||{},
+    score:data.score||null,
+    actions:data.actions||{},
+    reportReady:!!data.reportReady,
+    savedAt:data.savedAt||new Date().toISOString(),
+    offlineLarge:true,
+    offlineNote:"Full audit/photos saved in offline recovery cache"
+  };
+}
+function trySetAuditList(list){try{localStorage.setItem(AUDIT_LIST_KEY,JSON.stringify(list));return true}catch(e){return false}}
+function saveAuditSummaryToList(summary){
+  let list=getAuditList().filter(function(x){return x&&x.id!==summary.id});
+  list.unshift(summary);
+  return trySetAuditList(list);
+}
+function scheduleCloudReconnect(reason){
+  if(cloudReconnectTimer)return;
+  cloudReconnectTimer=setTimeout(function(){cloudReconnectTimer=null;recoverCloudConnection(reason||"scheduled");},1500);
+}
+async function recoverCloudConnection(reason){
+  if(cloudReconnectRunning)return;
+  cloudReconnectRunning=true;
+  try{
+    if(!currentAuthUser){try{await loadAuthMe();}catch(e){}}
+    if(!currentAuthUser)return;
+    if(!navigator.onLine){setCloudStatus("Cloud: waiting for internet","cloudOffline");return;}
+    setCloudStatus("Cloud: reconnecting...","cloudSyncing");
+    await initCloudSync();
+    if(cloudAvailable)await syncOfflineAuditCacheToCloud(true);
+  }catch(e){setCloudStatus("Cloud: local only","cloudOffline");}
+  finally{cloudReconnectRunning=false;}
+}
+async function syncOfflineAuditCacheToCloud(silent){
+  if(!cloudAvailable)return;
+  let cached=[];
+  try{cached=await offlineAuditGetAll();}catch(e){return;}
+  if(!cached.length)return;
+  if(!silent)setCloudStatus("Cloud: uploading offline audits...","cloudSyncing");
+  for(let i=0;i<cached.length;i++){
+    let audit=cached[i];
+    if(!audit||!audit.id)continue;
+    try{
+      audit.savedAt=audit.savedAt||new Date().toISOString();
+      let res=await cloudFetch("/api/audits",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(audit)});
+      if(!res.ok)throw new Error("Offline audit upload failed");
+      let summary=makeAuditListSummary(audit);
+      summary.offlineSyncedAt=new Date().toISOString();
+      summary.offlineNote="Full audit/photos saved on cloud and this device";
+      saveAuditSummaryToList(summary);
+    }catch(e){if(!silent)setCloudStatus("Cloud: offline audit upload failed","cloudError");return;}
+  }
+  updateHomeDashboard();
+  if($('screenAuditList')&&!$('screenAuditList').classList.contains('hidden'))renderAuditList();
+  setCloudStatus("Cloud: synced","cloudOnline");
+}
+window.addEventListener('online',function(){scheduleCloudReconnect('browser online')});
+window.addEventListener('focus',function(){if(currentAuthUser&&(!cloudAvailable||navigator.onLine))scheduleCloudReconnect('window focus')});
+document.addEventListener('visibilitychange',function(){if(!document.hidden&&currentAuthUser&&(!cloudAvailable||navigator.onLine))scheduleCloudReconnect('visible')});
+setInterval(function(){if(currentAuthUser&&!cloudAvailable&&navigator.onLine)scheduleCloudReconnect('interval')},60000);
+
 function setCloudStatus(text,cls){
   let el=$("cloudStatus");
   if(!el)return;
@@ -2400,6 +2505,7 @@ async function manualCloudSync(){
   let wlist=getWorkerList();
   for(let n=0;n<wlist.length;n++)await syncWorkerToCloud(wlist[n],true);
   await syncPPEToCloud(true);
+  await syncOfflineAuditCacheToCloud(true);
   setCloudStatus("Cloud: synced","cloudOnline");
 }
 async function initCloudSync(){
@@ -2417,6 +2523,7 @@ async function initCloudSync(){
     await loadCloudWorkers();
     await loadCloudPPE();
     await loadCloudSettings();
+    await syncOfflineAuditCacheToCloud(true);
     if(cloudAvailable) setCloudStatus("Cloud: synced","cloudOnline");
   }catch(e){
     cloudAvailable=false;
@@ -2735,7 +2842,17 @@ function upsertAuditToList(status){
   let list=getAuditList();
   let idx=list.findIndex(function(x){return x.id===data.id});
   if(idx>=0){list[idx]=data;}else{list.unshift(data);}
-  let ok=setAuditList(list); if(ok)syncAuditToCloud(data); return ok;
+  let ok=trySetAuditList(list);
+  if(ok){syncAuditToCloud(data);return true;}
+  let summary=makeAuditListSummary(data);
+  let summaryOk=saveAuditSummaryToList(summary);
+  offlineAuditPut(data).then(function(){
+    setAutosaveStatus("Saved in offline recovery cache");
+    if(cloudAvailable)syncOfflineAuditCacheToCloud(true);else scheduleCloudReconnect('large audit saved offline');
+  }).catch(function(){setAutosaveStatus("Offline recovery cache failed")});
+  if(cloudAvailable)syncAuditToCloud(data);else scheduleCloudReconnect('large audit saved offline');
+  if(!summaryOk)setCloudStatus("Cloud: offline audit saved, Audit List summary not saved","cloudError");
+  return true;
 }
 function saveUnfinishedAudit(){setReadOnlyReportMode(false);
   reportReady=false;
@@ -2896,7 +3013,7 @@ function renderAuditList(){
     let cls=status==="Finished"?"statusFinished":"statusUnfinished";
     let openText=status==="Finished"?"Open Report":"Continue Audit";
     h+='<div class="auditListItem"><span class="statusPill '+cls+'">'+esc(status)+'</span><b>'+esc(auditLabel(item))+'</b>';
-    h+='<div class="auditListMeta">Saved: '+esc(saved)+'<br>Date: '+esc(d.date||"Not entered")+' | Auditor: '+esc(d.auditor||"Not entered")+' | Score: '+esc(score)+'</div>';
+    h+='<div class="auditListMeta">Saved: '+esc(saved)+'<br>Date: '+esc(d.date||"Not entered")+' | Auditor: '+esc(d.auditor||"Not entered")+' | Score: '+esc(score)+(item.offlineLarge?'<br><b>Offline recovery:</b> '+esc(item.offlineSyncedAt?'Synced to cloud':'Waiting for cloud sync'):'')+'</div>';
     h+='<div class="actions noPrint"><button class="primary" type="button" onclick="openSavedAudit('+idx+')">'+openText+'</button><button class="secondary" type="button" onclick="deleteSavedAudit('+idx+')">Delete</button></div></div>';
   });
   box.innerHTML=h;
@@ -2908,10 +3025,14 @@ function openAuditList(){
   renderAuditList();
   show("screenAuditList");
 }
-function openSavedAudit(idx){
+async function openSavedAudit(idx){
   let list=getAuditList();
   let item=list[idx];
   if(!item)return;
+  if(item.offlineLarge){
+    try{let full=await offlineAuditGet(item.id);if(full)item=full;}catch(e){}
+  }
+  if(item.offlineLarge&&!item.answers){alert("This large offline audit is saved on this device but full details could not be opened. Try Sync now when internet is available.");return;}
   let status=item.status || (item.reportReady?"Finished":"Unfinished");
   restoreAudit(item);
   if(status==="Finished"){
@@ -3193,7 +3314,7 @@ function clearAutoSave(){try{localStorage.removeItem(AUTOSAVE_KEY)}catch(e){}set
 function restoreAudit(data){if(!data||!data.category||!CATEGORIES[data.category])return false;currentCategory=data.category;currentAuditId=data.id||("audit_"+Date.now());answers=data.answers||{};comments=data.comments||{};photos=data.photos||{};actions=data.actions||{};commentVariant=data.commentVariant||0;reportReady=!!data.reportReady || data.status==="Finished";questionIndex=Math.min(data.questionIndex||0,CATEGORIES[currentCategory].questions.length-1);$("selectedCat").textContent=currentCategory;$("selectedCount").textContent=CATEGORIES[currentCategory].questions.length+" questions";detailIds.forEach(function(id){if(data.details&&data.details[id]!==undefined)$(id).value=data.details[id]});if($("overallComment"))$("overallComment").value=data.overallComment||"";setSignatureData(data.signatures||{});$("sub").textContent=reportReady?currentCategory+" report":currentCategory+" audit restored";if(reportReady){$("backToReportDetails").classList.remove("hidden");buildReport();show("screenReport");}else if(data.screen==="screenQuestion"){renderQuestion();show("screenQuestion");}else{show("screenDetails");}setAutosaveStatus("Previous audit restored");updateResumeDraftButton();return true;}
 function checkResumeDraft(){return;}
 function collect(){let data={id:currentAuditId,category:currentCategory,status:(reportReady?"Finished":"Unfinished"),details:{},overallComment:$("overallComment")?$("overallComment").value:"",answers:answers,comments:comments,photos:photos,actions:cleanActionsObject(actions),score:calc(),questionIndex:questionIndex,reportReady:reportReady,screen:currentScreenId(),commentVariant:commentVariant,signatures:getSignatureData()};detailIds.forEach(function(id){data.details[id]=$(id).value});return data}
-function saveAudit(){try{localStorage.setItem(AUTOSAVE_KEY,JSON.stringify(collect()));upsertAuditToList(reportReady?"Finished":"Unfinished");setAutosaveStatus("Saved on this device/browser");alert("Saved on this device/browser and Audit List.")}catch(e){alert("Could not save. Photos may be too large. Use Export or Report.")}}
+function saveAudit(){let autoOk=true;try{localStorage.setItem(AUTOSAVE_KEY,JSON.stringify(collect()));}catch(e){autoOk=false;}if(upsertAuditToList(reportReady?"Finished":"Unfinished")){setAutosaveStatus(autoOk?"Saved on this device/browser":"Saved in offline recovery cache");alert(autoOk?"Saved on this device/browser and Audit List.":"Audit is too large for normal phone storage, so it was saved in offline recovery cache. When internet is back, press Sync now or reopen the app and it will upload to cloud.");}else{alert("Could not save audit.")}}
 function exportAudit(){let safe=currentCategory.split(" ").join("-").replace("/","-").toLowerCase(),blob=new Blob([JSON.stringify(collect(),null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="barricora-"+safe+"-"+($("date").value||today())+".json";a.click()}
 document.addEventListener("DOMContentLoaded",function(){init();detailIds.forEach(function(id){let el=$(id);if(el)el.addEventListener("input",autoSave)});startPortalAfterInit();});
 </script></body></html>
