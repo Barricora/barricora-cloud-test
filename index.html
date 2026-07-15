@@ -361,6 +361,22 @@
 .userPasswordReset{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px;width:100%;justify-content:flex-end}
 .userPasswordReset input{max-width:210px;min-width:180px;padding:9px 10px;border:1px solid #d7e1ea;border-radius:12px;background:white}
 @media(max-width:760px){.userPasswordReset{justify-content:stretch}.userPasswordReset input{max-width:none;width:100%}.userPasswordReset button{width:100%}}
+
+
+/* v94 mobile menu real scroll fix */
+@supports (height: 100dvh){
+  @media(max-width:900px){.portalSidebar{height:100dvh!important;max-height:100dvh!important;min-height:0!important}}
+}
+@supports not (height: 100dvh){
+  @media(max-width:900px){.portalSidebar{height:100vh!important;max-height:100vh!important;min-height:0!important}}
+}
+@media(max-width:900px){
+  body.mobileMenuOpen{position:fixed!important;overflow:hidden!important;width:100%!important}
+  body.mobileMenuOpen .portalSidebar{overflow-y:auto!important;overscroll-behavior:contain!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-y!important;display:flex!important;flex-direction:column!important;padding-bottom:0!important}
+  body.mobileMenuOpen .portalSidebar .navGroup{flex:0 0 auto!important;padding-bottom:8px!important}
+  body.mobileMenuOpen .sidebarFooter{position:static!important;margin-top:8px!important;padding-top:10px!important;padding-bottom:96px!important}
+}
+
 </style></head><body>
 <section id="loginScreen" class="loginScreen noPrint">
   <div class="loginCard">
@@ -406,7 +422,7 @@
     <div class="sectionHeader"><div><span class="step">Home</span><h2>Safety Portal Dashboard</h2><p class="small">Overall snapshot of audits, actions, findings, toolbox talks, daily checks and PPE.</p></div><button class="primary noPrint" id="dashboardStartAuditBtn" type="button">Start Audit</button></div>
     <div class="cloudPanel noPrint">
       <span id="cloudStatus">Cloud: checking...</span>
-      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v93</span><span id="authUserBadge">User: signed out</span>
+      <span id="cloudLastSync">Last sync: never</span><span id="appVersionBadge">v94</span><span id="authUserBadge">User: signed out</span>
       <button class="secondary" id="syncNowBtn" type="button">Sync now</button>
     </div>
     <div class="kpiGrid" id="homeDashGrid">
@@ -963,7 +979,9 @@ function today(){return new Date().toISOString().slice(0,10)}
 const PORTAL_SCREENS=["screenPortalDashboard","screenCategories","screenDailyChecklists","screenToolboxTalks","screenRAMS","screenActionList","screenFindings","screenWorkers","screenPPE","screenSettings","screenAuditList","screenCloseAction","screenDetails","screenQuestion","screenReport"];
 function screenTitle(id){return {screenPortalDashboard:"Dashboard",screenCategories:"Audits",screenDailyChecklists:"Daily Checklists",screenToolboxTalks:"Toolbox Talks",screenRAMS:"RAMS",screenActionList:"Actions",screenFindings:"Findings",screenWorkers:"Workers",screenPPE:"PPE Stock",screenSettings:"Settings",screenAuditList:"Audit List",screenCloseAction:"Update Action",screenDetails:"Audit Details",screenQuestion:"Audit Questions",screenReport:"Audit Report"}[id]||"Barricora"}
 function setActiveNav(id){document.querySelectorAll(".navItem").forEach(function(btn){let target=btn.getAttribute("data-nav-screen");btn.classList.toggle("active",target===id)});if($("portalTitle"))$("portalTitle").textContent=screenTitle(id)}
-function closeMobileMenu(){if($("portalSidebar"))$("portalSidebar").classList.remove("open");if($("mobileMenuOverlay"))$("mobileMenuOverlay").classList.remove("open")}
+let mobileMenuScrollY=0;
+function openMobileMenu(){mobileMenuScrollY=window.scrollY||document.documentElement.scrollTop||0;if($("portalSidebar"))$("portalSidebar").classList.add("open");if($("mobileMenuOverlay"))$("mobileMenuOverlay").classList.add("open");document.body.classList.add("mobileMenuOpen");document.body.style.top="-"+mobileMenuScrollY+"px"}
+function closeMobileMenu(){if($("portalSidebar"))$("portalSidebar").classList.remove("open");if($("mobileMenuOverlay"))$("mobileMenuOverlay").classList.remove("open");if(document.body.classList.contains("mobileMenuOpen")){document.body.classList.remove("mobileMenuOpen");document.body.style.top="";window.scrollTo(0,mobileMenuScrollY||0)}}
 function show(id){PORTAL_SCREENS.forEach(function(s){let el=$(s);if(el)el.classList.add("hidden")});let target=$(id);if(target)target.classList.remove("hidden");if($("appShell"))$("appShell").classList.remove("hidden");if($("loginScreen"))$("loginScreen").classList.add("hidden");updateCompanyBranding();if(id==="screenPortalDashboard"||id==="screenCategories"||id==="screenActionList"||id==="screenAuditList"||id==="screenFindings"||id==="screenDailyChecklists"||id==="screenToolboxTalks"||id==="screenRAMS"||id==="screenPPE")updateHomeDashboard();if(id==="screenFindings")showFindingDashboard(false);if(id==="screenDailyChecklists")showDailyDashboard(false);if(id==="screenWorkers")showWorkersDashboard(false);if(id==="screenPPE")showPPEDashboard(false);if(id==="screenRAMS")showRAMSDashboard(false);setActiveNav(id);closeMobileMenu();window.scrollTo(0,0);applyRoleRestrictionsSoon()}
 
 
@@ -1171,7 +1189,7 @@ function initPortalShell(){
   if($('registerPasswordConfirm'))$('registerPasswordConfirm').addEventListener('keydown',function(e){if(e.key==='Enter')registerProfile();});
   function bindLogoutButton(id){if($(id))$(id).onclick=function(){showPortalConfirm({title:'Log out?',message:'Log out from Barricora on this device?',icon:'🚪',confirmText:'Log out',danger:false,onConfirm:logoutPasswordSession})};}
   bindLogoutButton('logoutBtn');
-  if($('mobileMenuBtn'))$('mobileMenuBtn').onclick=function(){if($('portalSidebar'))$('portalSidebar').classList.add('open');if($('mobileMenuOverlay'))$('mobileMenuOverlay').classList.add('open')};
+  if($('mobileMenuBtn'))$('mobileMenuBtn').onclick=openMobileMenu;
   if($('mobileMenuOverlay'))$('mobileMenuOverlay').onclick=closeMobileMenu;
   document.querySelectorAll('[data-nav-screen]').forEach(function(btn){btn.onclick=function(){handlePortalNavTarget(this.getAttribute('data-nav-screen'))}});
 }
